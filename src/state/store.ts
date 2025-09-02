@@ -11,6 +11,10 @@ import {
   ProcessingParams,
   DetectionObject,
 } from '../types';
+import { revenueCatService } from '../monetization/revenuecat';
+import { iapService } from '../monetization/iap';
+import { adService } from '../ads/ads';
+import { consentService } from '../privacy/consent';
 
 // Initialize MMKV storage
 const storage = new MMKV();
@@ -49,6 +53,15 @@ const defaultSettings: AppSettings = {
   enableCrashReporting: true,
 };
 
+interface PurchaseState {
+  isPro: boolean;
+  isLoading: boolean;
+  products: Array<{ id: string; price: string; localizedPrice?: string }>;
+  error: string | null;
+  hasConsent: boolean;
+  shouldShowAds: boolean;
+}
+
 interface AppState {
   // Settings
   settings: AppSettings;
@@ -85,6 +98,15 @@ interface AppState {
   // UI state
   selectedSquares: number[];
   setSelectedSquares: (squares: number[]) => void;
+  
+  // Purchase state
+  purchase: PurchaseState;
+  setPurchaseState: (state: Partial<PurchaseState>) => void;
+  
+  // Purchase actions
+  initializePurchases: () => Promise<void>;
+  purchasePro: () => Promise<boolean>;
+  restorePurchases: () => Promise<boolean>;
   
   // Actions
   resetSession: () => void;
@@ -165,6 +187,207 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Selected squares
   selectedSquares: [0, 1, 2, 3], // Default to first 4 squares
   setSelectedSquares: (squares) => set({ selectedSquares: squares }),
+
+  // Purchase state
+  purchase: {
+    isPro: false,
+    isLoading: false,
+    products: [],
+    error: null,
+    hasConsent: false,
+    shouldShowAds: false,
+  },
+  setPurchaseState: (state) => {
+    set((prev) => ({
+      purchase: { ...prev.purchase, ...state },
+    }));
+  },
+
+  // Purchase actions
+  initializePurchases: async () => {
+    try {
+      set((prev) => ({ purchase: { ...prev.purchase, isLoading: true, error: null } }));
+
+      // Initialize consent
+      const consent = consentService.getConsentState();
+      const hasConsent = consentService.hasAdConsent();
+
+      // Initialize ads
+      await adService.initialize();
+      await adService.setNonPersonalized(consentService.shouldUseNonPersonalizedAds());
+
+      // Try RevenueCat first, fallback to IAP
+      let isPro = false;
+      let products: Array<{ id: string; price: string; localizedPrice?: string }> = [];
+
+      const revenueCatInitialized = await revenueCatService.initialize();
+      if (revenueCatInitialized) {
+        console.log('Using RevenueCat for purchases');
+        isPro = await revenueCatService.getProStatus();
+        
+        const offerings = await revenueCatService.getOfferings();
+        if (offerings?.current?.availablePackages) {
+          products = offerings.current.availablePackages.map(pkg => ({
+            id: pkg.identifier,
+            price: pkg.product.priceString,
+            localizedPrice: pkg.product.priceString,
+          }));
+        }
+
+        // Set up listener for purchase updates
+        revenueCatService.addListener((rcState) => {
+          set((prev) => ({
+            purchase: {
+              ...prev.purchase,
+              isPro: rcState.isPro ?? prev.purchase.isPro,
+              isLoading: rcState.isLoading ?? prev.purchase.isLoading,
+              error: rcState.error ?? prev.purchase.error,
+            },
+          }));
+        });
+      } else {
+        console.log('Using react-native-iap for purchases');
+        const iapInitialized = await iapService.initialize();
+        if (iapInitialized) {
+          isPro = iapService.getProStatus();
+          const iapProducts = await iapService.loadProducts();
+          products = iapProducts.map(product => ({
+            id: product.productId,
+            price: product.localizedPrice,
+            localizedPrice: product.localizedPrice,
+          }));
+
+          // Set up listener for purchase updates
+          iapService.addListener((iapState) => {
+            set((prev) => ({
+              purchase: {
+                ...prev.purchase,
+                isPro: iapState.isPro ?? prev.purchase.isPro,
+                isLoading: iapState.isLoading ?? prev.purchase.isLoading,
+                error: iapState.error ?? prev.purchase.error,
+                products: iapState.products ? iapState.products.map(p => ({
+                  id: p.productId,
+                  price: p.localizedPrice,
+                  localizedPrice: p.localizedPrice,
+                })) : prev.purchase.products,
+              },
+            }));
+          });
+        }
+      }
+
+      const shouldShowAds = !isPro && hasConsent;
+
+      set((prev) => ({
+        purchase: {
+          ...prev.purchase,
+          isPro,
+          products,
+          hasConsent,
+          shouldShowAds,
+          isLoading: false,
+        },
+      }));
+    } catch (error) {
+      console.error('Failed to initialize purchases:', error);
+      set((prev) => ({
+        purchase: {
+          ...prev.purchase,
+          isLoading: false,
+          error: `Initialization failed: ${error}`,
+        },
+      }));
+    }
+  },
+
+  purchasePro: async () => {
+    try {
+      set((prev) => ({ purchase: { ...prev.purchase, isLoading: true, error: null } }));
+
+      let success = false;
+
+      if (revenueCatService.isAvailable()) {
+        const offerings = await revenueCatService.getOfferings();
+        const proPackage = offerings?.current?.availablePackages.find(
+          pkg => pkg.identifier === 'lifetime' || pkg.product.identifier.includes('pro')
+        );
+        
+        if (proPackage) {
+          success = await revenueCatService.purchasePackage(proPackage);
+        }
+      } else if (iapService.isAvailable()) {
+        success = await iapService.purchasePro();
+      }
+
+      if (success) {
+        set((prev) => ({
+          purchase: {
+            ...prev.purchase,
+            isPro: true,
+            shouldShowAds: false,
+            isLoading: false,
+          },
+        }));
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Purchase failed:', error);
+      set((prev) => ({
+        purchase: {
+          ...prev.purchase,
+          isLoading: false,
+          error: `Purchase failed: ${error}`,
+        },
+      }));
+      return false;
+    }
+  },
+
+  restorePurchases: async () => {
+    try {
+      set((prev) => ({ purchase: { ...prev.purchase, isLoading: true, error: null } }));
+
+      let success = false;
+
+      if (revenueCatService.isAvailable()) {
+        success = await revenueCatService.restorePurchases();
+      } else if (iapService.isAvailable()) {
+        success = await iapService.restorePurchases();
+      }
+
+      if (success) {
+        set((prev) => ({
+          purchase: {
+            ...prev.purchase,
+            isPro: true,
+            shouldShowAds: false,
+            isLoading: false,
+          },
+        }));
+      } else {
+        set((prev) => ({
+          purchase: {
+            ...prev.purchase,
+            isLoading: false,
+            error: 'No purchases found to restore',
+          },
+        }));
+      }
+
+      return success;
+    } catch (error) {
+      console.error('Restore failed:', error);
+      set((prev) => ({
+        purchase: {
+          ...prev.purchase,
+          isLoading: false,
+          error: `Restore failed: ${error}`,
+        },
+      }));
+      return false;
+    }
+  },
   
   // Actions
   resetSession: () => {

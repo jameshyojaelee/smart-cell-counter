@@ -12,12 +12,15 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Sample } from '../src/types';
 import { SampleRepository } from '../src/data/repositories/SampleRepository';
 import { shareMultipleSamples } from '../src/utils/share';
 import { formatNumber } from '../src/imaging/math';
 import { logUserInteraction } from '../src/utils/logger';
+import { AdBanner } from '../src/components/AdBanner';
+import { useShouldShowAds, useProFeatures } from '../src/hooks/usePurchase';
 
 interface SampleItemProps {
   sample: Sample;
@@ -77,6 +80,8 @@ export default function HistoryScreen(): JSX.Element {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const sampleRepository = new SampleRepository();
+  const shouldShowAds = useShouldShowAds();
+  const { canUseBatchExport } = useProFeatures();
 
   useEffect(() => {
     loadSamples();
@@ -167,6 +172,19 @@ export default function HistoryScreen(): JSX.Element {
   const handleBulkShare = async (): Promise<void> => {
     if (selectedSamples.length === 0) {
       Alert.alert('No Selection', 'Please select samples to share.');
+      return;
+    }
+
+    // Check if user has Pro for batch export
+    if (!canUseBatchExport) {
+      Alert.alert(
+        'Pro Feature',
+        'Batch export is a Pro feature. Upgrade to export multiple samples at once.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Upgrade', onPress: () => router.push('/paywall') },
+        ]
+      );
       return;
     }
 
@@ -291,6 +309,9 @@ export default function HistoryScreen(): JSX.Element {
                 : 'Start analyzing samples to see them here.'}
             </Text>
           </View>
+        }
+        ListFooterComponent={
+          <AdBanner visible={shouldShowAds} style={styles.adBanner} />
         }
       />
 
@@ -457,5 +478,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
+  },
+  adBanner: {
+    marginTop: 20,
+    marginBottom: 20,
   },
 });

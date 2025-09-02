@@ -520,6 +520,122 @@ If you use this app in research, please cite:
 }
 ```
 
+## Monetization Setup
+
+The app includes a comprehensive monetization system with Pro features and privacy-compliant advertising.
+
+### Revenue Model
+
+**Free Tier:**
+- Full cell counting functionality
+- CSV export
+- PDF export with watermark
+- Light ads on Results and History screens only
+
+**Pro Tier (One-time purchase):**
+- Remove all advertisements
+- Remove watermarks from PDFs and exports
+- Advanced features: batch export, custom grid presets, multiple stain profiles
+- Priority ML processing
+- Per-square statistics in CSV exports
+
+### Setup Instructions
+
+#### 1. RevenueCat Configuration (Recommended)
+
+```bash
+# Set your RevenueCat API keys as environment variables
+export EXPO_PUBLIC_REVENUECAT_IOS_KEY="your_ios_key_here"
+export EXPO_PUBLIC_REVENUECAT_ANDROID_KEY="your_android_key_here"
+```
+
+Create offerings in RevenueCat dashboard:
+- Offering ID: `default`
+- Package ID: `lifetime`
+- Product ID: `com.smartcellcounter.pro`
+
+#### 2. Alternative: React Native IAP
+
+If not using RevenueCat, the app automatically falls back to `react-native-iap`:
+
+```typescript
+// The app will automatically detect missing RevenueCat keys
+// and use react-native-iap for purchases
+```
+
+#### 3. Google AdMob Setup
+
+Replace test ad unit IDs in `src/ads/ads.ts`:
+
+```typescript
+const AD_UNIT_IDS = {
+  banner: {
+    ios: 'ca-app-pub-YOUR_PUBLISHER_ID/YOUR_BANNER_ID',
+    android: 'ca-app-pub-YOUR_PUBLISHER_ID/YOUR_BANNER_ID',
+  },
+  interstitial: {
+    ios: 'ca-app-pub-YOUR_PUBLISHER_ID/YOUR_INTERSTITIAL_ID',
+    android: 'ca-app-pub-YOUR_PUBLISHER_ID/YOUR_INTERSTITIAL_ID',
+  },
+};
+```
+
+#### 4. App Store Configuration
+
+**iOS (App Store Connect):**
+1. Create in-app purchase product: `com.smartcellcounter.pro`
+2. Set as non-consumable, one-time purchase
+3. Configure pricing tiers
+4. Add localized descriptions
+
+**Android (Google Play Console):**
+1. Create managed product: `com.smartcellcounter.pro`
+2. Set as non-consumable
+3. Configure pricing
+4. Enable Play Billing API v5
+
+#### 5. Privacy Compliance
+
+The app includes GDPR/CCPA compliant consent management:
+
+- First-run consent screen
+- Granular privacy controls in Settings
+- Non-personalized ads by default
+- App Tracking Transparency on iOS (only if user opts into personalized ads)
+- All cell counting data stays on device
+
+#### 6. Testing
+
+```bash
+# Test with development builds
+npx expo run:ios
+npx expo run:android
+
+# Test purchase flow in sandbox/test environments
+# Verify ad loading with test unit IDs
+# Test consent flow on fresh installs
+```
+
+### Monetization Features
+
+#### Ad Integration
+- **Banner ads**: Bottom of Results and History screens only
+- **Interstitial ads**: Before PDF export for free users (once per session)
+- **No ads**: During counting flow (Capture, Crop, Review screens)
+- **Consent-driven**: Respects user privacy preferences
+
+#### Purchase Integration
+- **Cross-platform**: Same Pro features on iOS and Android
+- **Restore purchases**: Works across device reinstalls
+- **Graceful fallbacks**: App works even if store is unavailable
+- **Feature gating**: Pro features clearly marked and gated
+
+#### Privacy First
+- **Data minimization**: Only anonymous usage analytics
+- **Local storage**: All consent preferences stored locally
+- **Transparent**: Clear explanations of data usage
+- **User control**: Easy to change preferences in Settings
+
 ## Support
 
 - 📧 Email: support@smartcellcounter.com

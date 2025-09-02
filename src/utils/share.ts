@@ -11,6 +11,7 @@ export interface ShareOptions {
   includeImages?: boolean;
   includeDetections?: boolean;
   format: 'pdf' | 'csv' | 'both';
+  removeWatermark?: boolean;
 }
 
 /**
@@ -34,9 +35,13 @@ export async function shareSample(
       let pdfPath: string;
       
       if (options.includeImages && imagePaths) {
-        pdfPath = await generatePDFWithImages(sample, squareCounts, qcAlerts, imagePaths);
+        pdfPath = await generatePDFWithImages(sample, squareCounts, qcAlerts, imagePaths, {
+          removeWatermark: options.removeWatermark || false,
+        });
       } else {
-        pdfPath = await generatePDFReport(sample, squareCounts, qcAlerts);
+        pdfPath = await generatePDFReport(sample, squareCounts, qcAlerts, {
+          removeWatermark: options.removeWatermark || false,
+        });
       }
       
       filesToShare.push(pdfPath);
@@ -116,7 +121,9 @@ export async function saveToFiles(
     let totalSize = 0;
     
     if (options.format === 'pdf' || options.format === 'both') {
-      const pdfPath = await generatePDFReport(sample, squareCounts, qcAlerts);
+      const pdfPath = await generatePDFReport(sample, squareCounts, qcAlerts, {
+        removeWatermark: options.removeWatermark || false,
+      });
       savedFiles.push(pdfPath);
       
       const pdfInfo = await FileSystem.getInfoAsync(pdfPath);

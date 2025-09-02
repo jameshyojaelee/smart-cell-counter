@@ -16,9 +16,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../src/state/store';
 import { ThresholdSlider } from '../src/components/ThresholdSlider';
 import { logUserInteraction } from '../src/utils/logger';
+import { usePurchase, useProFeatures } from '../src/hooks/usePurchase';
+import { consentService } from '../src/privacy/consent';
+import { router } from 'expo-router';
 
 export default function SettingsScreen(): JSX.Element {
   const { settings, updateSettings } = useAppStore();
+  const { isPro, isLoading, restorePurchases } = usePurchase();
+  const proFeatures = useProFeatures();
+  const [consent, setConsent] = React.useState(consentService.getConsentState());
 
   const handleResetSettings = (): void => {
     Alert.alert(
@@ -70,9 +76,79 @@ export default function SettingsScreen(): JSX.Element {
     );
   };
 
+  const handleGoToPro = (): void => {
+    logUserInteraction('Settings', 'GoToPro');
+    router.push('/paywall');
+  };
+
+  const handleRestorePurchases = async (): Promise<void> => {
+    try {
+      logUserInteraction('Settings', 'RestorePurchases');
+      const success = await restorePurchases();
+      if (success) {
+        Alert.alert('Success', 'Your Pro features have been restored!');
+      } else {
+        Alert.alert('No Purchases Found', 'We couldn\'t find any purchases to restore.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to restore purchases. Please try again.');
+    }
+  };
+
+  const updateConsent = (updates: any): void => {
+    consentService.updateConsent(updates);
+    setConsent(consentService.getConsentState());
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
+        {/* Pro Status */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {isPro ? (
+              <>
+                <Ionicons name="checkmark-circle" size={20} color="#34C759" /> Pro Status
+              </>
+            ) : (
+              'Upgrade to Pro'
+            )}
+          </Text>
+          
+          {isPro ? (
+            <View style={styles.proStatusContainer}>
+              <View style={styles.proStatusCard}>
+                <Ionicons name="star" size={24} color="#FFD60A" />
+                <Text style={styles.proStatusText}>Pro features unlocked!</Text>
+                <Text style={styles.proStatusSubtext}>
+                  Enjoy ad-free experience and advanced features
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.restoreButton}
+                onPress={handleRestorePurchases}
+                disabled={isLoading}
+              >
+                <Text style={styles.restoreButtonText}>Restore Purchases</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.upgradeContainer}>
+              <TouchableOpacity style={styles.upgradeButton} onPress={handleGoToPro}>
+                <Ionicons name="star" size={20} color="#fff" />
+                <Text style={styles.upgradeButtonText}>Upgrade to Pro</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.restoreButton}
+                onPress={handleRestorePurchases}
+                disabled={isLoading}
+              >
+                <Text style={styles.restoreButtonText}>Restore Purchases</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
         {/* Processing Parameters */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Processing Parameters</Text>
@@ -283,41 +359,109 @@ export default function SettingsScreen(): JSX.Element {
           </View>
           
           <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>TensorFlow Lite Refinement</Text>
+            <View style={styles.switchLabelContainer}>
+              <Text style={styles.switchLabel}>Priority ML Processing</Text>
+              {!proFeatures.canUsePriorityProcessing && (
+                <Text style={styles.proLabel}>Pro</Text>
+              )}
+            </View>
             <Switch
-              value={settings.processingParams.useTFLiteRefinement}
-              onValueChange={(value) =>
+              value={proFeatures.canUsePriorityProcessing ? settings.processingParams.useTFLiteRefinement : false}
+              onValueChange={(value) => {
+                if (!proFeatures.canUsePriorityProcessing) {
+                  Alert.alert(
+                    'Pro Feature',
+                    'Priority ML processing is available in Pro version.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Upgrade', onPress: handleGoToPro },
+                    ]
+                  );
+                  return;
+                }
                 updateSettings({
                   processingParams: {
                     ...settings.processingParams,
                     useTFLiteRefinement: value,
                   },
-                })
-              }
+                });
+              }}
+              disabled={!proFeatures.canUsePriorityProcessing}
             />
           </View>
         </View>
 
-        {/* Privacy */}
+        {/* Pro Features */}
+        {proFeatures.canUseAdvancedSettings && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Pro Features</Text>
+            
+            <TouchableOpacity style={styles.menuRow} disabled>
+              <Ionicons name="grid" size={20} color="#007AFF" />
+              <Text style={styles.menuLabel}>Custom Grid Presets</Text>
+              <Text style={styles.menuSubtitle}>Coming soon</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuRow} disabled>
+              <Ionicons name="color-palette" size={20} color="#007AFF" />
+              <Text style={styles.menuLabel}>Multiple Stain Profiles</Text>
+              <Text style={styles.menuSubtitle}>Coming soon</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuRow} disabled>
+              <Ionicons name="analytics" size={20} color="#007AFF" />
+              <Text style={styles.menuLabel}>Per-Square Statistics</Text>
+              <Text style={styles.menuSubtitle}>Enhanced CSV exports</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Privacy & Consent */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Privacy & Analytics</Text>
+          <Text style={styles.sectionTitle}>Privacy & Consent</Text>
           
           <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Enable Analytics</Text>
+            <View style={styles.switchLabelContainer}>
+              <Text style={styles.switchLabel}>Personalized Ads</Text>
+              <Text style={styles.switchSubtitle}>
+                {consent.adPersonalizationConsent === null 
+                  ? 'Not set (using non-personalized)'
+                  : consent.adPersonalizationConsent 
+                    ? 'Personalized ads enabled'
+                    : 'Non-personalized ads only'
+                }
+              </Text>
+            </View>
             <Switch
-              value={settings.enableAnalytics}
-              onValueChange={(value) => updateSettings({ enableAnalytics: value })}
+              value={consent.adPersonalizationConsent === true}
+              onValueChange={(value) => updateConsent({ adPersonalizationConsent: value })}
             />
           </View>
           
           <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Enable Crash Reporting</Text>
+            <Text style={styles.switchLabel}>Crash Reporting</Text>
             <Switch
-              value={settings.enableCrashReporting}
-              onValueChange={(value) => updateSettings({ enableCrashReporting: value })}
+              value={consent.crashReportingConsent}
+              onValueChange={(value) => updateConsent({ crashReportingConsent: value })}
             />
+          </View>
+          
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>Usage Analytics</Text>
+            <Switch
+              value={consent.analyticsConsent}
+              onValueChange={(value) => updateConsent({ analyticsConsent: value })}
+            />
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Text style={styles.infoText}>
+              Your cell counting data never leaves your device. We only collect anonymous usage statistics to improve the app.
+            </Text>
           </View>
         </View>
+
+
 
         {/* Actions */}
         <View style={styles.section}>
@@ -381,5 +525,100 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
     fontWeight: '600',
     marginLeft: 8,
+  },
+  proStatusContainer: {
+    paddingHorizontal: 20,
+  },
+  proStatusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F8FF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  proStatusText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginLeft: 12,
+    flex: 1,
+  },
+  proStatusSubtext: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  upgradeContainer: {
+    paddingHorizontal: 20,
+  },
+  upgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  upgradeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginLeft: 8,
+  },
+  restoreButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  restoreButtonText: {
+    fontSize: 14,
+    color: '#007AFF',
+  },
+  switchLabelContainer: {
+    flex: 1,
+  },
+  switchSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  proLabel: {
+    backgroundColor: '#007AFF',
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  menuLabel: {
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 12,
+    flex: 1,
+  },
+  menuSubtitle: {
+    fontSize: 12,
+    color: '#666',
+  },
+  infoRow: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  infoText: {
+    fontSize: 12,
+    color: '#666',
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
 });

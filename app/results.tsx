@@ -18,9 +18,12 @@ import { useAppStore } from '../src/state/store';
 import { calculateConcentration } from '../src/imaging/counting';
 import { evaluateCountingQuality } from '../src/imaging/qc';
 import { StatCard } from '../src/components/StatCard';
+import { AdBanner } from '../src/components/AdBanner';
 import { SampleRepository } from '../src/data/repositories/SampleRepository';
 import { shareSample } from '../src/utils/share';
 import { logUserInteraction, logError } from '../src/utils/logger';
+import { useShouldShowAds, useIsPro } from '../src/hooks/usePurchase';
+import { adService } from '../src/ads/ads';
 
 export default function ResultsScreen(): JSX.Element {
   const [notes, setNotes] = useState('');
@@ -35,6 +38,9 @@ export default function ResultsScreen(): JSX.Element {
     settings,
     resetSession,
   } = useAppStore();
+
+  const shouldShowAds = useShouldShowAds();
+  const isPro = useIsPro();
 
   const sampleRepository = new SampleRepository();
 
@@ -103,6 +109,11 @@ export default function ResultsScreen(): JSX.Element {
       return;
     }
 
+    // Show interstitial ad for free users before PDF export (once per session)
+    if (!isPro && shouldShowAds) {
+      await adService.showInterstitialAd();
+    }
+
     setIsSharing(true);
     logUserInteraction('Results', 'ShareResults');
 
@@ -111,7 +122,7 @@ export default function ResultsScreen(): JSX.Element {
         currentSample as any,
         squareCounts,
         qcAlerts,
-        { format: 'pdf', includeImages: true }
+        { format: 'pdf', includeImages: true, removeWatermark: isPro }
       );
     } catch (error) {
       logError('Results', error as Error, { context: 'shareResults' });
@@ -246,6 +257,9 @@ export default function ResultsScreen(): JSX.Element {
           </Text>
           {/* Seeding calculator inputs would go here */}
         </View>
+
+        {/* Banner Ad */}
+        <AdBanner visible={shouldShowAds} style={styles.adBanner} />
       </ScrollView>
 
       {/* Action Buttons */}
@@ -432,5 +446,9 @@ const styles = StyleSheet.create({
   },
   primaryActionText: {
     color: '#fff',
+  },
+  adBanner: {
+    marginTop: 20,
+    marginBottom: 20,
   },
 });
