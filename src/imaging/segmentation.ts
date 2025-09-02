@@ -166,16 +166,23 @@ export async function segmentCells(
     
     // Step 4: Filter by area constraints
     onProgress?.('Filtering detections...', 0.7);
+    console.log(`Segmentation: Starting with ${classicalResult.contours.length} raw contours`);
+
     let filteredContours = filterByArea(classicalResult.contours, p, safePxPerMicron)
       .filter(c => withinCircularity(c.circularity, p));
+
+    console.log(`Segmentation: After area filtering: ${filteredContours.length} contours`);
+    console.log(`Segmentation: Params - minAreaUm2: ${p.minAreaUm2}, maxAreaUm2: ${p.maxAreaUm2}, pixelsPerMicron: ${safePxPerMicron}`);
 
     // Fallback path to avoid 0 cells: relax thresholds and retry
     if (filteredContours.length === 0) {
       onProgress?.('No cells; retrying with relaxed params...', 0.72);
       const relaxed = relaxParams(p);
+      console.log(`Segmentation: Retrying with relaxed params - minAreaUm2: ${relaxed.minAreaUm2}`);
       const retry = await cvNativeAdapter.segmentCells(correctedImageUri, relaxed);
       filteredContours = filterByArea(retry.contours, relaxed, safePxPerMicron)
         .filter(c => withinCircularity(c.circularity, relaxed));
+      console.log(`Segmentation: After retry: ${filteredContours.length} contours`);
     }
     
     // Step 5: Extract color statistics

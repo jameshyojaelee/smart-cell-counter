@@ -87,6 +87,7 @@ export function CornerEditor({
   const [selectedCorner, setSelectedCorner] = useState<number | null>(null);
   const [dragMode, setDragMode] = useState<'corner' | 'box'>('corner');
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions>({ width: 0, height: 0 });
+  const [wrapperSize, setWrapperSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const { settings } = useAppStore();
 
   // Zoom and pan state
@@ -320,47 +321,37 @@ export function CornerEditor({
 
   const createCornerAnimatedStyle = (index: number) =>
     useAnimatedStyle(() => {
-      const baseScaleLocal = Math.min(
-        screenWidth * 0.9 / Math.max(1, imageDimensions.width),
-        screenHeight * 0.6 / Math.max(1, imageDimensions.height)
-      );
-      const effectiveScale = Math.max(0.1, baseScaleLocal * (scale.value || 1));
       const cx = cornerAnimations[index]?.x.value || 0;
       const cy = cornerAnimations[index]?.y.value || 0;
 
-      // Calculate the exact position of the corner handle to match SVG polygon
-      const containerWidth = screenWidth * 0.9;
-      const containerHeight = screenHeight * 0.6;
-      const imageAspectRatio = imageDimensions.width / imageDimensions.height;
-      const containerAspectRatio = containerWidth / containerHeight;
+      // Map image coords -> rendered coords inside wrapper with contain behavior
+      const imgW = Math.max(1, imageDimensions.width);
+      const imgH = Math.max(1, imageDimensions.height);
+      const wrapW = Math.max(1, wrapperSize.width);
+      const wrapH = Math.max(1, wrapperSize.height);
+      const imgAR = imgW / imgH;
+      const wrapAR = wrapW / wrapH;
 
-      let displayWidth, displayHeight, offsetX, offsetY;
-
-      if (imageAspectRatio > containerAspectRatio) {
-        // Image is wider than container
-        displayWidth = containerWidth;
-        displayHeight = containerWidth / imageAspectRatio;
-        offsetX = 0;
-        offsetY = (containerHeight - displayHeight) / 2;
+      let dispW: number, dispH: number, offX: number, offY: number;
+      if (imgAR > wrapAR) {
+        dispW = wrapW;
+        dispH = wrapW / imgAR;
+        offX = 0;
+        offY = (wrapH - dispH) / 2;
       } else {
-        // Image is taller than container
-        displayHeight = containerHeight;
-        displayWidth = containerHeight * imageAspectRatio;
-        offsetX = (containerWidth - displayWidth) / 2;
-        offsetY = 0;
+        dispH = wrapH;
+        dispW = wrapH * imgAR;
+        offX = (wrapW - dispW) / 2;
+        offY = 0;
       }
 
-      const scaledX = (cx / imageDimensions.width) * displayWidth;
-      const scaledY = (cy / imageDimensions.height) * displayHeight;
+      const px = offX + (cx / imgW) * dispW - handleSize / 2;
+      const py = offY + (cy / imgH) * dispH - handleSize / 2;
 
       return {
         position: 'absolute',
-        left: offsetX + scaledX * effectiveScale - handleSize / 2,
-        top: 100 + offsetY + scaledY * effectiveScale - handleSize / 2,
-        transform: [
-          { translateX: translateX.value },
-          { translateY: translateY.value },
-        ],
+        left: px,
+        top: py,
       };
     });
 
@@ -417,7 +408,9 @@ export function CornerEditor({
                 maxPointers={1}
               >
                 <Animated.View style={StyleSheet.absoluteFill}>
-                  <Animated.View style={imageAnimatedStyle}>
+                  <Animated.View style={imageAnimatedStyle} onLayout={(e:any)=>{
+                    const {width,height}=e.nativeEvent.layout; setWrapperSize({width,height});
+                  }}>
                     <TapGestureHandler
                       onGestureEvent={doubleTapHandler}
                       numberOfTaps={2}
@@ -472,7 +465,9 @@ export function CornerEditor({
                 minPointers={2}
                 maxPointers={2}
               >
-                <Animated.View style={imageAnimatedStyle}>
+                <Animated.View style={imageAnimatedStyle} onLayout={(e:any)=>{
+                  const {width,height}=e.nativeEvent.layout; setWrapperSize({width,height});
+                }}>
                   <TapGestureHandler
                     onGestureEvent={doubleTapHandler}
                     numberOfTaps={2}
@@ -524,38 +519,37 @@ export function CornerEditor({
           </Animated.View>
         </PinchGestureHandler>
 
-        {/* Corner Handles */}
-        {corners.map((_, index) => (
-          <PanGestureHandler
-            key={index}
-            onGestureEvent={createCornerGestureHandler(index)}
-          >
-            <Animated.View
-              style={[
-                styles.cornerHandle,
-                {
-                  width: handleSize,
-                  height: handleSize,
-                },
-                createCornerAnimatedStyle(index),
-                selectedCorner === index && styles.cornerHandleSelected,
-              ]}
-            >
-              <View style={styles.cornerInner}>
-                <Text style={styles.cornerLabel}>{index + 1}</Text>
-              </View>
-              
-              {/* Coordinate display for selected corner */}
-              {selectedCorner === index && (
-                <View style={styles.coordinateDisplay}>
-                  <Text style={styles.coordinateText}>
-                    {Math.round(corners[index]?.x || 0)}, {Math.round(corners[index]?.y || 0)}
-                  </Text>
-                </View>
-              )}
-            </Animated.View>
-          </PanGestureHandler>
-        ))}
+        {/* Corner Handles inside transformed group */}
+        <Animated.View style={[StyleSheet.absoluteFill, imageAnimatedStyle]} pointerEvents="box-none">
+          <View style={StyleSheet.absoluteFill} onLayout={(e)=>{
+            const {width,height}=e.nativeEvent.layout; setWrapperSize({width,height});
+          }}>
+            {corners.map((_, index) => (
+              <PanGestureHandler key={index} onGestureEvent={createCornerGestureHandler(index)}>
+                <Animated.View
+                  style={[
+                    styles.cornerHandle,
+                    { width: handleSize, height: handleSize },
+                    createCornerAnimatedStyle(index),
+                    selectedCorner === index && styles.cornerHandleSelected,
+                  ]}
+                  pointerEvents="box-none"
+                >
+                  <View style={styles.cornerInner}>
+                    <Text style={styles.cornerLabel}>{index + 1}</Text>
+                  </View>
+                  {selectedCorner === index && (
+                    <View style={styles.coordinateDisplay}>
+                      <Text style={styles.coordinateText}>
+                        {Math.round(corners[index]?.x || 0)}, {Math.round(corners[index]?.y || 0)}
+                      </Text>
+                    </View>
+                  )}
+                </Animated.View>
+              </PanGestureHandler>
+            ))}
+          </View>
+        </Animated.View>
 
         {/* Grid Lines */}
         <View style={styles.gridOverlay}>

@@ -87,7 +87,7 @@ class MockCVNative implements CVNativeModule {
         { x: 100, y: 900 }, // bottom-left
       ],
       gridType: 'neubauer',
-      pixelsPerMicron: 10.5,
+      pixelsPerMicron: 8.5, // More realistic for typical camera/phone imaging
       focusScore: 150.2,
       glareRatio: 0.05,
     };
@@ -116,6 +116,7 @@ class MockCVNative implements CVNativeModule {
       centroid: Point;
     }>;
   }> {
+    console.log('Mock CV: Segmenting cells from', correctedImageUri);
     await this.delay(800);
 
     // Generate mock detections for 4 large squares (Neubauer chamber)
@@ -131,13 +132,16 @@ class MockCVNative implements CVNativeModule {
 
       // Generate 20-50 cells per square
       const cellCount = Math.floor(Math.random() * 30) + 20;
-      
+
       for (let i = 0; i < cellCount; i++) {
         const x = squareX + Math.random() * squareSize;
         const y = squareY + Math.random() * squareSize;
-        const area = 50 + Math.random() * 200; // 50-250 pixels
+        // Generate cells with appropriate area for typical hemocytometer imaging
+        // With pixelsPerMicron ≈ 10, we want cells around 100-500 μm²
+        // So areaPx = areaUm2 * pixelsPerMicron² ≈ 100 * 10² = 10,000 pixels
+        const area = 8000 + Math.random() * 20000; // 8000-28000 pixels
         const size = Math.sqrt(area / Math.PI) * 2;
-        
+
         contours.push({
           id: `${squareIdx}_${i}`,
           areaPx: area,
@@ -153,6 +157,12 @@ class MockCVNative implements CVNativeModule {
       }
     }
 
+    console.log(`Mock CV: Generated ${contours.length} mock cell detections`);
+    if (contours.length > 0) {
+      const sampleArea = contours[0].areaPx;
+      const sampleAreaUm2 = sampleArea / (8.5 * 8.5); // Using the pixelsPerMicron we set
+      console.log(`Mock CV: Sample cell area: ${sampleArea} px = ${sampleAreaUm2.toFixed(1)} μm²`);
+    }
     return {
       binaryMaskUri: this.generateMockImageUri('mask'),
       contours,
