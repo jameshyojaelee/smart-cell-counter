@@ -612,3 +612,16 @@ brew install xcodegen
 xcodegen generate
 open SmartCellCounter.xcodeproj
 ```
+
+### CI & Tooling
+
+- CI: GitHub Actions workflow at `.github/workflows/ci.yml` generates the project and runs tests on a macOS runner.
+- Makefile: Common shortcuts for local workflows:
+
+```bash
+# Build & Test on default simulator (change DEST as needed)
+make test
+
+# Open Xcode after generating the project
+make open
+```
