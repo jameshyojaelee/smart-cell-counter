@@ -1,0 +1,70 @@
+name: SmartCellCounter
+options:
+  minimumXcodeGenVersion: 2.38.0
+  deploymentTarget:
+    iOS: 16.0
+  createIntermediateGroups: true
+packages:
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    from: 6.0.0
+  GoogleMobileAds:
+    url: https://github.com/googleads/googleads-mobile-ios-spm
+    from: 11.0.0
+settings:
+  base:
+    DEVELOPMENT_TEAM: ABCDE12345
+    SWIFT_VERSION: 5.9
+    IPHONEOS_DEPLOYMENT_TARGET: 16.0
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 1.0.0
+    CODE_SIGN_STYLE: Automatic
+  configs:
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+    Release:
+      SWIFT_COMPILATION_MODE: wholemodule
+      SWIFT_OPTIMIZATION_LEVEL: -O
+
+targets:
+  SmartCellCounter:
+    type: application
+    platform: iOS
+    sources:
+      - path: SmartCellCounter
+    info:
+      path: SmartCellCounter/Info.plist
+      properties:
+        CFBundleDisplayName: SmartCellCounter
+        CFBundleIdentifier: com.example.SmartCellCounter
+        UILaunchStoryboardName: ""
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSCameraUsageDescription: "Camera access is required to capture hemocytometer images."
+        NSPhotoLibraryUsageDescription: "Photo library access is used to import images."
+        NSPhotoLibraryAddUsageDescription: "Saving analysis results to Photos requires permission."
+        NSUserTrackingUsageDescription: "Tracking is used only to personalize ads, if enabled."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.SmartCellCounter
+    dependencies:
+      - package: GRDB
+      - package: GoogleMobileAds
+        condition: platform(iOS)
+
+  SmartCellCounterTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SmartCellCounterTests
+    dependencies:
+      - target: SmartCellCounter
+
+  SmartCellCounterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: SmartCellCounterUITests
+    dependencies:
+      - target: SmartCellCounter

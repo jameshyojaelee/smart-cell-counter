@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>SmartCellCounter</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.example.SmartCellCounter</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UILaunchStoryboardName</key>
+	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to capture hemocytometer images.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is used to import images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Saving analysis results to Photos requires permission.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Tracking is used only to personalize ads, if enabled.</string>
+</dict>
+</plist>

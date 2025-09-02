@@ -2,10 +2,10 @@
 
 The world's first automated cell counter on mobile devices. Replace expensive laboratory equipment like Thermo Fisher Countess with the automated cell counter in your pocket.
 
--**Cost Savings**: Save $10,000+ on automated cell counters
--**Accuracy**: Sub-pixel precision matching laboratory standards
--**Speed**: Results in under 3 seconds. Don't count the cells manually
--**Portability**: Works anywhere, no equipment required other than your phone 
+**Cost Savings**: Save $10,000+ on automated cell counters
+**Accuracy**: Sub-pixel precision matching laboratory standards
+**Speed**: Results in under 3 seconds. Don't count the cells manually
+**Portability**: Works anywhere, no equipment required other than your phone 
 
 ## Why Choose Smart Cell Counter?
 
@@ -577,3 +577,49 @@ If you use this app in research, please cite:
 ---
 
 **Join the mobile cell counting revolution. Replace expensive equipment with our automated cell counter in your pocket.**
+
+## Native iOS App (SwiftUI) - Build & Run
+
+This repo includes a native SwiftUI implementation (iOS 16+, Swift 5.9+, MVVM).
+
+- Open `SmartCellCounter.xcodeproj` (generated via `project.yml` using XcodeGen)
+- In Xcode, set Signing Team for all targets
+- Select an iPhone 12+ simulator (or a device)
+- Build and run
+
+File tree (native subset):
+
+```
+SmartCellCounter/
+  SmartCellCounterApp.swift
+  Info.plist
+  Assets.xcassets/
+  Core/
+    CoreModules.swift
+    Utilities/Utilities.swift
+  Features/
+    Capture/CaptureView.swift
+    Crop/CropView.swift
+    Review/ReviewView.swift
+    Results/ResultsView.swift
+    History/HistoryView.swift
+    Settings/SettingsView.swift
+    Paywall/PaywallView.swift
+    Help/HelpView.swift
+    Debug/DebugView.swift
+SmartCellCounterTests/
+  SmartCellCounterTests.swift
+SmartCellCounterUITests/
+  SmartCellCounterUITests.swift
+project.yml
+```
+
+Dependencies (SPM): GRDB (SQLite). GoogleMobileAds optional.
+
+If the Xcode project is missing, install XcodeGen and generate it:
+
+```bash
+brew install xcodegen
+xcodegen generate
+open SmartCellCounter.xcodeproj
+```
