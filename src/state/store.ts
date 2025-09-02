@@ -70,6 +70,10 @@ const defaultSettings: AppSettings = {
   enableAnalytics: true,
   enableCrashReporting: true,
   debugMode: false,
+  largeHandles: false,
+  handleSensitivity: 0.3,
+  snapThreshold: 6,
+  enableViabilityCount: true,
 };
 
 interface PurchaseState {

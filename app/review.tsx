@@ -72,22 +72,32 @@ export default function ReviewScreen(): JSX.Element {
         }
       );
 
-      // Step 2: Classify viability
-      setProcessingStep('Classifying viability...');
-      const classifiedDetections = classifyViability(
-        segmentationResult.detections,
-        currentSample?.stainType || 'trypan_blue',
-        settings.viabilityThresholds
-      );
+      let finalDetections = segmentationResult.detections;
+      if (settings.enableViabilityCount) {
+        setProcessingStep('Classifying viability...');
+        finalDetections = classifyViability(
+          segmentationResult.detections,
+          currentSample?.stainType || 'trypan_blue',
+          settings.viabilityThresholds
+        );
+      } else {
+        // Viability disabled: mark all as live
+        finalDetections = segmentationResult.detections.map(d => ({ ...d, isLive: true }));
+      }
 
-      setDetections(classifiedDetections);
+      setDetections(finalDetections);
+
+      // Ensure all 4 squares selected by default
+      if (!selectedSquares || selectedSquares.length === 0) {
+        setSelectedSquares([0, 1, 2, 3]);
+      }
 
       // Update sample with basic info
-      const stats = calculateViabilityStats(classifiedDetections);
+      const stats = calculateViabilityStats(finalDetections);
       updateCurrentSample({
         liveTotal: stats.live,
         deadTotal: stats.dead,
-        detections: classifiedDetections,
+        detections: finalDetections,
       });
 
     } catch (error) {

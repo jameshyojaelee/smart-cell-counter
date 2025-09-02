@@ -11,6 +11,7 @@ import { logger } from '../src/utils/logger';
 import { useAppStore } from '../src/state/store';
 import { consentService } from '../src/privacy/consent';
 import ConsentScreen from './consent';
+import { colors } from '../src/utils/theme';
 
 export default function RootLayout(): JSX.Element {
   const [showConsent, setShowConsent] = useState(false);
@@ -56,18 +57,20 @@ export default function RootLayout(): JSX.Element {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
       <SafeAreaProvider>
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#007AFF',
+              backgroundColor: colors.surface,
             },
-            headerTintColor: '#fff',
+            headerTintColor: colors.textPrimary,
             headerTitleStyle: {
               fontWeight: 'bold',
+              color: colors.textPrimary,
             },
             animation: 'slide_from_right',
+            contentStyle: { backgroundColor: colors.background },
           }}
         >
           <Stack.Screen

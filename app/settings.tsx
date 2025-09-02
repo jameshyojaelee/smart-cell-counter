@@ -68,6 +68,10 @@ export default function SettingsScreen(): JSX.Element {
               units: 'metric',
               enableAnalytics: true,
               enableCrashReporting: true,
+              debugMode: false,
+              largeHandles: false,
+              handleSensitivity: 0.3,
+              snapThreshold: 6,
             });
             logUserInteraction('Settings', 'ResetToDefaults');
           },
@@ -389,6 +393,36 @@ export default function SettingsScreen(): JSX.Element {
               disabled={!proFeatures.canUsePriorityProcessing}
             />
           </View>
+
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>Large Corner Handles</Text>
+            <Switch
+              value={!!settings.largeHandles}
+              onValueChange={(value) =>
+                updateSettings({ largeHandles: value })
+              }
+            />
+          </View>
+
+          <ThresholdSlider
+            label="Handle Sensitivity"
+            value={settings.handleSensitivity ?? 0.3}
+            minimumValue={0.1}
+            maximumValue={1.0}
+            step={0.05}
+            description="Adjust corner handle movement speed (lower = finer control)"
+            onValueChange={(value) => updateSettings({ handleSensitivity: Number(value.toFixed(2)) })}
+          />
+
+          <ThresholdSlider
+            label="Snap Strength (px)"
+            value={settings.snapThreshold ?? 6}
+            minimumValue={0}
+            maximumValue={12}
+            step={1}
+            description="Distance within which corners snap to align"
+            onValueChange={(value) => updateSettings({ snapThreshold: Math.round(value) })}
+          />
         </View>
 
         {/* Pro Features */}

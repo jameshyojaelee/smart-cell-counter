@@ -33,6 +33,8 @@ import Animated, {
   interpolate,
   Extrapolate,
 } from 'react-native-reanimated';
+import Svg, { Polygon, Line, Circle } from 'react-native-svg';
+import { useAppStore } from '../state/store';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -83,8 +85,10 @@ export function CornerEditor({
 }: CornerEditorProps): JSX.Element {
   const [corners, setCorners] = useState<Corner[]>(initialCorners);
   const [selectedCorner, setSelectedCorner] = useState<number | null>(null);
+  const [dragMode, setDragMode] = useState<'corner' | 'box'>('corner');
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions>({ width: 0, height: 0 });
-  
+  const { settings } = useAppStore();
+
   // Zoom and pan state
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -127,7 +131,7 @@ export function CornerEditor({
 
   // Snap to alignment
   const snapToAlignment = useCallback((corner: Corner, otherCorners: Corner[]): Corner => {
-    const snapThreshold = 6;
+    const snapThreshold = settings.snapThreshold ?? 6;
     let snappedCorner = { ...corner };
 
     // Check for horizontal alignment
@@ -147,12 +151,12 @@ export function CornerEditor({
     }
 
     return snappedCorner;
-  }, []);
+  }, [settings.snapThreshold]);
 
   // Update corner position
   const updateCorner = useCallback((index: number, newPosition: Corner) => {
     const newCorners = [...corners];
-    
+
     // Constrain to image bounds
     const constrainedPosition = {
       x: Math.max(0, Math.min(imageDimensions.width, newPosition.x)),
@@ -162,14 +166,14 @@ export function CornerEditor({
     // Apply snapping
     const otherCorners = corners.filter((_, i) => i !== index);
     const snappedPosition = snapToAlignment(constrainedPosition, otherCorners);
-    
+
     newCorners[index] = snappedPosition;
 
     // Validate polygon
     if (isPolygonValid(newCorners)) {
       setCorners(newCorners);
       onChange(newCorners);
-      
+
       // Update animation value
       if (cornerAnimations[index]) {
         cornerAnimations[index].x.value = snappedPosition.x;
@@ -177,12 +181,64 @@ export function CornerEditor({
       }
 
       // Haptic feedback on snap
-      if (Math.abs(snappedPosition.x - constrainedPosition.x) > 0 || 
+      if (Math.abs(snappedPosition.x - constrainedPosition.x) > 0 ||
           Math.abs(snappedPosition.y - constrainedPosition.y) > 0) {
         triggerLightHaptic();
       }
     }
   }, [corners, imageDimensions, onChange, snapToAlignment, isPolygonValid, cornerAnimations]);
+
+  // Move entire box
+  const moveBox = useCallback((deltaX: number, deltaY: number) => {
+    const newCorners = corners.map(corner => ({
+      x: corner.x + deltaX,
+      y: corner.y + deltaY,
+    }));
+
+    // Constrain all corners to image bounds
+    const constrainedCorners = newCorners.map(corner => ({
+      x: Math.max(0, Math.min(imageDimensions.width, corner.x)),
+      y: Math.max(0, Math.min(imageDimensions.height, corner.y)),
+    }));
+
+    // Validate polygon
+    if (isPolygonValid(constrainedCorners)) {
+      setCorners(constrainedCorners);
+      onChange(constrainedCorners);
+
+      // Update all animation values
+      constrainedCorners.forEach((corner, index) => {
+        if (cornerAnimations[index]) {
+          cornerAnimations[index].x.value = corner.x;
+          cornerAnimations[index].y.value = corner.y;
+        }
+      });
+
+      triggerLightHaptic();
+    }
+  }, [corners, imageDimensions, onChange, isPolygonValid, cornerAnimations]);
+
+  // Box drag gesture handler
+  const boxDragGestureHandler = useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
+    onStart: () => {
+      runOnJS(setSelectedCorner)(null);
+    },
+    onActive: (event) => {
+      const baseScaleLocal = Math.min(
+        screenWidth * 0.9 / Math.max(1, imageDimensions.width),
+        screenHeight * 0.6 / Math.max(1, imageDimensions.height)
+      );
+      const effectiveScale = Math.max(0.1, baseScaleLocal * (scale.value || 1));
+      const sens = settings.handleSensitivity ?? 0.5;
+      const dx = (event.translationX / effectiveScale) * sens;
+      const dy = (event.translationY / effectiveScale) * sens;
+
+      // Only move if significant movement detected
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        runOnJS(moveBox)(dx, dy);
+      }
+    },
+  });
 
   // Corner drag gesture handler
   const createCornerGestureHandler = (cornerIndex: number) =>
@@ -191,14 +247,20 @@ export function CornerEditor({
         runOnJS(setSelectedCorner)(cornerIndex);
       },
       onActive: (event) => {
-        const imageScale = Math.min(
-          screenWidth * 0.9 / imageDimensions.width,
-          screenHeight * 0.6 / imageDimensions.height
+        const baseScaleLocal = Math.min(
+          screenWidth * 0.9 / Math.max(1, imageDimensions.width),
+          screenHeight * 0.6 / Math.max(1, imageDimensions.height)
         );
-        
-        const newX = cornerAnimations[cornerIndex].x.value + event.translationX / imageScale;
-        const newY = cornerAnimations[cornerIndex].y.value + event.translationY / imageScale;
-        
+        const effectiveScale = Math.max(0.1, baseScaleLocal * (scale.value || 1));
+        // Stronger damping and deadzone for fine control
+        const sens = settings.handleSensitivity ?? 0.3;
+        const dx = (event.translationX / effectiveScale) * sens;
+        const dy = (event.translationY / effectiveScale) * sens;
+        const adjX = Math.abs(dx) < 2 ? 0 : dx;
+        const adjY = Math.abs(dy) < 2 ? 0 : dy;
+        const newX = cornerAnimations[cornerIndex].x.value + adjX;
+        const newY = cornerAnimations[cornerIndex].y.value + adjY;
+
         runOnJS(updateCorner)(cornerIndex, { x: newX, y: newY });
       },
       onEnd: () => {
@@ -258,19 +320,46 @@ export function CornerEditor({
 
   const createCornerAnimatedStyle = (index: number) =>
     useAnimatedStyle(() => {
-      const imageScale = Math.min(
-        screenWidth * 0.9 / imageDimensions.width,
-        screenHeight * 0.6 / imageDimensions.height
+      const baseScaleLocal = Math.min(
+        screenWidth * 0.9 / Math.max(1, imageDimensions.width),
+        screenHeight * 0.6 / Math.max(1, imageDimensions.height)
       );
-      
+      const effectiveScale = Math.max(0.1, baseScaleLocal * (scale.value || 1));
+      const cx = cornerAnimations[index]?.x.value || 0;
+      const cy = cornerAnimations[index]?.y.value || 0;
+
+      // Calculate the exact position of the corner handle to match SVG polygon
+      const containerWidth = screenWidth * 0.9;
+      const containerHeight = screenHeight * 0.6;
+      const imageAspectRatio = imageDimensions.width / imageDimensions.height;
+      const containerAspectRatio = containerWidth / containerHeight;
+
+      let displayWidth, displayHeight, offsetX, offsetY;
+
+      if (imageAspectRatio > containerAspectRatio) {
+        // Image is wider than container
+        displayWidth = containerWidth;
+        displayHeight = containerWidth / imageAspectRatio;
+        offsetX = 0;
+        offsetY = (containerHeight - displayHeight) / 2;
+      } else {
+        // Image is taller than container
+        displayHeight = containerHeight;
+        displayWidth = containerHeight * imageAspectRatio;
+        offsetX = (containerWidth - displayWidth) / 2;
+        offsetY = 0;
+      }
+
+      const scaledX = (cx / imageDimensions.width) * displayWidth;
+      const scaledY = (cy / imageDimensions.height) * displayHeight;
+
       return {
+        position: 'absolute',
+        left: offsetX + scaledX * effectiveScale - handleSize / 2,
+        top: 100 + offsetY + scaledY * effectiveScale - handleSize / 2,
         transform: [
-          { 
-            translateX: (cornerAnimations[index]?.x.value || 0) * imageScale - handleSize / 2 
-          },
-          { 
-            translateY: (cornerAnimations[index]?.y.value || 0) * imageScale - handleSize / 2 
-          },
+          { translateX: translateX.value },
+          { translateY: translateY.value },
         ],
       };
     });
@@ -308,26 +397,35 @@ export function CornerEditor({
     }
   };
 
+  const toggleDragMode = () => {
+    setDragMode(prev => prev === 'corner' ? 'box' : 'corner');
+    setSelectedCorner(null);
+    triggerLightHaptic();
+  };
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.imageContainer}>
         {/* Zoomable Image */}
         <PinchGestureHandler onGestureEvent={pinchGestureHandler}>
           <Animated.View style={styles.imageWrapper}>
-            <PanGestureHandler 
-              onGestureEvent={panGestureHandler}
-              minPointers={2}
-              maxPointers={2}
-            >
-              <Animated.View>
-                <TapGestureHandler 
-                  onGestureEvent={doubleTapHandler}
-                  numberOfTaps={2}
-                >
-                  <Animated.View>
+            {/* Conditional Gesture Handlers */}
+            {dragMode === 'box' ? (
+              <PanGestureHandler
+                onGestureEvent={boxDragGestureHandler}
+                minPointers={1}
+                maxPointers={1}
+              >
+                <Animated.View style={StyleSheet.absoluteFill}>
+                  <Animated.View style={imageAnimatedStyle}>
+                    <TapGestureHandler
+                      onGestureEvent={doubleTapHandler}
+                      numberOfTaps={2}
+                    >
+                      <Animated.View>
                     <Animated.Image
                       source={{ uri: imageUri }}
-                      style={[styles.image, imageAnimatedStyle]}
+                      style={styles.image}
                       onLoad={(event: any) => {
                         try {
                           const src = event?.nativeEvent?.source || event?.source;
@@ -343,10 +441,86 @@ export function CornerEditor({
                         } catch {}
                       }}
                     />
+                    {/* Polygon overlay inside the same transform group */}
+                    {imageDimensions.width > 0 && imageDimensions.height > 0 && corners.length === 4 && (
+                      <Svg
+                        width="100%"
+                        height="100%"
+                        viewBox={`0 0 ${imageDimensions.width} ${imageDimensions.height}`}
+                        preserveAspectRatio="xMidYMid meet"
+                        style={StyleSheet.absoluteFill}
+                      >
+                        <Polygon
+                          points={corners.map(c => `${c.x},${c.y}`).join(' ')}
+                          fill={dragMode === 'box' ? "rgba(255,165,0,0.2)" : "rgba(0,122,255,0.15)"}
+                          stroke={dragMode === 'box' ? "#FF9500" : "#0A84FF"}
+                          strokeWidth={dragMode === 'box' ? 3 : 2}
+                        />
+                        {corners.map((c, i) => (
+                          <Circle key={i} cx={c.x} cy={c.y} r={5} fill={dragMode === 'box' ? "#FF9500" : "#0A84FF"} />
+                        ))}
+                      </Svg>
+                    )}
                   </Animated.View>
                 </TapGestureHandler>
               </Animated.View>
+            </Animated.View>
             </PanGestureHandler>
+            ) : (
+              <PanGestureHandler
+                onGestureEvent={panGestureHandler}
+                minPointers={2}
+                maxPointers={2}
+              >
+                <Animated.View style={imageAnimatedStyle}>
+                  <TapGestureHandler
+                    onGestureEvent={doubleTapHandler}
+                    numberOfTaps={2}
+                  >
+                    <Animated.View>
+                      <Animated.Image
+                        source={{ uri: imageUri }}
+                        style={styles.image}
+                        onLoad={(event: any) => {
+                          try {
+                            const src = event?.nativeEvent?.source || event?.source;
+                            if (src?.width && src?.height) {
+                              setImageDimensions({ width: src.width, height: src.height });
+                            } else if (imageUri) {
+                              RNImage.getSize(
+                                imageUri,
+                                (w, h) => setImageDimensions({ width: w, height: h }),
+                                () => {}
+                              );
+                            }
+                          } catch {}
+                        }}
+                      />
+                      {/* Polygon overlay inside the same transform group */}
+                      {imageDimensions.width > 0 && imageDimensions.height > 0 && corners.length === 4 && (
+                        <Svg
+                          width="100%"
+                          height="100%"
+                          viewBox={`0 0 ${imageDimensions.width} ${imageDimensions.height}`}
+                          preserveAspectRatio="xMidYMid meet"
+                          style={StyleSheet.absoluteFill}
+                        >
+                          <Polygon
+                            points={corners.map(c => `${c.x},${c.y}`).join(' ')}
+                            fill={dragMode === 'box' ? "rgba(255,165,0,0.2)" : "rgba(0,122,255,0.15)"}
+                            stroke={dragMode === 'box' ? "#FF9500" : "#0A84FF"}
+                            strokeWidth={dragMode === 'box' ? 3 : 2}
+                          />
+                          {corners.map((c, i) => (
+                            <Circle key={i} cx={c.x} cy={c.y} r={5} fill={dragMode === 'box' ? "#FF9500" : "#0A84FF"} />
+                          ))}
+                        </Svg>
+                      )}
+                    </Animated.View>
+                  </TapGestureHandler>
+                </Animated.View>
+              </PanGestureHandler>
+            )}
           </Animated.View>
         </PinchGestureHandler>
 
@@ -440,6 +614,35 @@ export function CornerEditor({
           </TouchableOpacity>
         </View>
 
+        {/* Drag Mode Toggle */}
+        <View style={styles.dragModeContainer}>
+          <TouchableOpacity
+            style={[
+              styles.dragModeButton,
+              dragMode === 'corner' && styles.dragModeButtonActive
+            ]}
+            onPress={() => setDragMode('corner')}
+          >
+            <Ionicons name="radio-button-on" size={20} color={dragMode === 'corner' ? "#007AFF" : "#666"} />
+            <Text style={[styles.dragModeText, dragMode === 'corner' && styles.dragModeTextActive]}>
+              Corner Mode
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.dragModeButton,
+              dragMode === 'box' && styles.dragModeButtonActive
+            ]}
+            onPress={() => setDragMode('box')}
+          >
+            <Ionicons name="move" size={20} color={dragMode === 'box' ? "#FF9500" : "#666"} />
+            <Text style={[styles.dragModeText, dragMode === 'box' && styles.dragModeTextActive]}>
+              Box Mode
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
           {onAutoDetect && (
@@ -448,14 +651,14 @@ export function CornerEditor({
               <Text style={styles.secondaryButtonText}>Auto Detect</Text>
             </TouchableOpacity>
           )}
-          
+
           <TouchableOpacity style={styles.secondaryButton} onPress={onCancel}>
             <Ionicons name="close" size={20} color="#FF3B30" />
             <Text style={[styles.secondaryButtonText, { color: '#FF3B30' }]}>Cancel</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.primaryButton} 
+
+          <TouchableOpacity
+            style={styles.primaryButton}
             onPress={() => onConfirm(corners)}
           >
             <Ionicons name="checkmark" size={20} color="#fff" />
@@ -466,13 +669,19 @@ export function CornerEditor({
         {/* Instructions */}
         <View style={styles.instructionsContainer}>
           <Text style={styles.instructionsText}>
-            • Drag corners to adjust grid boundaries
+            {dragMode === 'corner'
+              ? "• Drag individual corners to adjust grid boundaries"
+              : "• Drag anywhere on the box to move the entire grid"
+            }
           </Text>
           <Text style={styles.instructionsText}>
-            • Pinch to zoom, two-finger pan to move
+            • Pinch to zoom, two-finger pan to move (Corner Mode only)
           </Text>
           <Text style={styles.instructionsText}>
             • Double-tap to reset view
+          </Text>
+          <Text style={styles.instructionsText}>
+            • Use mode toggle to switch between Corner and Box dragging
           </Text>
         </View>
       </View>
@@ -631,6 +840,43 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#007AFF',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  dragModeContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  dragModeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  dragModeButtonActive: {
+    backgroundColor: '#fff',
+    borderColor: '#007AFF',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  dragModeText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  dragModeTextActive: {
+    color: '#007AFF',
     fontWeight: '600',
   },
   instructionsContainer: {

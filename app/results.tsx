@@ -229,13 +229,22 @@ export default function ResultsScreen(): JSX.Element {
             icon="flask"
             color="#007AFF"
           />
-          <StatCard
-            title="Viability"
-            value={results.viability.toFixed(1)}
-            unit="%"
-            icon="heart"
-            color="#34C759"
-          />
+          {settings.enableViabilityCount ? (
+            <StatCard
+              title="Viability"
+              value={results.viability.toFixed(1)}
+              unit="%"
+              icon="heart"
+              color="#34C759"
+            />
+          ) : (
+            <StatCard
+              title="Viability (off)"
+              value={"—"}
+              icon="heart"
+              color="#8E8E93"
+            />
+          )}
         </View>
 
         <View style={styles.resultsContainer}>

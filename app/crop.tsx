@@ -9,11 +9,14 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
+import { Image as RNImage, LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Polygon, Circle } from 'react-native-svg';
 import { useAppStore } from '../src/state/store';
 import { cvNativeAdapter } from '../src/imaging/cvNativeAdapter';
 import { logUserInteraction, logError } from '../src/utils/logger';
@@ -24,6 +27,8 @@ export default function CropScreen(): JSX.Element {
   const [gridDetected, setGridDetected] = useState(false);
   const [corners, setCorners] = useState<Corner[]>([]);
   const [showEditor, setShowEditor] = useState(false);
+  const [imageDims, setImageDims] = useState({ width: 0, height: 0 });
+  const [previewSize, setPreviewSize] = useState({ width: 0, height: 0 });
 
   const {
     originalImageUri,
@@ -35,6 +40,8 @@ export default function CropScreen(): JSX.Element {
     setPixelsPerMicron,
     setLastGridCorners,
     settings,
+    setSelectedSquares,
+    updateSettings,
   } = useAppStore();
 
   useEffect(() => {
@@ -42,6 +49,17 @@ export default function CropScreen(): JSX.Element {
       detectGrid();
     }
   }, [originalImageUri]);
+
+  // Load image dimensions for overlay mapping
+  useEffect(() => {
+    const uri = correctedImageUri || originalImageUri;
+    if (!uri) return;
+    RNImage.getSize(
+      uri,
+      (w, h) => setImageDims({ width: w, height: h }),
+      () => {}
+    );
+  }, [originalImageUri, correctedImageUri]);
 
   const detectGrid = async (): Promise<void> => {
     if (!originalImageUri) {
@@ -67,6 +85,7 @@ export default function CropScreen(): JSX.Element {
         });
         setPixelsPerMicron(result.pixelsPerMicron || null);
         setLastGridCorners(result.corners);
+        setSelectedSquares([0, 1, 2, 3]);
 
         // Show the corner editor for manual adjustment
         setShowEditor(true);
@@ -197,11 +216,35 @@ export default function CropScreen(): JSX.Element {
           <Text style={styles.loadingText}>Analyzing hemocytometer structure...</Text>
         </View>
       ) : (
-        <View style={styles.previewContainer}>
+        <View style={styles.previewContainer} onLayout={(e: LayoutChangeEvent) => {
+          const { width, height } = e.nativeEvent.layout;
+          setPreviewSize({ width, height });
+        }}>
           <Image
             source={{ uri: correctedImageUri || originalImageUri }}
             style={styles.previewImage}
           />
+          {/* Show detected corners overlay before opening editor */}
+          {corners.length === 4 && imageDims.width > 0 && imageDims.height > 0 && previewSize.width > 0 && previewSize.height > 0 && (
+            <Svg style={StyleSheet.absoluteFill}>
+              {(() => {
+                const s = Math.min(previewSize.width / imageDims.width, previewSize.height / imageDims.height);
+                const left = (previewSize.width - imageDims.width * s) / 2;
+                const top = (previewSize.height - imageDims.height * s) / 2;
+                const mapX = (x: number) => left + x * s;
+                const mapY = (y: number) => top + y * s;
+                const pts = corners.map(c => `${mapX(c.x)},${mapY(c.y)}`).join(' ');
+                return (
+                  <>
+                    <Polygon points={pts} fill="rgba(0,122,255,0.18)" stroke="#0A84FF" strokeWidth={2} />
+                    {corners.map((c, i) => (
+                      <Circle key={i} cx={mapX(c.x)} cy={mapY(c.y)} r={5} fill="#0A84FF" />
+                    ))}
+                  </>
+                );
+              })()}
+            </Svg>
+          )}
           <View style={styles.previewOverlay}>
             <Ionicons name="scan" size={64} color="#007AFF" />
             <Text style={styles.previewTitle}>Grid Detection</Text>
@@ -214,6 +257,15 @@ export default function CropScreen(): JSX.Element {
 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
+        {/* Viability toggle */}
+        <View style={styles.rowBetween}>
+          <Text style={styles.quickActionText}>Viability Count</Text>
+          <Switch
+            value={!!settings.enableViabilityCount}
+            onValueChange={(value) => updateSettings({ enableViabilityCount: value })}
+          />
+        </View>
+
         <TouchableOpacity style={styles.quickActionButton} onPress={handleRetake}>
           <Ionicons name="camera" size={24} color="#007AFF" />
           <Text style={styles.quickActionText}>Retake</Text>
@@ -296,6 +348,7 @@ const styles = StyleSheet.create({
   previewImage: {
     width: '100%',
     height: '100%',
+    resizeMode: 'contain',
     opacity: 0.7,
   },
   previewOverlay: {
@@ -325,6 +378,17 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     gap: 16,
+    },
+  rowBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginRight: 16,
+    flex: 1,
   },
   quickActionButton: {
     flex: 1,

@@ -134,6 +134,12 @@ export interface AppSettings {
   enableCrashReporting: boolean;
   // Debug tools toggle
   debugMode?: boolean;
+  // Corner editor controls
+  largeHandles?: boolean;
+  handleSensitivity?: number; // 0.1 (slow) .. 1.0 (fast), default 0.3
+  snapThreshold?: number; // pixels in image space, default 6
+  // Viability classification toggle (trypan blue)
+  enableViabilityCount?: boolean;
 }
 
 export interface CameraState {
