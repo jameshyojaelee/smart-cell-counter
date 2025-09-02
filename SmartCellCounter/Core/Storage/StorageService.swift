@@ -1,0 +1,157 @@
+import Foundation
+import UIKit
+import GRDB
+
+public protocol Storage {
+    func setup() throws
+}
+
+// MARK: - Records
+struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
+    static let databaseTableName = "sample"
+    var id: String
+    var createdAt: Date
+    var operatorName: String
+    var project: String
+    var chamberType: String
+    var dilutionFactor: Double
+    var stainType: String
+    var liveTotal: Int
+    var deadTotal: Int
+    var concentrationPerMl: Double
+    var viabilityPercent: Double
+    var squaresUsed: Int
+    var rejectedSquares: String // comma-separated indices
+    var focusScore: Double
+    var glareRatio: Double
+    var pxPerMicron: Double
+    var imagePath: String?
+    var maskPath: String?
+    var pdfPath: String?
+    var notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, createdAt
+        case operatorName = "operator"
+        case project, chamberType, dilutionFactor, stainType, liveTotal, deadTotal, concentrationPerMl, viabilityPercent, squaresUsed, rejectedSquares, focusScore, glareRatio, pxPerMicron, imagePath, maskPath, pdfPath, notes
+    }
+}
+
+struct DetectionRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
+    static let databaseTableName = "detection"
+    var sampleId: String
+    var objectId: String
+    var x: Double
+    var y: Double
+    var areaPx: Double
+    var circularity: Double
+    var solidity: Double
+    var isLive: Bool
+}
+
+// MARK: - App Database
+public final class AppDatabase: Storage {
+    public static let shared = AppDatabase()
+    private(set) var dbQueue: DatabaseQueue?
+
+    private init() {}
+
+    public func setup() throws {
+        let baseDir = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let dbURL = baseDir.appendingPathComponent("smartcellcounter.sqlite")
+        var config = Configuration()
+        config.prepareDatabase { db in
+            db.trace = { Logger.log($0) }
+        }
+        dbQueue = try DatabaseQueue(path: dbURL.path, configuration: config)
+        try migrate()
+    }
+
+    private func migrate() throws {
+        guard let dbQueue else { return }
+        var migrator = DatabaseMigrator()
+        migrator.registerMigration("v1") { db in
+            try db.create(table: "sample") { t in
+                t.column("id", .text).primaryKey()
+                t.column("createdAt", .datetime).notNull()
+                t.column("operator", .text).notNull()
+                t.column("project", .text).notNull().defaults(to: "")
+                t.column("chamberType", .text).notNull()
+                t.column("dilutionFactor", .double).notNull().defaults(to: 1.0)
+                t.column("stainType", .text).notNull()
+                t.column("liveTotal", .integer).notNull()
+                t.column("deadTotal", .integer).notNull()
+                t.column("concentrationPerMl", .double).notNull()
+                t.column("viabilityPercent", .double).notNull()
+                t.column("squaresUsed", .integer).notNull()
+                t.column("rejectedSquares", .text).notNull().defaults(to: "")
+                t.column("focusScore", .double).notNull().defaults(to: 0)
+                t.column("glareRatio", .double).notNull().defaults(to: 0)
+                t.column("pxPerMicron", .double).notNull().defaults(to: 0)
+                t.column("imagePath", .text)
+                t.column("maskPath", .text)
+                t.column("pdfPath", .text)
+                t.column("notes", .text)
+            }
+            try db.create(table: "detection") { t in
+                t.column("sampleId", .text).notNull().indexed().references("sample", onDelete: .cascade)
+                t.column("objectId", .text).notNull()
+                t.column("x", .double).notNull()
+                t.column("y", .double).notNull()
+                t.column("areaPx", .double).notNull()
+                t.column("circularity", .double).notNull()
+                t.column("solidity", .double).notNull()
+                t.column("isLive", .boolean).notNull()
+            }
+        }
+        try migrator.migrate(dbQueue)
+    }
+
+    // MARK: - DAO
+    public func insertSample(_ record: SampleRecord, detections: [DetectionRecord]) throws {
+        guard let dbQueue else { throw NSError(domain: "DB", code: -1) }
+        try dbQueue.write { db in
+            try record.insert(db)
+            for d in detections { try d.insert(db) }
+        }
+    }
+
+    public func fetchSamples(matching query: String? = nil, limit: Int = 100) throws -> [SampleRecord] {
+        guard let dbQueue else { return [] }
+        return try dbQueue.read { db in
+            if let q = query, !q.isEmpty {
+                return try SampleRecord
+                    .filter(sql: "project LIKE ? OR \"operator\" LIKE ?", arguments: ["%\(q)%", "%\(q)%"])
+                    .order(sql: "createdAt DESC")
+                    .limit(limit)
+                    .fetchAll(db)
+            } else {
+                return try SampleRecord
+                    .order(sql: "createdAt DESC")
+                    .limit(limit)
+                    .fetchAll(db)
+            }
+        }
+    }
+
+    public func fetchDetections(for sampleId: String) throws -> [DetectionRecord] {
+        guard let dbQueue else { return [] }
+        return try dbQueue.read { db in
+            try DetectionRecord.filter(Column("sampleId") == sampleId).fetchAll(db)
+        }
+    }
+
+    // MARK: - Filesystem helpers
+    public func sampleFolder(id: String) throws -> URL {
+        let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let dir = base.appendingPathComponent("SmartCellCounter/Samples/\(id)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    public func save(image: UIImage, name: String, in folder: URL) throws -> URL {
+        let url = folder.appendingPathComponent(name)
+        if let data = image.pngData() { try data.write(to: url) }
+        return url
+    }
+}

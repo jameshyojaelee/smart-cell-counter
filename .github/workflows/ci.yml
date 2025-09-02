@@ -9,9 +9,15 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-15
+    env:
+      GIT_TERMINAL_PROMPT: 0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Configure GitHub auth for SPM
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
       - name: Install XcodeGen
         run: |
@@ -29,11 +35,13 @@ jobs:
       - name: Build and Test (iOS Simulator)
         run: |
           set -euo pipefail
+          # Resolve SPM first (helps isolate dependency issues)
+          xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -resolvePackageDependencies
+
           # Try common device names to maximize compatibility
           DEST="platform=iOS Simulator,OS=latest,name=iPhone 15"
-          xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -destination "$DEST" -quiet test | xcpretty || {
+          xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -destination "$DEST" test || {
             echo "Retrying on iPhone 14..."
             DEST="platform=iOS Simulator,OS=latest,name=iPhone 14"
-            xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -destination "$DEST" -quiet test | xcpretty
+            xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -destination "$DEST" test
           }
-

@@ -21,5 +21,11 @@ public enum Hemocytometer {
         guard total > 0 else { return 0 }
         return (Double(live) / Double(total)) * 100.0
     }
-}
 
+    /// Convert pixel area to square microns using calibration (pixels per micron).
+    /// area_um2 = pixelCount / (pxPerMicron^2)
+    public static func areaUm2(pixelCount: Int, pxPerMicron: Double) -> Double {
+        guard pxPerMicron > 0 else { return 0 }
+        return Double(pixelCount) / (pxPerMicron * pxPerMicron)
+    }
+}

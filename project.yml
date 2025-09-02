@@ -8,9 +8,6 @@ packages:
   GRDB:
     url: https://github.com/groue/GRDB.swift
     from: 6.0.0
-  GoogleMobileAds:
-    url: https://github.com/googleads/googleads-mobile-ios-spm
-    from: 11.0.0
 settings:
   base:
     DEVELOPMENT_TEAM: ABCDE12345
@@ -50,8 +47,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.SmartCellCounter
     dependencies:
       - package: GRDB
-      - package: GoogleMobileAds
-        condition: platform(iOS)
 
   SmartCellCounterTests:
     type: bundle.unit-test

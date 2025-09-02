@@ -585,7 +585,19 @@ SmartCellCounter/
   Assets.xcassets/
   Core/
     CoreModules.swift
+    Math/Hemocytometer.swift
+    Imaging/ImagingService.swift
+    Counting/CountingService.swift
+    Viability/ViabilityClassifier.swift
+    Export/CSVExporter.swift
+    Export/PDFExporter.swift
+    Storage/StorageService.swift
+    Monetization/ProPurchase.swift
+    Ads/AdsManager.swift
+    Privacy/ConsentManager.swift
     Utilities/Utilities.swift
+    Utilities/Settings.swift
+    Utilities/TimerUtil.swift
   Features/
     Capture/CaptureView.swift
     Crop/CropView.swift
@@ -603,7 +615,12 @@ SmartCellCounterUITests/
 project.yml
 ```
 
-Dependencies (SPM): GRDB (SQLite). GoogleMobileAds optional.
+Dependencies (SPM): GRDB.swift is configured via `project.yml` and integrated into the app target for SQLite storage scaffolding. GoogleMobileAds remains optional and is not added by default; `Core/Ads/AdsManager.swift` is guarded by `#if ADS` and can be enabled later without impacting builds.
+
+Optional Ads support:
+
+- Define the `ADS` Swift flag in Build Settings to compile ad stubs.
+- Add GoogleMobileAds via SPM in `project.yml` when ready, then run `xcodegen generate`.
 
 If the Xcode project is missing, install XcodeGen and generate it:
 

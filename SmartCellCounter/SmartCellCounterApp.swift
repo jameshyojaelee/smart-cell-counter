@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main
 struct SmartCellCounterApp: App {
@@ -12,12 +13,31 @@ struct SmartCellCounterApp: App {
     }
 }
 
+@MainActor
 final class AppState: ObservableObject {
     // Simple observable state used by unit tests and future features
     @Published var lastAction: String = ""
+    @Published var capturedImage: UIImage?
+    @Published var correctedImage: UIImage?
+    @Published var rectangleCorners: [CGPoint] = []
+    @Published var segmentation: SegmentationResult?
+    @Published var objects: [CellObject] = []
+    @Published var labeled: [CellObjectLabeled] = []
+    @Published var pxPerMicron: Double?
+    @Published var focusScore: Double = 0
+    @Published var glareRatio: Double = 0
+    @Published var samples: [Sample] = []
+    @Published var debugImages: [String: UIImage] = [:]
+
+    override init() {
+        super.init()
+        do { try AppDatabase.shared.setup() } catch { Logger.log("DB setup failed: \(error)") }
+    }
 }
 
 struct RootView: View {
+    @AppStorage("consent.shown") private var consentShown: Bool = false
+    @StateObject private var purchases = PurchaseManager.shared
     var body: some View {
         TabView {
             NavigationStack { CaptureView() }
@@ -28,6 +48,10 @@ struct RootView: View {
                 .tabItem { Label("Results", systemImage: "chart.bar.xaxis") }
             NavigationStack { SettingsView() }
                 .tabItem { Label("Settings", systemImage: "gearshape") }
+        }
+        .task { await purchases.loadProducts() }
+        .sheet(isPresented: .constant(!consentShown)) {
+            ConsentView(consentShown: $consentShown)
         }
     }
 }
