@@ -2,6 +2,7 @@
  * Cell segmentation pipeline combining classical CV and TensorFlow Lite
  */
 import * as FileSystem from 'expo-file-system';
+import { Image } from 'react-native';
 import { cvNativeAdapter } from './cvNativeAdapter';
 import { DetectionObject, ProcessingParams, Point } from '../types';
 
@@ -169,11 +170,13 @@ export async function segmentCells(
       filteredContours.map(c => ({ id: c.id, centroid: c.centroid }))
     );
     
-    // Step 6: Create detection objects
+    // Step 6: Determine corrected image dimensions to compute square index
     onProgress?.('Finalizing detections...', 0.9);
+    const { width: imageWidth, height: imageHeight } = await getImageDimensionsSafe(correctedImageUri);
+
     const detections: DetectionObject[] = filteredContours.map(contour => {
       const colorStats = colorResults.find(c => c.id === contour.id)?.colorStats;
-      const squareIndex = getSquareIndex(contour.centroid, 1000, 1000); // Assume 1000x1000 corrected image
+      const squareIndex = getSquareIndex(contour.centroid, imageWidth, imageHeight);
       
       return {
         id: contour.id,
@@ -231,4 +234,23 @@ export function estimateProcessingTime(
   }
   
   return Math.round(baseTime);
+}
+
+/**
+ * Safely get image dimensions for a given URI using React Native Image.getSize.
+ * Falls back to 1000x1000 if size cannot be determined.
+ */
+async function getImageDimensionsSafe(uri: string): Promise<{ width: number; height: number }> {
+  try {
+    const dims = await new Promise<{ width: number; height: number }>((resolve) => {
+      Image.getSize(
+        uri,
+        (width, height) => resolve({ width, height }),
+        () => resolve({ width: 1000, height: 1000 })
+      );
+    });
+    return dims;
+  } catch {
+    return { width: 1000, height: 1000 };
+  }
 }

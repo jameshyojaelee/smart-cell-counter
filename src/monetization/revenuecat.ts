@@ -3,10 +3,12 @@
  */
 import Purchases, { 
   CustomerInfo, 
-  Offerings, 
   PurchasesPackage,
   PURCHASES_ERROR_CODE 
 } from 'react-native-purchases';
+
+// Define types locally since they're not exported correctly
+type Offerings = any;
 import { Platform } from 'react-native';
 import { MMKV } from 'react-native-mmkv';
 
@@ -125,12 +127,12 @@ class RevenueCatService {
       console.error('Purchase failed:', error);
       
       let errorMessage = 'Purchase failed';
-      if (error.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED) {
+      if (error.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
         errorMessage = 'Purchase cancelled';
-      } else if (error.code === PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED) {
+      } else if (error.code === PURCHASES_ERROR_CODE.PURCHASE_NOT_ALLOWED_ERROR) {
         errorMessage = 'Purchase not allowed';
-      } else if (error.code === PURCHASES_ERROR_CODE.PAYMENT_PENDING) {
-        errorMessage = 'Payment pending';
+      } else if (error.userCancelled) {
+        errorMessage = 'Purchase cancelled';
       }
       
       this.notifyListeners({ 

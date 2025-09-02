@@ -61,7 +61,7 @@ export class ConsentService {
   getAdPersonalizationConsent(): boolean | null {
     const stored = storage.getString('adPersonalizationConsent');
     if (stored === undefined) return null;
-    return storage.getBoolean('adPersonalizationConsent');
+    return storage.getBoolean('adPersonalizationConsent') ?? null;
   }
 
   /**

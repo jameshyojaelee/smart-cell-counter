@@ -16,7 +16,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.smartcellcounter.app"
+      "bundleIdentifier": "com.smartcellcounter.app",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "We use your device identifier to show personalized ads if you opt in."
+      }
     },
     "android": {
       "adaptiveIcon": {

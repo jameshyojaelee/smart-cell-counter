@@ -96,8 +96,8 @@ export default function HelpScreen(): JSX.Element {
           
           <Text style={styles.stepTitle}>Cell Density Guidelines:</Text>
           <Text style={styles.step}>• Optimal: 50-200 cells per large square</Text>
-          <Text style={styles.step}>• Too crowded (>300): Dilute sample</Text>
-          <Text style={styles.step}>• Too sparse (<10): Concentrate sample</Text>
+          <Text style={styles.step}>• Too crowded ({'>'}300): Dilute sample</Text>
+          <Text style={styles.step}>• Too sparse ({'<'}10): Concentrate sample</Text>
         </HelpSection>
 
         {/* Viability Assessment */}

@@ -14,18 +14,28 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/imaging/*": ["./src/imaging/*"],
-      "@/data/*": ["./src/data/*"],
-      "@/state/*": ["./src/state/*"],
-      "@/utils/*": ["./src/utils/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/imaging/*": [
+        "./src/imaging/*"
+      ],
+      "@/data/*": [
+        "./src/data/*"
+      ],
+      "@/state/*": [
+        "./src/state/*"
+      ],
+      "@/utils/*": [
+        "./src/utils/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "**/*.tsx"
   ]
 }
