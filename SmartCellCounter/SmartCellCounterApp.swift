@@ -12,7 +12,10 @@ struct SmartCellCounterApp: App {
     }
 }
 
-final class AppState: ObservableObject {}
+final class AppState: ObservableObject {
+    // Simple observable state used by unit tests and future features
+    @Published var lastAction: String = ""
+}
 
 struct RootView: View {
     var body: some View {

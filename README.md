@@ -307,40 +307,45 @@ Professional reports include:
 
 ## Testing
 
-### Unit Tests
+### iOS (SwiftUI) Tests
 
-Run the test suite:
+The active codebase is a native SwiftUI app. You can run tests via Xcode or the command line after generating the project with XcodeGen.
+
+1) Generate the Xcode project (if needed):
 
 ```bash
-# Run all tests
-yarn test
-
-# Run with coverage
-yarn test --coverage
-
-# Run specific test file
-yarn test src/imaging/__tests__/counting.test.ts
-
-# Watch mode for development
-yarn test --watch
+brew install xcodegen
+xcodegen generate
 ```
 
-### Test Coverage
+2) Open in Xcode and run tests (recommended):
 
-The app includes comprehensive tests for:
+- Open `SmartCellCounter.xcodeproj`
+- Select the `SmartCellCounter` scheme
+- Press Command-U to run all tests
 
-- Mathematical utilities (statistics, outlier detection)
-- Counting algorithms (inclusion rules, concentration calculations)
-- Data validation and export functions
-- Component rendering and interactions
-
-### Integration Testing
-
-Use the provided fixture images to validate the complete pipeline:
+3) Or run from command line (requires Xcode + simulators):
 
 ```bash
-# Run integration tests with fixture data
-yarn test:integration
+xcodebuild \
+  -project SmartCellCounter.xcodeproj \
+  -scheme SmartCellCounter \
+  -destination 'platform=iOS Simulator,name=iPhone 14' \
+  test
+```
+
+Notes:
+- Unit tests live under `SmartCellCounterTests/` and validate observable state and utilities.
+- UI tests live under `SmartCellCounterUITests/` and launch the app to verify basic flows.
+
+### Archived React Native Tests
+
+The previous React Native implementation is archived under `archive/rn/`. If you need to run its tests, use the commands below within `archive/rn/`:
+
+```bash
+# In archive/rn/
+yarn install
+yarn test
 ```
 
 ## Performance
@@ -371,24 +376,13 @@ console.log(`Average duration: ${stats.averageDuration}ms`);
 
 ## Deployment
 
-### Building for Production
+### iOS (SwiftUI) Build
 
-```bash
-# Create production builds
-npx expo build:ios
-npx expo build:android
+- Open `SmartCellCounter.xcodeproj`
+- Set your Apple Developer signing team for all targets
+- Select a simulator or device and build/run
 
-# Using EAS Build (recommended)
-eas build --platform ios
-eas build --platform android
-```
-
-### App Store Distribution
-
-1. Configure app metadata in `app.json`
-2. Set up signing certificates
-3. Build release versions
-4. Submit to App Store/Play Store using EAS Submit
+For CI builds, prefer `xcodebuild` or Xcode Cloud. SPM dependencies are defined in `project.yml`.
 
 ## Contributing
 
@@ -404,18 +398,8 @@ eas build --platform android
 
 ### Code Style
 
-The project uses ESLint and Prettier with TypeScript strict mode:
-
-```bash
-# Check code style
-yarn lint
-
-# Format code
-yarn format
-
-# Type checking
-yarn type-check
-```
+- Swift: Follow standard Swift API design guidelines. Consider SwiftLint (not yet configured).
+- Archived RN code: ESLint + Prettier configs remain under `archive/rn/`.
 
 ### Adding New Features
 
@@ -577,6 +561,11 @@ If you use this app in research, please cite:
 ---
 
 **Join the mobile cell counting revolution. Replace expensive equipment with our automated cell counter in your pocket.**
+
+### Repository layout update
+
+- React Native/TypeScript implementation has been archived under `archive/rn/`.
+- Active codebase is native iOS SwiftUI in `SmartCellCounter/` with legacy native bridging still under `ios/` as needed.
 
 ## Native iOS App (SwiftUI) - Build & Run
 

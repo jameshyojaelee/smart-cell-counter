@@ -1,0 +1,701 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		095E99A5D2906790F573F2F6 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD635FB8FD45C51DC2C1ADE0 /* HistoryView.swift */; };
+		1BC58D6198A1A4EAB51F3238 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA53055068990142ACD4F02 /* Utilities.swift */; };
+		20843505E610553656E6D4E2 /* SmartCellCounterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401BBBE20117A15D026876E7 /* SmartCellCounterUITests.swift */; };
+		2124DC8942EFDC170770DDB7 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DEED0CD32F3A1C11ED660D90 /* GRDB */; };
+		3242605D287DCBE6F4FC94B8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BB10687490AAB0E73305A82 /* Assets.xcassets */; };
+		3A49FE4A756ED22E2E2FA7C3 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = D8CB30E7033381E78F7812D0 /* GoogleMobileAds */; };
+		584A7D012628B7599ECDFF74 /* CoreModules.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD38F742DAC92C8C732A2536 /* CoreModules.swift */; };
+		6E52EAA43CB6A3958C3F8D44 /* CropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B5BECC3BB7540869D5E9C8 /* CropView.swift */; };
+		718FFD02C085DBA7DB6DD7D1 /* SmartCellCounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */; };
+		84CCE5D1EED44AD43BFE5F84 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71668675CC691585C3A2EAE /* PaywallView.swift */; };
+		9C7628E57B22AD241F8B7EC6 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5AA0BC35250819AC74A731 /* HelpView.swift */; };
+		C43ADF84B284F3589A39D1AB /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8252830951ED10CFC153B9CD /* CaptureView.swift */; };
+		CDC4BF648FBD491706BE9077 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B129C19624AEF4BC8EE05B /* SettingsView.swift */; };
+		D60B93466E2D676EC377B47A /* ResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 886B4740D0BEB7CEB491B528 /* ResultsView.swift */; };
+		EE1BB8890FEBF478BDADF1B7 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C239B3C72A80A99850D1315C /* ReviewView.swift */; };
+		F511309A5BC1C1CF7D7C8E2A /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1D4F3099BE5D080CDB9BD7 /* DebugView.swift */; };
+		FA3A00E25D70BC57F666A150 /* SmartCellCounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3721347F542BC55A32B0B427 /* SmartCellCounterApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8B6E0FF1D486EC99500867C8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 262384792FBB033F3AF28331 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 48C5367F77709ED7AE925347;
+			remoteInfo = SmartCellCounter;
+		};
+		A4975BAA68EB22F8906DC8F3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 262384792FBB033F3AF28331 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 48C5367F77709ED7AE925347;
+			remoteInfo = SmartCellCounter;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SmartCellCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0EA53055068990142ACD4F02 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		3721347F542BC55A32B0B427 /* SmartCellCounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCellCounterApp.swift; sourceTree = "<group>"; };
+		401BBBE20117A15D026876E7 /* SmartCellCounterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCellCounterUITests.swift; sourceTree = "<group>"; };
+		4BB10687490AAB0E73305A82 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		65B5BECC3BB7540869D5E9C8 /* CropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropView.swift; sourceTree = "<group>"; };
+		6E1D4F3099BE5D080CDB9BD7 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
+		7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8252830951ED10CFC153B9CD /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
+		886B4740D0BEB7CEB491B528 /* ResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsView.swift; sourceTree = "<group>"; };
+		8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCellCounterTests.swift; sourceTree = "<group>"; };
+		96BF49F646CD4DAC74698FBE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B71668675CC691585C3A2EAE /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		C239B3C72A80A99850D1315C /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		CD38F742DAC92C8C732A2536 /* CoreModules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreModules.swift; sourceTree = "<group>"; };
+		CD635FB8FD45C51DC2C1ADE0 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		DC5AA0BC35250819AC74A731 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
+		F4B129C19624AEF4BC8EE05B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3EB82650BF0F0D021A51DBD3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2124DC8942EFDC170770DDB7 /* GRDB in Frameworks */,
+				3A49FE4A756ED22E2E2FA7C3 /* GoogleMobileAds in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08D5EF3748370003064FCD48 /* SmartCellCounterUITests */ = {
+			isa = PBXGroup;
+			children = (
+				401BBBE20117A15D026876E7 /* SmartCellCounterUITests.swift */,
+			);
+			path = SmartCellCounterUITests;
+			sourceTree = "<group>";
+		};
+		0B0BDD731FE488EF95755596 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				F4B129C19624AEF4BC8EE05B /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		13C30938FF4AF02F73841841 /* SmartCellCounter */ = {
+			isa = PBXGroup;
+			children = (
+				4BB10687490AAB0E73305A82 /* Assets.xcassets */,
+				96BF49F646CD4DAC74698FBE /* Info.plist */,
+				3721347F542BC55A32B0B427 /* SmartCellCounterApp.swift */,
+				7658D57BEBB6E9E772260BA5 /* Core */,
+				75CB865C2534FE36E8D500A9 /* Features */,
+			);
+			path = SmartCellCounter;
+			sourceTree = "<group>";
+		};
+		4375B0583EBB5489BF5DDB12 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */,
+				FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */,
+				7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		52ED3AAFDC0C932B7DC68010 /* Help */ = {
+			isa = PBXGroup;
+			children = (
+				DC5AA0BC35250819AC74A731 /* HelpView.swift */,
+			);
+			path = Help;
+			sourceTree = "<group>";
+		};
+		5986AC2F333FDADC5F384596 /* Review */ = {
+			isa = PBXGroup;
+			children = (
+				C239B3C72A80A99850D1315C /* ReviewView.swift */,
+			);
+			path = Review;
+			sourceTree = "<group>";
+		};
+		75CB865C2534FE36E8D500A9 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				A5C70CBAEF89248335DEEB16 /* Capture */,
+				DF1F5A52B83EB8EA808082D7 /* Crop */,
+				AF3684796280E96F0D085E06 /* Debug */,
+				52ED3AAFDC0C932B7DC68010 /* Help */,
+				80EF3A3D92979E732A898281 /* History */,
+				BF046AEE9B1B1B138EC47695 /* Paywall */,
+				E746799FF1E1FFFA20A98794 /* Results */,
+				5986AC2F333FDADC5F384596 /* Review */,
+				0B0BDD731FE488EF95755596 /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		7658D57BEBB6E9E772260BA5 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				CD38F742DAC92C8C732A2536 /* CoreModules.swift */,
+				FD692E391E1CD6347B4CCB19 /* Utilities */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		80EF3A3D92979E732A898281 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				CD635FB8FD45C51DC2C1ADE0 /* HistoryView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		A5C70CBAEF89248335DEEB16 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				8252830951ED10CFC153B9CD /* CaptureView.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
+		AABB5BC949F3F00ED3F8D243 = {
+			isa = PBXGroup;
+			children = (
+				13C30938FF4AF02F73841841 /* SmartCellCounter */,
+				E5938F8D8DA8745FBD70DF30 /* SmartCellCounterTests */,
+				08D5EF3748370003064FCD48 /* SmartCellCounterUITests */,
+				4375B0583EBB5489BF5DDB12 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AF3684796280E96F0D085E06 /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				6E1D4F3099BE5D080CDB9BD7 /* DebugView.swift */,
+			);
+			path = Debug;
+			sourceTree = "<group>";
+		};
+		BF046AEE9B1B1B138EC47695 /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				B71668675CC691585C3A2EAE /* PaywallView.swift */,
+			);
+			path = Paywall;
+			sourceTree = "<group>";
+		};
+		DF1F5A52B83EB8EA808082D7 /* Crop */ = {
+			isa = PBXGroup;
+			children = (
+				65B5BECC3BB7540869D5E9C8 /* CropView.swift */,
+			);
+			path = Crop;
+			sourceTree = "<group>";
+		};
+		E5938F8D8DA8745FBD70DF30 /* SmartCellCounterTests */ = {
+			isa = PBXGroup;
+			children = (
+				8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */,
+			);
+			path = SmartCellCounterTests;
+			sourceTree = "<group>";
+		};
+		E746799FF1E1FFFA20A98794 /* Results */ = {
+			isa = PBXGroup;
+			children = (
+				886B4740D0BEB7CEB491B528 /* ResultsView.swift */,
+			);
+			path = Results;
+			sourceTree = "<group>";
+		};
+		FD692E391E1CD6347B4CCB19 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				0EA53055068990142ACD4F02 /* Utilities.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		48C5367F77709ED7AE925347 /* SmartCellCounter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2EB9C76C21C25A580E9CF6E0 /* Build configuration list for PBXNativeTarget "SmartCellCounter" */;
+			buildPhases = (
+				1154EEDF5A2D6F4B521B4D3F /* Sources */,
+				AE4BDEB6F68221331F63696B /* Resources */,
+				3EB82650BF0F0D021A51DBD3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SmartCellCounter;
+			packageProductDependencies = (
+				DEED0CD32F3A1C11ED660D90 /* GRDB */,
+				D8CB30E7033381E78F7812D0 /* GoogleMobileAds */,
+			);
+			productName = SmartCellCounter;
+			productReference = 06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D934DE857D5EEEE3C4F96DFE /* SmartCellCounterUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F7719B92F2887B2C71C40A3C /* Build configuration list for PBXNativeTarget "SmartCellCounterUITests" */;
+			buildPhases = (
+				53537ABA7E99252CBF37CBA9 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DA55C5B6A27949D5FB0755BF /* PBXTargetDependency */,
+			);
+			name = SmartCellCounterUITests;
+			packageProductDependencies = (
+			);
+			productName = SmartCellCounterUITests;
+			productReference = 7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		E1CF21FFB29F6F7262E4FDAF /* SmartCellCounterTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DECDB82355A28D4A678D6D0B /* Build configuration list for PBXNativeTarget "SmartCellCounterTests" */;
+			buildPhases = (
+				C47C931E27C59476D07B7BA7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95277C21DF15DE45EA5DDA11 /* PBXTargetDependency */,
+			);
+			name = SmartCellCounterTests;
+			packageProductDependencies = (
+			);
+			productName = SmartCellCounterTests;
+			productReference = FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		262384792FBB033F3AF28331 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					48C5367F77709ED7AE925347 = {
+						DevelopmentTeam = ABCDE12345;
+						ProvisioningStyle = Automatic;
+					};
+					D934DE857D5EEEE3C4F96DFE = {
+						DevelopmentTeam = ABCDE12345;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 48C5367F77709ED7AE925347;
+					};
+					E1CF21FFB29F6F7262E4FDAF = {
+						DevelopmentTeam = ABCDE12345;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = E784A69D9A8F2635008633AD /* Build configuration list for PBXProject "SmartCellCounter" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = AABB5BC949F3F00ED3F8D243;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				684AD10ABBBEBC4B8A600503 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-spm" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				48C5367F77709ED7AE925347 /* SmartCellCounter */,
+				E1CF21FFB29F6F7262E4FDAF /* SmartCellCounterTests */,
+				D934DE857D5EEEE3C4F96DFE /* SmartCellCounterUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AE4BDEB6F68221331F63696B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3242605D287DCBE6F4FC94B8 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1154EEDF5A2D6F4B521B4D3F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C43ADF84B284F3589A39D1AB /* CaptureView.swift in Sources */,
+				584A7D012628B7599ECDFF74 /* CoreModules.swift in Sources */,
+				6E52EAA43CB6A3958C3F8D44 /* CropView.swift in Sources */,
+				F511309A5BC1C1CF7D7C8E2A /* DebugView.swift in Sources */,
+				9C7628E57B22AD241F8B7EC6 /* HelpView.swift in Sources */,
+				095E99A5D2906790F573F2F6 /* HistoryView.swift in Sources */,
+				84CCE5D1EED44AD43BFE5F84 /* PaywallView.swift in Sources */,
+				D60B93466E2D676EC377B47A /* ResultsView.swift in Sources */,
+				EE1BB8890FEBF478BDADF1B7 /* ReviewView.swift in Sources */,
+				CDC4BF648FBD491706BE9077 /* SettingsView.swift in Sources */,
+				FA3A00E25D70BC57F666A150 /* SmartCellCounterApp.swift in Sources */,
+				1BC58D6198A1A4EAB51F3238 /* Utilities.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		53537ABA7E99252CBF37CBA9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				20843505E610553656E6D4E2 /* SmartCellCounterUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C47C931E27C59476D07B7BA7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				718FFD02C085DBA7DB6DD7D1 /* SmartCellCounterTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		95277C21DF15DE45EA5DDA11 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 48C5367F77709ED7AE925347 /* SmartCellCounter */;
+			targetProxy = A4975BAA68EB22F8906DC8F3 /* PBXContainerItemProxy */;
+		};
+		DA55C5B6A27949D5FB0755BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 48C5367F77709ED7AE925347 /* SmartCellCounter */;
+			targetProxy = 8B6E0FF1D486EC99500867C8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		010968064E98DBB4D3E77ED5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SmartCellCounter;
+			};
+			name = Release;
+		};
+		5BD9FB14275E3CBC258D596D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmartCellCounter.app/SmartCellCounter";
+			};
+			name = Debug;
+		};
+		65FF2F057531FDBC2497519C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = ABCDE12345;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		96B7E66F4F825CD95F017A39 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SmartCellCounter;
+			};
+			name = Debug;
+		};
+		AE98654DB4761790E7B529EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = SmartCellCounter/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.SmartCellCounter;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CE12E388BA8CAA03C0FC0140 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = ABCDE12345;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DBE24098B162B03776F4FD0F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmartCellCounter.app/SmartCellCounter";
+			};
+			name = Release;
+		};
+		DD5B392A75AE1DC8EF004465 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = SmartCellCounter/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.SmartCellCounter;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2EB9C76C21C25A580E9CF6E0 /* Build configuration list for PBXNativeTarget "SmartCellCounter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE98654DB4761790E7B529EA /* Debug */,
+				DD5B392A75AE1DC8EF004465 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DECDB82355A28D4A678D6D0B /* Build configuration list for PBXNativeTarget "SmartCellCounterTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BD9FB14275E3CBC258D596D /* Debug */,
+				DBE24098B162B03776F4FD0F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E784A69D9A8F2635008633AD /* Build configuration list for PBXProject "SmartCellCounter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE12E388BA8CAA03C0FC0140 /* Debug */,
+				65FF2F057531FDBC2497519C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F7719B92F2887B2C71C40A3C /* Build configuration list for PBXNativeTarget "SmartCellCounterUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96B7E66F4F825CD95F017A39 /* Debug */,
+				010968064E98DBB4D3E77ED5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		684AD10ABBBEBC4B8A600503 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/googleads-mobile-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+		ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D8CB30E7033381E78F7812D0 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 684AD10ABBBEBC4B8A600503 /* XCRemoteSwiftPackageReference "googleads-mobile-ios-spm" */;
+			productName = GoogleMobileAds;
+		};
+		DEED0CD32F3A1C11ED660D90 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			productName = GRDB;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 262384792FBB033F3AF28331 /* Project object */;
+}

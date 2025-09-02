@@ -1,1 +1,26 @@
+# Node / RN artifacts
 node_modules
+
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcworkspace
+
+# CocoaPods (legacy RN/ios folder)
+Pods/
+Podfile.lock
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
