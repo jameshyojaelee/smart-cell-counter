@@ -1,6 +1,6 @@
 # Smart Cell Counter
 
-The world's first automated cell counter on mobile devices. Replace expensive laboratory equipment like Thermo Fisher Countess with professional-grade analysis in your pocket.
+The world's first automated cell counter on mobile devices. Replace expensive laboratory equipment like Thermo Fisher Countess with the automated cell counter in your pocket.
 
 -**Cost Savings**: Save $10,000+ on automated cell counters
 -**Accuracy**: Sub-pixel precision matching laboratory standards
@@ -576,4 +576,4 @@ If you use this app in research, please cite:
 
 ---
 
-**Join the mobile cell counting revolution. Replace expensive equipment with professional-grade analysis in your pocket.**
+**Join the mobile cell counting revolution. Replace expensive equipment with our automated cell counter in your pocket.**
