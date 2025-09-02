@@ -16,7 +16,7 @@ import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../src/state/store';
-import { cvNative } from '../src/imaging/cvNative';
+import { cvNativeAdapter } from '../src/imaging/cvNativeAdapter';
 import { logUserInteraction, logError } from '../src/utils/logger';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -53,7 +53,7 @@ export default function CropScreen(): JSX.Element {
     logUserInteraction('Crop', 'DetectGrid');
 
     try {
-      const result = await cvNative.detectGridAndCorners(originalImageUri);
+      const result = await cvNativeAdapter.detectGridAndCorners(originalImageUri);
       
       if (result.corners && result.corners.length === 4) {
         setCorners(result.corners);
@@ -113,7 +113,7 @@ export default function CropScreen(): JSX.Element {
     });
 
     try {
-      const correctedUri = await cvNative.perspectiveCorrect(
+      const correctedUri = await cvNativeAdapter.perspectiveCorrect(
         originalImageUri,
         correctionCorners as [any, any, any, any]
       );

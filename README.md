@@ -69,21 +69,47 @@ yarn ios
 yarn android
 ```
 
-### Native Module Setup (Optional)
+### Native Module Setup (Required for iOS)
 
-For full OpenCV functionality, set up the native modules:
+For full functionality on iOS and OpenCV on Android, set up the native modules:
 
 ```bash
 # Generate native code
 npx expo prebuild
 
-# iOS additional setup
+# iOS setup with Core ML and Vision
 cd ios && pod install && cd ..
 
 # Build with native modules
 yarn ios --device
 yarn android --variant release
 ```
+
+#### iOS-Specific Setup
+
+The iOS version uses Apple's Vision framework for grid detection and Core ML for segmentation:
+
+1. **Add Core ML Model** (Optional):
+   - Place your UNet256.mlmodel in `ios/SmartCellCounter/Models/`
+   - Xcode will automatically compile it to .mlmodelc
+   - If no model is provided, the app falls back to OpenCV
+
+2. **Configure Xcode Project**:
+   - Open `ios/SmartCellCounter.xcworkspace` in Xcode
+   - Set the Swift Compiler bridging header to: `SmartCellCounter/SmartCellCounter-Bridging-Header.h`
+   - Ensure deployment target is iOS 15.0 or later
+   - Add the Models folder to the Xcode project if using Core ML
+
+3. **Camera Permissions**:
+   The app automatically requests camera permissions with these descriptions:
+   - Camera: "Camera is used to capture hemocytometer images for cell counting."
+   - Photo Library: "Photo library access is used to import images for analysis."
+   - Photo Library Add: "The app saves exported images and reports to your library."
+
+4. **Backend Selection Logic**:
+   - iOS: Vision → Core ML → OpenCV (fallback chain)
+   - Android: OpenCV → TensorFlow Lite (existing path)
+   - Processing times: < 3 seconds on iPhone 12 or newer
 
 ## Architecture
 
@@ -104,7 +130,9 @@ smart-cell-counter/
 ├── src/
 │   ├── components/        # Reusable UI components
 │   ├── imaging/           # Image processing pipeline
-│   │   ├── cvNative.ts    # OpenCV native wrapper
+│   │   ├── cvNative.ts    # OpenCV native wrapper (Android)
+│   │   ├── iosBridge.ts   # iOS Vision/CoreML bridge
+│   │   ├── cvNativeAdapter.ts # Cross-platform adapter
 │   │   ├── segmentation.ts # Cell segmentation
 │   │   ├── viability.ts   # Viability classification
 │   │   ├── counting.ts    # Counting algorithms
@@ -119,6 +147,16 @@ smart-cell-counter/
 ├── assets/
 │   ├── models/            # TensorFlow Lite models
 │   └── fixtures/          # Test data
+├── ios/                   # iOS native code
+│   ├── Podfile           # CocoaPods dependencies
+│   └── SmartCellCounter/
+│       ├── Info.plist    # iOS app configuration
+│       ├── SmartCellCounter-Bridging-Header.h
+│       ├── VisionUtils.swift # Grid detection with Vision
+│       ├── SegmentationCoreML.swift # Core ML segmentation
+│       ├── CellCounterModule.swift # React Native bridge
+│       ├── CellCounterModule.m # Objective-C bridge
+│       └── Models/       # Core ML models (.mlmodel)
 └── __tests__/             # Unit tests
 ```
 
@@ -129,8 +167,12 @@ smart-cell-counter/
 - **State Management**: Zustand
 - **Database**: Expo SQLite
 - **Storage**: React Native MMKV
-- **Image Processing**: OpenCV (native modules)
-- **Machine Learning**: TensorFlow Lite
+- **Image Processing**: 
+  - iOS: Apple Vision + Core Image + Core ML
+  - Android: OpenCV (native modules)
+- **Machine Learning**: 
+  - iOS: Core ML (UNet segmentation)
+  - Android: TensorFlow Lite
 - **UI Components**: Custom components with Expo Vector Icons
 - **Testing**: Jest + React Native Testing Library
 - **Type Safety**: TypeScript with strict mode
@@ -139,8 +181,15 @@ smart-cell-counter/
 
 ### Grid Detection
 
-The app uses computer vision techniques to automatically detect hemocytometer grids:
+The app uses platform-optimized computer vision for hemocytometer grid detection:
 
+#### iOS Implementation (Apple Vision)
+1. **Vision Framework**: VNDetectRectanglesRequest for robust rectangle detection
+2. **Focus Assessment**: Laplacian variance for image sharpness
+3. **Glare Detection**: HSV analysis for overexposed regions
+4. **Perspective Correction**: Core Image CIFilter.perspectiveCorrection
+
+#### Android Implementation (OpenCV)
 1. **Preprocessing**: Convert to grayscale, apply CLAHE enhancement
 2. **Edge Detection**: Canny edge detection to find grid lines
 3. **Line Detection**: Hough transform to identify dominant orientations
@@ -148,23 +197,30 @@ The app uses computer vision techniques to automatically detect hemocytometer gr
 5. **Validation**: Geometric constraints and aspect ratio checks
 
 ```typescript
-// Simplified grid detection pipeline
-const result = await cvNative.detectGridAndCorners(imageUri);
+// Cross-platform grid detection pipeline
+const result = await cvNativeAdapter.detectGridAndCorners(imageUri);
 if (result.gridType && result.corners.length === 4) {
   // Proceed with perspective correction
-  const correctedUri = await cvNative.perspectiveCorrect(imageUri, result.corners);
+  const correctedUri = await cvNativeAdapter.perspectiveCorrect(imageUri, result.corners);
 }
 ```
 
 ### Cell Segmentation
 
-Multi-stage segmentation pipeline for robust cell detection:
+Cross-platform segmentation pipeline with ML acceleration:
 
+#### iOS Implementation
+1. **Core ML UNet**: 256x256 neural network segmentation (when available)
+2. **Fallback Pipeline**: OpenCV classical segmentation if Core ML unavailable
+3. **Metal Acceleration**: GPU-accelerated processing via Vision framework
+
+#### Android Implementation  
 1. **Background Subtraction**: Gaussian blur background estimation
 2. **Adaptive Thresholding**: Local threshold adaptation
 3. **Morphological Operations**: Opening to remove noise
 4. **Watershed Splitting**: Separate touching cells
-5. **Contour Analysis**: Size and circularity filtering
+5. **TensorFlow Lite**: Optional ML refinement
+6. **Contour Analysis**: Size and circularity filtering
 
 ```typescript
 const segmentationResult = await segmentCells(
@@ -172,6 +228,10 @@ const segmentationResult = await segmentCells(
   processingParams,
   pixelsPerMicron
 );
+
+// Platform-specific backend selection happens automatically
+// iOS: Core ML → OpenCV fallback
+// Android: OpenCV → TensorFlow Lite (optional)
 ```
 
 ### Viability Classification

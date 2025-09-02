@@ -2,7 +2,7 @@
  * Cell segmentation pipeline combining classical CV and TensorFlow Lite
  */
 import * as FileSystem from 'expo-file-system';
-import { cvNative } from './cvNative';
+import { cvNativeAdapter } from './cvNativeAdapter';
 import { DetectionObject, ProcessingParams, Point } from '../types';
 
 /**
@@ -142,13 +142,13 @@ export async function segmentCells(
   try {
     // Step 1: Classical segmentation
     onProgress?.('Classical segmentation...', 0.1);
-    const classicalResult = await cvNative.segmentCells(correctedImageUri, params);
+    const classicalResult = await cvNativeAdapter.segmentCells(correctedImageUri, params);
     
     // Step 2: Apply watershed if enabled
     let maskUri = classicalResult.binaryMaskUri;
     if (params.useWatershed) {
       onProgress?.('Watershed splitting...', 0.3);
-      maskUri = await cvNative.watershedSplit(correctedImageUri, maskUri);
+      maskUri = await cvNativeAdapter.watershedSplit(correctedImageUri, maskUri);
     }
     
     // Step 3: TensorFlow Lite refinement if enabled
@@ -164,7 +164,7 @@ export async function segmentCells(
     
     // Step 5: Extract color statistics
     onProgress?.('Extracting color features...', 0.8);
-    const colorResults = await cvNative.colorStats(
+    const colorResults = await cvNativeAdapter.colorStats(
       correctedImageUri,
       filteredContours.map(c => ({ id: c.id, centroid: c.centroid }))
     );
