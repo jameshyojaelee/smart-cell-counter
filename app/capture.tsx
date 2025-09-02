@@ -12,13 +12,35 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Camera, CameraType, FlashMode } from 'expo-camera';
+import { Platform } from 'react-native';
+// Mock camera types for development
+const CameraType = { back: 'back', front: 'front' };
+const FlashMode = { off: 'off', on: 'on', auto: 'auto' };
+const CameraConstants = {
+  AutoFocus: { on: 'on', off: 'off', auto: 'auto' },
+  FlashMode: { off: 'off', on: 'on', auto: 'auto' }
+};
+
+// Mock Camera component for development
+const MockCamera = ({ children, ...props }: any) => (
+  <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+    <Text style={{ color: '#fff', fontSize: 18 }}>Camera Preview</Text>
+    <Text style={{ color: '#666', fontSize: 14, marginTop: 10 }}>Mock Camera for Development</Text>
+    {children}
+  </View>
+);
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../src/state/store';
-import { cvNative } from '../src/imaging/cvNative';
+// Import mock CV implementation
+import { mockCVNative } from '../src/imaging/cvNativeMock';
+const cvNative = mockCVNative;
 import { generateCaptureGuidance } from '../src/imaging/qc';
 import { logUserInteraction, logError } from '../src/utils/logger';
+
+// Allow safe typeof checks for Camera when not imported
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare const Camera: any;
 
 export default function CaptureScreen(): JSX.Element {
   const cameraRef = useRef<Camera>(null);
@@ -42,6 +64,11 @@ export default function CaptureScreen(): JSX.Element {
 
   const requestCameraPermissions = async (): Promise<void> => {
     try {
+      // If Camera API is unavailable in this environment (e.g., web), skip and mark as no permission
+      if (typeof Camera === 'undefined' || typeof Camera.requestCameraPermissionsAsync !== 'function') {
+        setCameraState({ hasPermission: Platform.OS !== 'web' ? false : false });
+        return;
+      }
       const { status } = await Camera.requestCameraPermissionsAsync();
       setCameraState({ hasPermission: status === 'granted' });
       
@@ -65,7 +92,7 @@ export default function CaptureScreen(): JSX.Element {
   const toggleFlash = (): void => {
     const newFlashMode = flashMode === FlashMode.off ? FlashMode.on : FlashMode.off;
     setFlashMode(newFlashMode);
-    setCameraState({ flashMode: newFlashMode });
+    setCameraState({ flashMode: newFlashMode as 'off' | 'on' | 'auto' });
     logUserInteraction('Capture', 'ToggleFlash', { flashMode: newFlashMode });
   };
 
@@ -82,7 +109,11 @@ export default function CaptureScreen(): JSX.Element {
     logUserInteraction('Capture', 'TakePicture');
 
     try {
-      const photo = await cameraRef.current.takePictureAsync({
+      if (typeof (cameraRef.current as any)?.takePictureAsync !== 'function') {
+        Alert.alert('Camera Unavailable', 'Camera capture is not available in this environment. Please use the Gallery option.');
+        return;
+      }
+      const photo = await (cameraRef.current as any).takePictureAsync({
         quality: 0.8,
         base64: false,
         skipProcessing: false,
@@ -165,7 +196,7 @@ export default function CaptureScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.permissionContainer}>
-          <Ionicons name="camera-off" size={64} color="#666" />
+          <Ionicons name="camera-outline" size={64} color="#666" />
           <Text style={styles.permissionTitle}>Camera Permission Required</Text>
           <Text style={styles.permissionText}>
             Please grant camera access to capture hemocytometer images.
@@ -176,6 +207,15 @@ export default function CaptureScreen(): JSX.Element {
           >
             <Text style={styles.permissionButtonText}>Grant Permission</Text>
           </TouchableOpacity>
+
+          <View style={{ height: 16 }} />
+          <Text style={[styles.permissionText, { marginBottom: 8 }]}>Or analyze an existing photo:</Text>
+          <TouchableOpacity
+            style={[styles.permissionButton, { backgroundColor: '#34C759' }]}
+            onPress={handleImportFromGallery}
+          >
+            <Text style={styles.permissionButtonText}>Import from Gallery</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -184,13 +224,13 @@ export default function CaptureScreen(): JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.cameraContainer}>
-        <Camera
+        <MockCamera
           ref={cameraRef}
           style={styles.camera}
           type={cameraType}
           flashMode={flashMode}
           onCameraReady={handleCameraReady}
-          autoFocus={Camera.Constants.AutoFocus.on}
+          autoFocus={CameraConstants.AutoFocus.on}
         >
           {/* Grid Overlay */}
           <View style={styles.gridOverlay}>
@@ -238,7 +278,7 @@ export default function CaptureScreen(): JSX.Element {
               ))}
             </View>
           )}
-        </Camera>
+        </MockCamera>
       </View>
 
       {/* Controls */}

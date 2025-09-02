@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 
 // Always use mock implementation since package is removed for testing
 console.log('Using mock AdMob implementation for development');
+const isDevelopment = __DEV__;
 
 const mobileAds = () => ({
   initialize: async () => console.log('Mock AdMob initialized'),

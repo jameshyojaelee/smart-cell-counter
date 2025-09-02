@@ -98,7 +98,9 @@ class MockCVNative implements CVNativeModule {
     corners: [Point, Point, Point, Point]
   ): Promise<string> {
     await this.delay(300);
-    return this.generateMockImageUri('corrected');
+    // In development, return the original URI so the image displays
+    // even when we don't have an actual corrected file on disk.
+    return inputUri;
   }
 
   async segmentCells(
@@ -208,6 +210,13 @@ export const defaultProcessingParams: ProcessingParams = {
   maxAreaUm2: 5000,
   useWatershed: true,
   useTFLiteRefinement: false,
+  circularityMin: 0.4,
+  circularityMax: 1.2,
+  solidityMin: 0.8,
+  clipLimit: 2.0,
+  tileGridSize: 8,
+  illuminationKernel: 51,
+  enableDualThresholding: true,
 };
 
 /**
@@ -220,5 +229,12 @@ export function validateProcessingParams(params: ProcessingParams): ProcessingPa
     C: Math.max(-10, Math.min(10, params.C)),
     minAreaUm2: Math.max(10, params.minAreaUm2),
     maxAreaUm2: Math.max(params.minAreaUm2, Math.min(10000, params.maxAreaUm2)),
+    circularityMin: Math.max(0.0, Math.min(1.2, params.circularityMin ?? 0.4)),
+    circularityMax: Math.max(params.circularityMin ?? 0.4, Math.min(1.5, params.circularityMax ?? 1.2)),
+    solidityMin: Math.max(0.5, Math.min(1.0, params.solidityMin ?? 0.8)),
+    clipLimit: Math.max(0.5, Math.min(5.0, params.clipLimit ?? 2.0)),
+    tileGridSize: Math.max(4, Math.min(16, params.tileGridSize ?? 8)),
+    illuminationKernel: Math.max(15, Math.min(101, params.illuminationKernel ?? 51)),
+    enableDualThresholding: params.enableDualThresholding ?? true,
   };
 }

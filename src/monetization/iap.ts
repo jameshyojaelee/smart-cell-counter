@@ -100,13 +100,7 @@ class IAPService {
    */
   async loadProducts(): Promise<Product[]> {
     try {
-      if (!this.initialized) {
-        throw new Error('IAP not initialized');
-      }
-
-      const products = await getProducts({
-        skus: [IAP_PRODUCT_IDS.PRO],
-      });
+      const products = await getProducts([IAP_PRODUCT_IDS.PRO]);
 
       this.notifyListeners({ products });
       return products;
@@ -128,9 +122,7 @@ class IAPService {
 
       this.notifyListeners({ isLoading: true, error: null });
 
-      await requestPurchase({
-        sku: IAP_PRODUCT_IDS.PRO,
-      });
+      await requestPurchase(IAP_PRODUCT_IDS.PRO);
 
       // Purchase result will be handled by purchaseUpdatedListener
       return true;

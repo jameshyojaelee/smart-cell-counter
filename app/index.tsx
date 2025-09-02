@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import { useAppStore } from '../src/state/store';
 import { logUserInteraction } from '../src/utils/logger';
 
@@ -68,7 +69,7 @@ function MenuItem({ icon, title, subtitle, onPress, color, disabled = false }: M
 }
 
 export default function HomeScreen(): JSX.Element {
-  const { resetSession, currentSample } = useAppStore();
+  const { resetSession, currentSample, updateCurrentSample, setImageUris, settings } = useAppStore();
 
   const handleNewAnalysis = (): void => {
     logUserInteraction('Home', 'StartNewAnalysis');
@@ -92,6 +93,62 @@ export default function HomeScreen(): JSX.Element {
     } else {
       resetSession();
       router.push('/capture');
+    }
+  };
+
+  const doImportFromGallery = async (): Promise<void> => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'] as any,
+        allowsEditing: false,
+        quality: 0.8,
+        aspect: [4, 3],
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+
+        updateCurrentSample({
+          id: `sample_${Date.now()}`,
+          timestamp: Date.now(),
+          imagePath: asset.uri,
+          operator: settings.defaultOperator,
+          project: settings.defaultProject,
+          chamberType: settings.defaultChamberType,
+          stainType: settings.defaultStainType,
+          dilutionFactor: settings.defaultDilutionFactor,
+        });
+
+        setImageUris({ original: asset.uri });
+        router.push('/crop');
+      }
+    } catch (error) {
+      Alert.alert('Import Error', 'Failed to import image from gallery.');
+    }
+  };
+
+  const handleImportImage = (): void => {
+    logUserInteraction('Home', 'ImportImage');
+
+    if (currentSample) {
+      Alert.alert(
+        'Current Analysis',
+        'You have an analysis in progress. Importing a new image will discard the current session.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Import',
+            style: 'destructive',
+            onPress: async () => {
+              resetSession();
+              await doImportFromGallery();
+            },
+          },
+        ]
+      );
+    } else {
+      resetSession();
+      void doImportFromGallery();
     }
   };
 
@@ -139,7 +196,7 @@ export default function HomeScreen(): JSX.Element {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Ionicons name="microscope" size={48} color="#fff" />
+            <Ionicons name="search" size={48} color="#fff" />
             <Text style={styles.headerTitle}>Smart Cell Counter</Text>
             <Text style={styles.headerSubtitle}>
               AI-powered hemocytometer analysis
@@ -171,6 +228,14 @@ export default function HomeScreen(): JSX.Element {
             subtitle="Start counting cells from a new image"
             onPress={handleNewAnalysis}
             color="#007AFF"
+          />
+
+          <MenuItem
+            icon="images"
+            title="Import Image"
+            subtitle="Analyze a photo from your library"
+            onPress={handleImportImage}
+            color="#0A84FF"
           />
 
           <MenuItem
@@ -211,7 +276,7 @@ export default function HomeScreen(): JSX.Element {
         <View style={styles.quickStats}>
           <Text style={styles.quickStatsTitle}>Quick Tips</Text>
           <View style={styles.tipContainer}>
-            <Ionicons name="lightbulb" size={16} color="#FF9500" />
+            <Ionicons name="bulb" size={16} color="#FF9500" />
             <Text style={styles.tipText}>
               Ensure good lighting and focus for accurate results
             </Text>

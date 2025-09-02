@@ -26,14 +26,14 @@ export interface ColorStats {
 export interface DetectionObject {
   id: string;
   centroid: Point;
-  areaPx: number;
-  areaUm2: number;
-  circularity: number;
-  bbox: BoundingBox;
+  areaPx?: number;
+  areaUm2?: number;
+  circularity?: number;
+  bbox?: BoundingBox;
   colorStats?: ColorStats;
-  isLive: boolean;
-  confidence: number;
-  squareIndex: number;
+  isLive?: boolean;
+  confidence?: number;
+  squareIndex?: number;
 }
 
 export interface GridDetectionResult {
@@ -52,6 +52,14 @@ export interface ProcessingParams {
   maxAreaUm2: number;
   useWatershed: boolean;
   useTFLiteRefinement: boolean;
+  // Advanced tunables (optional, safe defaults applied)
+  circularityMin?: number; // default 0.4
+  circularityMax?: number; // default 1.2
+  solidityMin?: number; // default 0.8
+  clipLimit?: number; // CLAHE clip limit, default 2.0
+  tileGridSize?: number; // CLAHE tile size, default 8
+  illuminationKernel?: number; // opening kernel size, default 51
+  enableDualThresholding?: boolean; // OR adaptive+Otsu when needed
 }
 
 export interface Sample {
@@ -124,6 +132,8 @@ export interface AppSettings {
   units: 'metric' | 'imperial';
   enableAnalytics: boolean;
   enableCrashReporting: boolean;
+  // Debug tools toggle
+  debugMode?: boolean;
 }
 
 export interface CameraState {

@@ -5,6 +5,7 @@ import * as FileSystem from 'expo-file-system';
 import { Image } from 'react-native';
 import { cvNativeAdapter } from './cvNativeAdapter';
 import { DetectionObject, ProcessingParams, Point } from '../types';
+import { logger } from '../utils/logger';
 
 /**
  * TensorFlow Lite model interface
@@ -141,19 +142,23 @@ export async function segmentCells(
   const startTime = Date.now();
   
   try {
+    const safePxPerMicron = !pixelsPerMicron || pixelsPerMicron <= 0 ? 1 : pixelsPerMicron;
+    const p = normalizeParams(params);
+    logger.startTimer('segmentation_pipeline');
     // Step 1: Classical segmentation
     onProgress?.('Classical segmentation...', 0.1);
-    const classicalResult = await cvNativeAdapter.segmentCells(correctedImageUri, params);
+    onProgress?.('Preprocessing & segmentation...', 0.05);
+    const classicalResult = await cvNativeAdapter.segmentCells(correctedImageUri, p);
     
     // Step 2: Apply watershed if enabled
     let maskUri = classicalResult.binaryMaskUri;
-    if (params.useWatershed) {
+    if (p.useWatershed) {
       onProgress?.('Watershed splitting...', 0.3);
       maskUri = await cvNativeAdapter.watershedSplit(correctedImageUri, maskUri);
     }
     
     // Step 3: TensorFlow Lite refinement if enabled
-    if (params.useTFLiteRefinement) {
+    if (p.useTFLiteRefinement) {
       onProgress?.('TensorFlow Lite refinement...', 0.5);
       const tfliteMaskUri = await tfliteSegmentation.runTFLiteSegmentation(correctedImageUri);
       maskUri = await fuseSegmentationMasks(maskUri, tfliteMaskUri);
@@ -161,7 +166,17 @@ export async function segmentCells(
     
     // Step 4: Filter by area constraints
     onProgress?.('Filtering detections...', 0.7);
-    const filteredContours = filterByArea(classicalResult.contours, params, pixelsPerMicron);
+    let filteredContours = filterByArea(classicalResult.contours, p, safePxPerMicron)
+      .filter(c => withinCircularity(c.circularity, p));
+
+    // Fallback path to avoid 0 cells: relax thresholds and retry
+    if (filteredContours.length === 0) {
+      onProgress?.('No cells; retrying with relaxed params...', 0.72);
+      const relaxed = relaxParams(p);
+      const retry = await cvNativeAdapter.segmentCells(correctedImageUri, relaxed);
+      filteredContours = filterByArea(retry.contours, relaxed, safePxPerMicron)
+        .filter(c => withinCircularity(c.circularity, relaxed));
+    }
     
     // Step 5: Extract color statistics
     onProgress?.('Extracting color features...', 0.8);
@@ -182,7 +197,7 @@ export async function segmentCells(
         id: contour.id,
         centroid: contour.centroid,
         areaPx: contour.areaPx,
-        areaUm2: pixelsToMicrometers(contour.areaPx, pixelsPerMicron),
+        areaUm2: pixelsToMicrometers(contour.areaPx, safePxPerMicron),
         circularity: contour.circularity,
         bbox: contour.bbox,
         colorStats,
@@ -194,6 +209,7 @@ export async function segmentCells(
     
     const processingTimeMs = Date.now() - startTime;
     onProgress?.('Complete', 1.0);
+    logger.endTimer('segmentation_pipeline', { detections: detections.length });
     
     return {
       detections,
@@ -234,6 +250,45 @@ export function estimateProcessingTime(
   }
   
   return Math.round(baseTime);
+}
+
+// Helpers
+function normalizeParams(params: ProcessingParams): ProcessingParams {
+  return {
+    ...params,
+    blockSize: params.blockSize % 2 === 0 ? params.blockSize + 1 : params.blockSize,
+    circularityMin: params.circularityMin ?? 0.4,
+    circularityMax: params.circularityMax ?? 1.2,
+    solidityMin: params.solidityMin ?? 0.8,
+    clipLimit: params.clipLimit ?? 2.0,
+    tileGridSize: params.tileGridSize ?? 8,
+    illuminationKernel: params.illuminationKernel ?? 51,
+    enableDualThresholding: params.enableDualThresholding ?? true,
+  };
+}
+
+function withinCircularity(circularity: number, params: ProcessingParams): boolean {
+  const min = params.circularityMin ?? 0.4;
+  const max = params.circularityMax ?? 1.2;
+  return circularity >= min && circularity <= max;
+}
+
+function relaxParams(params: ProcessingParams): ProcessingParams {
+  const relaxedBlock = Math.min(101, (params.blockSize ?? 51) + 20);
+  const c = params.C ?? -2;
+  const relaxedC = Math.abs(c) <= 1 ? c : (c > 0 ? c - 1 : c + 1);
+  return {
+    ...params,
+    blockSize: relaxedBlock % 2 === 0 ? relaxedBlock + 1 : relaxedBlock,
+    C: relaxedC,
+    minAreaUm2: Math.min( params.minAreaUm2 ?? 50, 30 ),
+    circularityMin: Math.min( params.circularityMin ?? 0.4, 0.3 ),
+  };
+}
+
+export function um2ToPxArea(um2: number, pixelsPerMicron: number): number {
+  const ppm = !pixelsPerMicron || pixelsPerMicron <= 0 ? 1 : pixelsPerMicron;
+  return um2 * ppm * ppm;
 }
 
 /**

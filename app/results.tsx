@@ -1,7 +1,7 @@
 /**
  * Results Screen - Final concentration and viability results
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -39,33 +39,81 @@ export default function ResultsScreen(): JSX.Element {
     resetSession,
   } = useAppStore();
 
+  // Dilution factor editor state
+  const [dilutionInput, setDilutionInput] = useState<string>(
+    (currentSample?.dilutionFactor ?? settings.defaultDilutionFactor ?? 1).toString()
+  );
+
+  useEffect(() => {
+    // Keep input in sync if sample changes
+    if (currentSample?.dilutionFactor != null) {
+      setDilutionInput(String(currentSample.dilutionFactor));
+    }
+  }, [currentSample?.dilutionFactor]);
+
+  const commitDilution = (value: number): void => {
+    const clean = isFinite(value) && value > 0 ? value : 1;
+    setDilutionInput(String(clean));
+    updateCurrentSample({ dilutionFactor: clean });
+  };
+
+  const handleDilutionChange = (text: string): void => {
+    setDilutionInput(text);
+  };
+
+  const handleDilutionEndEditing = (): void => {
+    const parsed = Number(dilutionInput.replace(/,/g, '.'));
+    commitDilution(parsed);
+  };
+
+  const stepDilution = (delta: number): void => {
+    const current = Number(dilutionInput.replace(/,/g, '.'));
+    const next = Math.max(0.01, (isFinite(current) && current > 0 ? current : 1) + delta);
+    commitDilution(Number(next.toFixed(2)));
+  };
+
   const shouldShowAds = useShouldShowAds();
   const isPro = useIsPro();
 
   const sampleRepository = new SampleRepository();
 
-  // Calculate results
-  const squareCounts = []; // Would be calculated from detections
-  const results = calculateConcentration(
+  // Calculate results - memoized to prevent infinite loops
+  const squareCounts = useMemo(() => {
+    // Mock square counts for development
+    if (detections && detections.length > 0) {
+      return [
+        { index: 1, squareIndex: 1, live: 45, dead: 12, total: 57, isOutlier: false, isSelected: true },
+        { index: 2, squareIndex: 2, live: 48, dead: 8, total: 56, isOutlier: false, isSelected: true },
+        { index: 3, squareIndex: 3, live: 52, dead: 15, total: 67, isOutlier: true, isSelected: false },
+        { index: 4, squareIndex: 4, live: 43, dead: 10, total: 53, isOutlier: false, isSelected: true },
+        { index: 5, squareIndex: 5, live: 50, dead: 14, total: 64, isOutlier: false, isSelected: true }
+      ];
+    }
+    return [];
+  }, [detections]);
+
+  const results = useMemo(() => calculateConcentration(
     squareCounts,
     currentSample?.dilutionFactor || 1,
     currentSample?.chamberType || 'neubauer'
-  );
+  ), [squareCounts, currentSample?.dilutionFactor, currentSample?.chamberType]);
 
-  const qcAlerts = evaluateCountingQuality(squareCounts, settings.qcThresholds);
+  const qcAlerts = useMemo(() => evaluateCountingQuality(squareCounts, settings.qcThresholds), [squareCounts, settings.qcThresholds]);
 
   useEffect(() => {
     // Update current sample with final results
-    updateCurrentSample({
-      concentration: results.concentration,
-      viability: results.viability,
-      liveTotal: results.liveTotal,
-      deadTotal: results.deadTotal,
-      squaresUsed: results.squaresUsed,
-      rejectedSquares: results.rejectedSquares,
-      notes,
-    });
-  }, [results, notes]);
+    if (currentSample && results) {
+      updateCurrentSample({
+        concentration: results.concentration,
+        viability: results.viability,
+        liveTotal: results.liveTotal,
+        deadTotal: results.deadTotal,
+        squaresUsed: results.squaresUsed,
+        rejectedSquares: results.rejectedSquares,
+        notes,
+      });
+    }
+  }, [results?.concentration, results?.viability, notes, currentSample?.id, updateCurrentSample]);
 
   const handleSaveSample = async (): Promise<void> => {
     if (!currentSample) {
@@ -224,9 +272,25 @@ export default function ResultsScreen(): JSX.Element {
             <Text style={styles.infoValue}>{currentSample?.chamberType || 'Unknown'}</Text>
           </View>
           
-          <View style={styles.infoRow}>
+          <View style={[styles.infoRow, { alignItems: 'center' }]}>
             <Text style={styles.infoLabel}>Dilution Factor:</Text>
-            <Text style={styles.infoValue}>{currentSample?.dilutionFactor || 1}x</Text>
+            <View style={styles.dilutionEditor}>
+              <TouchableOpacity style={styles.dilutionButton} onPress={() => stepDilution(-0.5)}>
+                <Ionicons name="remove" size={18} color="#007AFF" />
+              </TouchableOpacity>
+              <TextInput
+                style={styles.dilutionInput}
+                value={dilutionInput}
+                keyboardType="decimal-pad"
+                onChangeText={handleDilutionChange}
+                onEndEditing={handleDilutionEndEditing}
+                returnKeyType="done"
+              />
+              <Text style={styles.dilutionSuffix}>x</Text>
+              <TouchableOpacity style={styles.dilutionButton} onPress={() => stepDilution(0.5)}>
+                <Ionicons name="add" size={18} color="#007AFF" />
+              </TouchableOpacity>
+            </View>
           </View>
           
           <View style={styles.infoRow}>
@@ -380,6 +444,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
+  },
+  dilutionEditor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dilutionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EAF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  dilutionInput: {
+    width: 70,
+    height: 36,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#333',
+    backgroundColor: '#fff',
+  },
+  dilutionSuffix: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 6,
+    marginRight: 4,
   },
   notesContainer: {
     margin: 20,

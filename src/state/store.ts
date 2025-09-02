@@ -45,6 +45,13 @@ const defaultSettings: AppSettings = {
     maxAreaUm2: 5000,
     useWatershed: true,
     useTFLiteRefinement: false,
+    circularityMin: 0.4,
+    circularityMax: 1.2,
+    solidityMin: 0.8,
+    clipLimit: 2.0,
+    tileGridSize: 8,
+    illuminationKernel: 51,
+    enableDualThresholding: true,
   },
   viabilityThresholds: {
     hueMin: 200,
@@ -62,6 +69,7 @@ const defaultSettings: AppSettings = {
   units: 'metric',
   enableAnalytics: true,
   enableCrashReporting: true,
+  debugMode: false,
 };
 
 interface PurchaseState {
@@ -95,11 +103,15 @@ interface AppState {
   originalImageUri: string | null;
   correctedImageUri: string | null;
   maskImageUri: string | null;
+  pixelsPerMicron: number | null;
+  lastGridCorners: { x: number; y: number }[] | null;
   setImageUris: (uris: {
     original?: string | null;
     corrected?: string | null;
     mask?: string | null;
   }) => void;
+  setPixelsPerMicron: (pxPerMicron: number | null) => void;
+  setLastGridCorners: (corners: { x: number; y: number }[] | null) => void;
   
   // Detection results
   detections: DetectionObject[];
@@ -176,6 +188,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   originalImageUri: null,
   correctedImageUri: null,
   maskImageUri: null,
+  pixelsPerMicron: null,
+  lastGridCorners: null,
   setImageUris: (uris) => {
     set((state) => ({
       originalImageUri: uris.original !== undefined ? uris.original : state.originalImageUri,
@@ -183,6 +197,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       maskImageUri: uris.mask !== undefined ? uris.mask : state.maskImageUri,
     }));
   },
+  setPixelsPerMicron: (pxPerMicron) => set({ pixelsPerMicron: pxPerMicron }),
+  setLastGridCorners: (corners) => set({ lastGridCorners: corners }),
   
   // Detections
   detections: [],
@@ -407,6 +423,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       originalImageUri: null,
       correctedImageUri: null,
       maskImageUri: null,
+      pixelsPerMicron: null,
+      lastGridCorners: null,
       detections: [],
       processing: {
         isProcessing: false,

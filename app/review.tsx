@@ -37,6 +37,8 @@ export default function ReviewScreen(): JSX.Element {
     settings,
     selectedSquares,
     setSelectedSquares,
+    pixelsPerMicron,
+    lastGridCorners,
   } = useAppStore();
 
   useEffect(() => {
@@ -60,10 +62,11 @@ export default function ReviewScreen(): JSX.Element {
     try {
       // Step 1: Segment cells
       setProcessingStep('Segmenting cells...');
+      const pxPerMicron = pixelsPerMicron && pixelsPerMicron > 0 ? pixelsPerMicron : 1;
       const segmentationResult = await segmentCells(
         correctedImageUri,
         settings.processingParams,
-        10.5, // Mock pixels per micron
+        pxPerMicron,
         (step, progress) => {
           setProcessingStep(step);
         }
@@ -152,6 +155,17 @@ export default function ReviewScreen(): JSX.Element {
         <View style={styles.imageContainer}>
           {correctedImageUri && (
             <Image source={{ uri: correctedImageUri }} style={styles.image} />
+          )}
+          {settings.debugMode && (
+            <View style={styles.debugOverlay}>
+              <Text style={styles.debugText}>Debug Mode</Text>
+              <Text style={styles.debugText}>px/µm: {pixelsPerMicron ?? 'n/a'}</Text>
+              {lastGridCorners && (
+                <Text style={styles.debugText}>Corners: {lastGridCorners.map(c => `(${Math.round(c.x)},${Math.round(c.y)})`).join(' ')}</Text>
+              )}
+              <Text style={styles.debugText}>Detections: {detections.length}</Text>
+              <Text style={styles.debugText}>Min area: {settings.processingParams.minAreaUm2}µm², circ≥{settings.processingParams.circularityMin ?? 0.4}</Text>
+            </View>
           )}
           
           {/* Detection overlay would be rendered here */}
@@ -314,6 +328,14 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     padding: 12,
+  },
+  debugOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 6,
   },
   overlayText: {
     color: '#fff',
