@@ -35,17 +35,16 @@ The world's first automated cell counter on mobile devices. Replace expensive la
 
 ## Cost Comparison: Smart Cell Counter vs Traditional Equipment
 
-| Feature | Smart Cell Counter | Thermo Countess 3 | Traditional Manual |
-|---------|-------------------|------------------|-------------------|
-| **Initial Cost** | Free Download | $15,000+ | $500 (hemocytometer only) |
-| **Annual Cost** | $4.99 (Pro features) | $2,000+ service contracts | $200+ consumables |
-| **Processing Speed** | 3 seconds | 10 seconds | 5-10 minutes |
-| **Accuracy** | Sub-pixel precision | High precision | Operator dependent |
-| **Portability** | Smartphone | Benchtop only | Lab bench required |
-| **Setup Time** | Instant | 15 minutes | 5 minutes |
-| **Maintenance** | None required | Annual service | Regular cleaning |
-| **Data Export** | PDF, CSV, Images | Limited export | Manual transcription |
-| **Quality Control** | Built-in validation | Basic QC | Manual verification |
+| Feature | Smart Cell Counter | Thermo Countess 3 |
+|---------|-------------------|------------------|
+| **Initial Cost** | Free Download | $15,000+ |
+| **Annual Cost** | $4.99 (Pro features) | $2,000+ service contracts |
+| **Processing Speed** | 3 seconds | 10 seconds |
+| **Accuracy** | Sub-pixel precision | High precision |
+| **Portability** | Smartphone | Benchtop |
+| **Maintenance** | None required | Annual service |
+| **Data Export** | PDF, CSV, Images | Limited export |
+| **Quality Control** | Built-in validation | Basic QC |
 
 **Total Savings**: $17,000+ in the first year compared to automated cell counters
 
