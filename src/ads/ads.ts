@@ -1,39 +1,44 @@
 /**
- * Google AdMob integration with consent handling
+ * Google AdMob integration with consent handling - Mock implementation for development
  */
 import { Platform } from 'react-native';
 
-// Development mode: Mock AdMob for testing
-const isDevelopment = __DEV__;
+// Always use mock implementation since package is removed for testing
+console.log('Using mock AdMob implementation for development');
 
-let mobileAds: any;
-let TestIds: any;
-let InterstitialAd: any;
-let AdEventType: any;
-let RequestConfiguration: any;
+const mobileAds = () => ({
+  initialize: async () => console.log('Mock AdMob initialized'),
+  setRequestConfiguration: async () => console.log('Mock AdMob request configuration set'),
+});
 
-if (!isDevelopment) {
-  try {
-    const adMobModule = require('react-native-google-mobile-ads');
-    mobileAds = adMobModule.default;
-    TestIds = adMobModule.TestIds;
-    InterstitialAd = adMobModule.InterstitialAd;
-    AdEventType = adMobModule.AdEventType;
-    RequestConfiguration = adMobModule.RequestConfiguration;
-  } catch (error) {
-    console.log('AdMob not available, using mock implementation');
-  }
-}
+const TestIds = {
+  BANNER: 'ca-app-pub-3940256099942544/2934735716',
+  INTERSTITIAL: 'ca-app-pub-3940256099942544/4411468910',
+};
+
+const InterstitialAd = {
+  createForAdUnitId: () => ({
+    addAdEventListener: () => {},
+    load: () => {},
+    show: () => {},
+  }),
+};
+
+const AdEventType = {
+  LOADED: 'loaded',
+  ERROR: 'error',
+  CLOSED: 'closed',
+};
 
 // Test Ad Unit IDs - Replace with your actual IDs before release
 const AD_UNIT_IDS = {
   banner: {
-    ios: isDevelopment ? 'ca-app-pub-3940256099942544/2934735716' : 'ca-app-pub-3940256099942544/2934735716',
-    android: isDevelopment ? 'ca-app-pub-3940256099942544/6300978111' : 'ca-app-pub-3940256099942544/6300978111',
+    ios: 'ca-app-pub-3940256099942544/2934735716',
+    android: 'ca-app-pub-3940256099942544/6300978111',
   },
   interstitial: {
-    ios: isDevelopment ? 'ca-app-pub-3940256099942544/4411468910' : 'ca-app-pub-3940256099942544/4411468910',
-    android: isDevelopment ? 'ca-app-pub-3940256099942544/1033173712' : 'ca-app-pub-3940256099942544/1033173712',
+    ios: 'ca-app-pub-3940256099942544/4411468910',
+    android: 'ca-app-pub-3940256099942544/1033173712',
   },
 };
 

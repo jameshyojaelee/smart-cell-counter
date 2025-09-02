@@ -1,24 +1,47 @@
 /**
  * React Native IAP fallback implementation
  */
-import {
-  initConnection,
-  endConnection,
-  getProducts,
-  requestPurchase,
-  getAvailablePurchases,
-  finishTransaction,
-  purchaseErrorListener,
-  purchaseUpdatedListener,
-  type Product,
-  type Purchase,
-  type PurchaseError,
-  type SubscriptionPurchase,
-} from 'react-native-iap';
-import { Platform } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
+// Mock react-native-iap for development since package is removed
+console.log('Using mock react-native-iap for development');
 
-const storage = new MMKV({ id: 'iap' });
+const initConnection = async () => console.log('Mock IAP connection initialized');
+const endConnection = async () => console.log('Mock IAP connection ended');
+const purchaseUpdatedListener = () => ({ remove: () => {} });
+const purchaseErrorListener = () => ({ remove: () => {} });
+const getProducts = async (productIds: string[]) => productIds.map(id => ({
+  productId: id,
+  price: '$4.99',
+  localizedPrice: '$4.99',
+  currency: 'USD',
+  title: 'Smart Cell Counter Pro',
+  description: 'Unlock all Pro features',
+}));
+const requestPurchase = async (productId: string) => ({
+  productId,
+  transactionId: 'mock_transaction_' + Date.now(),
+  transactionDate: Date.now(),
+  transactionReceipt: 'mock_receipt',
+});
+const getAvailablePurchases = async () => [];
+const finishTransaction = async () => {};
+
+type Product = any;
+type Purchase = any;
+type SubscriptionPurchase = any;
+type PurchaseError = any;
+import { Platform } from 'react-native';
+
+// Mock MMKV for development since package is removed
+const MockMMKV = class {
+  private storage = new Map();
+  constructor(options?: any) {}
+  set(key: string, value: any) { this.storage.set(key, String(value)); }
+  getString(key: string) { return this.storage.get(key); }
+  getBoolean(key: string) { return this.storage.get(key) === 'true'; }
+  delete(key: string) { this.storage.delete(key); }
+};
+
+const storage = new MockMMKV({ id: 'iap' });
 
 // Product IDs
 export const IAP_PRODUCT_IDS = {

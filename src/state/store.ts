@@ -2,7 +2,18 @@
  * Zustand store for global app state management
  */
 import { create } from 'zustand';
-import { MMKV } from 'react-native-mmkv';
+
+// Mock MMKV for development since package is removed
+const MockMMKV = class {
+  private storage = new Map();
+  constructor(options?: any) {}
+  set(key: string, value: any) { this.storage.set(key, String(value)); }
+  getString(key: string) { return this.storage.get(key); }
+  getBoolean(key: string) { return this.storage.get(key) === 'true'; }
+  delete(key: string) { this.storage.delete(key); }
+};
+
+const MMKV = MockMMKV;
 import {
   Sample,
   AppSettings,

@@ -6,21 +6,11 @@ import { View, StyleSheet, Text } from 'react-native';
 import { adService } from '../ads/ads';
 import { consentService } from '../privacy/consent';
 
-// Development mode: Mock BannerAd
-const isDevelopment = __DEV__;
+// Mock BannerAd for development - always use mock since package is removed
+console.log('Using mock BannerAd for development');
 
-let BannerAd: any;
-let BannerAdSize: any;
-
-if (!isDevelopment) {
-  try {
-    const adMobModule = require('react-native-google-mobile-ads');
-    BannerAd = adMobModule.BannerAd;
-    BannerAdSize = adMobModule.BannerAdSize;
-  } catch (error) {
-    console.log('BannerAd not available, using mock implementation');
-  }
-}
+const BannerAd = null; // Always null to force mock implementation
+const BannerAdSize = { ADAPTIVE_BANNER: 'adaptive' };
 
 interface AdBannerProps {
   visible: boolean;
@@ -32,8 +22,8 @@ export function AdBanner({ visible, style }: AdBannerProps): JSX.Element | null 
     return null;
   }
 
-  // Development mode: Show mock ad banner
-  if (isDevelopment || !BannerAd) {
+  // Always show mock ad banner since package is removed
+  if (!BannerAd) {
     return (
       <View style={[styles.container, styles.mockAd, style]}>
         <Text style={styles.mockAdText}>📱 Development Ad Banner</Text>

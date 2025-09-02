@@ -1,10 +1,19 @@
 /**
  * Logging and performance monitoring utilities
  */
-import { MMKV } from 'react-native-mmkv';
+
+// Mock MMKV for development since package is removed
+const MockMMKV = class {
+  private storage = new Map();
+  constructor(options?: any) {}
+  set(key: string, value: any) { this.storage.set(key, String(value)); }
+  getString(key: string) { return this.storage.get(key); }
+  getBoolean(key: string) { return this.storage.get(key) === 'true'; }
+  delete(key: string) { this.storage.delete(key); }
+};
 
 // Separate storage for logs to avoid cluttering main storage
-const logStorage = new MMKV({ id: 'app_logs' });
+const logStorage = new MockMMKV({ id: 'app_logs' });
 
 export interface LogEntry {
   timestamp: number;

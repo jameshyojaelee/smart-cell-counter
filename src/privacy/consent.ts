@@ -2,8 +2,22 @@
  * Privacy consent management
  */
 import { Platform } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
-import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+
+// Mock implementations for development - always use mocks since packages are removed
+console.log('Using mock implementations for MMKV and permissions');
+
+const MMKV = class MockMMKV {
+  private storage = new Map();
+  constructor(options?: any) {}
+  set(key: string, value: any) { this.storage.set(key, String(value)); }
+  getString(key: string) { return this.storage.get(key); }
+  getBoolean(key: string) { return this.storage.get(key) === 'true'; }
+  delete(key: string) { this.storage.delete(key); }
+};
+
+const request = async () => 'granted';
+const PERMISSIONS = { IOS: { APP_TRACKING_TRANSPARENCY: 'mock' } };
+const RESULTS = { GRANTED: 'granted', DENIED: 'denied' };
 
 const storage = new MMKV({ id: 'consent' });
 

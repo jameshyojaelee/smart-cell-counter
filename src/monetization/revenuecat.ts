@@ -1,16 +1,54 @@
 /**
  * RevenueCat integration for cross-platform in-app purchases
  */
-import Purchases, { 
-  CustomerInfo, 
-  PurchasesPackage,
-  PURCHASES_ERROR_CODE 
-} from 'react-native-purchases';
+// Mock RevenueCat for development - always use mock since package is removed
+console.log('Using mock RevenueCat implementation for development');
+
+const isDevelopment = __DEV__;
+
+const Purchases = {
+  configure: async () => console.log('Mock RevenueCat configured'),
+  getCustomerInfo: async () => ({ entitlements: { active: {} } }),
+  getOfferings: async () => ({ 
+    current: { 
+      availablePackages: [
+        { 
+          identifier: 'lifetime',
+          product: { 
+            identifier: 'com.smartcellcounter.pro',
+            price: '$4.99'
+          }
+        }
+      ]
+    }
+  }),
+  purchasePackage: async () => ({ customerInfo: { entitlements: { active: { pro: true } } } }),
+  restorePurchases: async () => ({ entitlements: { active: {} } }),
+  addCustomerInfoUpdateListener: () => {},
+  removeCustomerInfoUpdateListener: () => {},
+  setAttributes: async () => {},
+};
+
+const PURCHASES_ERROR_CODE = {
+  PURCHASE_CANCELLED_ERROR: '1',
+  PURCHASE_NOT_ALLOWED_ERROR: '3',
+};
 
 // Define types locally since they're not exported correctly
 type Offerings = any;
 import { Platform } from 'react-native';
-import { MMKV } from 'react-native-mmkv';
+
+// Mock MMKV for development - always use mock since package is removed
+console.log('Using mock MMKV storage for development');
+
+const MMKV = class MockMMKV {
+  private storage = new Map();
+  constructor(options?: any) {}
+  set(key: string, value: any) { this.storage.set(key, String(value)); }
+  getString(key: string) { return this.storage.get(key); }
+  getBoolean(key: string) { return this.storage.get(key) === 'true'; }
+  delete(key: string) { this.storage.delete(key); }
+};
 
 const storage = new MMKV({ id: 'purchases' });
 

@@ -3,17 +3,23 @@
  */
 import 'react-native-gesture-handler/jestSetup';
 
-// Mock react-native-mmkv
-jest.mock('react-native-mmkv', () => ({
-  MMKV: jest.fn().mockImplementation(() => ({
-    set: jest.fn(),
-    getString: jest.fn(),
-    getNumber: jest.fn(),
-    getBoolean: jest.fn(),
-    delete: jest.fn(),
-    clearAll: jest.fn(),
-  })),
-}));
+// Mock react-native-mmkv if available; otherwise skip to avoid resolver errors in CI
+try {
+  // Only attempt to mock if module is installed
+  require.resolve('react-native-mmkv');
+  jest.mock('react-native-mmkv', () => ({
+    MMKV: jest.fn().mockImplementation(() => ({
+      set: jest.fn(),
+      getString: jest.fn(),
+      getNumber: jest.fn(),
+      getBoolean: jest.fn(),
+      delete: jest.fn(),
+      clearAll: jest.fn(),
+    })),
+  }));
+} catch (_) {
+  // no-op
+}
 
 // Mock expo modules
 jest.mock('expo-sqlite', () => ({

@@ -3,7 +3,35 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Slider from '@react-native-community/slider';
+
+// Mock slider for development since package is removed
+const MockSlider = (props: any) => {
+  const { value, minimumValue, maximumValue, step = 1, onValueChange, style, disabled } = props;
+
+  const handleChange = (event: any) => {
+    const newValue = parseFloat(event.target.value);
+    onValueChange?.(newValue);
+  };
+
+  return (
+    <input
+      type="range"
+      min={minimumValue}
+      max={maximumValue}
+      step={step}
+      value={value}
+      onChange={handleChange}
+      disabled={disabled}
+      style={{
+        width: '100%',
+        height: 40,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        ...style,
+      }}
+    />
+  );
+};
 
 interface ThresholdSliderProps {
   label: string;
@@ -49,17 +77,13 @@ export function ThresholdSlider({
         </Text>
       </View>
 
-      <Slider
+      <MockSlider
         style={styles.slider}
         value={value}
         minimumValue={minimumValue}
         maximumValue={maximumValue}
         step={step}
         onValueChange={onValueChange}
-        minimumTrackTintColor={disabled ? '#ccc' : '#007AFF'}
-        maximumTrackTintColor="#E5E5EA"
-        thumbStyle={disabled ? styles.thumbDisabled : styles.thumb}
-        trackStyle={styles.track}
         disabled={disabled}
       />
 

@@ -159,8 +159,8 @@ describe('Counting Algorithms', () => {
 
       const result = calculateConcentration(squareCounts, 2.0, 'neubauer');
 
-      expect(result.concentration).toBeCloseTo(1075000, -3); // ~1.075M cells/mL
-      expect(result.viability).toBeCloseTo(78.1, 1);
+      expect(result.concentration).toBeCloseTo(1050000, -3); // ~1.05M cells/mL
+      expect(result.viability).toBeCloseTo(78.6, 1);
       expect(result.liveTotal).toBe(165);
       expect(result.deadTotal).toBe(45);
       expect(result.squaresUsed).toBe(4);
