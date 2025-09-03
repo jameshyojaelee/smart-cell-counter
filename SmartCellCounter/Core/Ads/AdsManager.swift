@@ -34,5 +34,8 @@ public struct BannerAdView: UIViewRepresentable {
 }
 #else
 import SwiftUI
-public struct BannerAdView: View { public init() {} public var body: some View { EmptyView() } }
+public struct BannerAdView: View {
+    public init() {}
+    public var body: some View { EmptyView() }
+}
 #endif

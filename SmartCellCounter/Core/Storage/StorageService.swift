@@ -7,8 +7,8 @@ public protocol Storage {
 }
 
 // MARK: - Records
-struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
-    static let databaseTableName = "sample"
+public struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
+    public static let databaseTableName = "sample"
     var id: String
     var createdAt: Date
     var operatorName: String
@@ -37,8 +37,8 @@ struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRe
     }
 }
 
-struct DetectionRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
-    static let databaseTableName = "detection"
+public struct DetectionRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
+    public static let databaseTableName = "detection"
     var sampleId: String
     var objectId: String
     var x: Double
@@ -61,7 +61,9 @@ public final class AppDatabase: Storage {
         let dbURL = baseDir.appendingPathComponent("smartcellcounter.sqlite")
         var config = Configuration()
         config.prepareDatabase { db in
-            db.trace = { Logger.log($0) }
+            db.trace(options: .statement) { event in
+                Logger.log("SQL: \(event)")
+            }
         }
         dbQueue = try DatabaseQueue(path: dbURL.path, configuration: config)
         try migrate()
@@ -111,8 +113,9 @@ public final class AppDatabase: Storage {
     public func insertSample(_ record: SampleRecord, detections: [DetectionRecord]) throws {
         guard let dbQueue else { throw NSError(domain: "DB", code: -1) }
         try dbQueue.write { db in
-            try record.insert(db)
-            for d in detections { try d.insert(db) }
+            var rec = record
+            try rec.insert(db)
+            for det in detections { var d = det; try d.insert(db) }
         }
     }
 

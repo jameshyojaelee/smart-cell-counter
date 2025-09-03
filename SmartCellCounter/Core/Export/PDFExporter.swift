@@ -124,7 +124,8 @@ public extension PDFExporter {
                 let c = item.base.centroid
                 let color: UIColor = item.label == "dead" ? .red : .green
                 color.setStroke()
-                ctx.cgContext.strokeEllipse(in: CGRect(x: c.x-6, y: c.y-6, width: 12, height: 12), width: 2)
+                ctx.cgContext.setLineWidth(2)
+                ctx.cgContext.strokeEllipse(in: CGRect(x: c.x-6, y: c.y-6, width: 12, height: 12))
             }
         }
         PerformanceLogger.shared.record("renderOverlay", Date().timeIntervalSince(start) * 1000)

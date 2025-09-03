@@ -23,7 +23,7 @@ struct CaptureView: View {
                     Toggle(isOn: $viewModel.torchOn) { Image(systemName: viewModel.torchOn ? "flashlight.on.fill" : "flashlight.off.fill") }
                         .labelsHidden()
                         .toggleStyle(.switch)
-                        .onChange(of: viewModel.torchOn) { _, on in viewModel.toggleTorch() }
+                        .onChange(of: viewModel.torchOn) { _ in viewModel.toggleTorch() }
                 }
                 .padding(8)
             }
@@ -34,7 +34,7 @@ struct CaptureView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                .onChange(of: photoItem) { _, newItem in
+                .onChange(of: photoItem) { newItem in
                     guard let item = newItem else { return }
                     Task { @MainActor in
                         if let data = try? await item.loadTransferable(type: Data.self), let img = UIImage(data: data) {
@@ -55,7 +55,9 @@ struct CaptureView: View {
             .padding()
         }
         .navigationTitle("Capture")
-        .toolbar { ToolbarItem(placement: .navigationBarTrailing) { NavigationLink(destination: CropView(), isActive: $goToCrop) { EmptyView() } } }
+        .background(
+            NavigationLink(destination: CropView(), isActive: $goToCrop) { EmptyView() }
+        )
         .onReceive(viewModel.$focusScore) { appState.focusScore = $0 }
         .onReceive(viewModel.$glareRatio) { appState.glareRatio = $0 }
         .onReceive(viewModel.captured) { image in

@@ -26,8 +26,8 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
             let products = try await Product.products(for: [productId])
             self.product = products.first
             if let p = products.first { self.price = p.displayPrice }
-            for await result in Transaction.updates {
-                await self.handle(transactionResult: result)
+            for await update in Transaction.updates {
+                await self.handle(transactionUpdate: update)
             }
         } catch {
             Logger.log("StoreKit load error: \(error)")
@@ -37,7 +37,7 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
     public func purchase() async throws {
         guard let product else { throw NSError(domain: "IAP", code: -1, userInfo: [NSLocalizedDescriptionKey: "Product not loaded"]) }
         let result = try await product.purchase()
-        await handle(transactionResult: result)
+        await handlePurchaseResult(result)
     }
 
     public func restore() async throws {
@@ -50,8 +50,8 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
         UserDefaults.standard.set(value, forKey: "pro.entitled")
     }
 
-    private func handle(transactionResult: Product.PurchaseResult) async {
-        switch transactionResult {
+    private func handlePurchaseResult(_ result: Product.PurchaseResult) async {
+        switch result {
         case .success(let verification):
             do {
                 let transaction = try self.checkVerified(verification)
@@ -67,6 +67,16 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
         @unknown default:
             break
         }
+    }
+
+    private func handle(transactionUpdate: VerificationResult<Transaction>) async {
+        do {
+            let transaction: Transaction = try self.checkVerified(transactionUpdate)
+            if transaction.productID == productId {
+                setEntitled(true)
+            }
+            await transaction.finish()
+        } catch { Logger.log("Update verification failed: \(error)") }
     }
 
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
