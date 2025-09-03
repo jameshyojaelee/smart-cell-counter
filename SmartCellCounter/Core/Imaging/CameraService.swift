@@ -10,6 +10,8 @@ public protocol CameraServiceDelegate: AnyObject {
 }
 
 public final class CameraService: NSObject {
+    public enum State: Equatable { case idle, preparing, ready, capturing, saving, error(AppError) }
+
     private let session = AVCaptureSession()
     private let photoOutput = AVCapturePhotoOutput()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -21,26 +23,40 @@ public final class CameraService: NSObject {
     private(set) var isReady: Bool = false { didSet { readinessSubject.send(isReady) } }
     private let readinessSubject = PassthroughSubject<Bool, Never>()
     public var readinessPublisher: AnyPublisher<Bool, Never> { readinessSubject.eraseToAnyPublisher() }
+    private let stateSubject = CurrentValueSubject<State, Never>(.idle)
+    public var statePublisher: AnyPublisher<State, Never> { stateSubject.eraseToAnyPublisher() }
 
     public func start() {
+        stateSubject.send(.preparing)
         let auth = AVCaptureDevice.authorizationStatus(for: .video)
         if auth == .notDetermined {
             AVCaptureDevice.requestAccess(for: .video) { granted in
-                if granted { self.startSessionOnQueue() }
+                DispatchQueue.main.async {
+                    if granted { self.startSessionOnQueue() }
+                    else { self.stateSubject.send(.error(.permissionDenied)) }
+                }
             }
         } else if auth == .authorized {
             startSessionOnQueue()
         } else {
             Logger.log("Camera permission not granted")
+            stateSubject.send(.error(.permissionDenied))
         }
     }
 
     private func startSessionOnQueue() {
         queue.async {
-            self.configureSession()
-            self.session.startRunning()
-            let hasConnection = (self.photoOutput.connection(with: .video) != nil)
-            DispatchQueue.main.async { self.isReady = self.session.isRunning && hasConnection }
+            do {
+                try self.configureSession()
+                self.session.startRunning()
+                let hasConnection = (self.photoOutput.connection(with: .video) != nil)
+                DispatchQueue.main.async {
+                    self.isReady = self.session.isRunning && hasConnection
+                    self.stateSubject.send(self.isReady ? .ready : .error(.hardwareUnavailable))
+                }
+            } catch {
+                DispatchQueue.main.async { self.stateSubject.send(.error(.configurationFailed(error.localizedDescription))) }
+            }
         }
     }
 
@@ -52,12 +68,18 @@ public final class CameraService: NSObject {
 
     public func capturePhoto() {
         queue.async {
-            guard self.session.isRunning, self.photoOutput.connection(with: .video)?.isEnabled == true else {
+            guard self.session.isRunning,
+                  let conn = self.photoOutput.connection(with: .video), conn.isEnabled else {
                 Logger.log("Capture requested before session ready; ignoring")
+                DispatchQueue.main.async { self.stateSubject.send(.error(.notReady)) }
                 return
             }
+            DispatchQueue.main.async { self.stateSubject.send(.capturing) }
             let settings = AVCapturePhotoSettings()
-            settings.isHighResolutionPhotoEnabled = true
+            if self.photoOutput.availablePhotoCodecTypes.contains(.jpeg) {
+                settings.format = [AVVideoCodecKey: AVVideoCodecType.jpeg]
+            }
+            settings.isHighResolutionPhotoEnabled = self.photoOutput.isHighResolutionCaptureEnabled
             self.captureStart = Date()
             self.photoOutput.capturePhoto(with: settings, delegate: self)
         }
@@ -120,17 +142,20 @@ public final class CameraService: NSObject {
         }
     }
 
-    private func configureSession() {
+    private func configureSession() throws {
         session.beginConfiguration()
         session.sessionPreset = .photo
         session.inputs.forEach { session.removeInput($0) }
         session.outputs.forEach { session.removeOutput($0) }
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-              let input = try? AVCaptureDeviceInput(device: device) else {
-            session.commitConfiguration(); return
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+            session.commitConfiguration(); throw AppError.hardwareUnavailable
         }
-        if session.canAddInput(input) { session.addInput(input) }
-        if session.canAddOutput(photoOutput) { session.addOutput(photoOutput) }
+        let input = try AVCaptureDeviceInput(device: device)
+        if session.canAddInput(input) { session.addInput(input) } else { throw AppError.configurationFailed("Cannot add camera input") }
+        if session.canAddOutput(photoOutput) {
+            session.addOutput(photoOutput)
+            photoOutput.isHighResolutionCaptureEnabled = true
+        } else { throw AppError.configurationFailed("Cannot add photo output") }
         if session.canAddOutput(videoOutput) {
             videoOutput.setSampleBufferDelegate(self, queue: queue)
             videoOutput.alwaysDiscardsLateVideoFrames = true

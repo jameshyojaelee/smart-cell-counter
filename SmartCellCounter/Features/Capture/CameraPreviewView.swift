@@ -29,6 +29,7 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     @Published var glareRatio: Double = 0
     @Published var torchOn: Bool = false
     @Published var ready: Bool = false
+    @Published var status: String = "Preparing…"
     @Published var navigatingToCrop = false
     private let capturedSubject = PassthroughSubject<UIImage, Never>()
     var captured: AnyPublisher<UIImage, Never> { capturedSubject.eraseToAnyPublisher() }
@@ -42,10 +43,23 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
 
     func start() {
         camera.start()
-        // Observe readiness
-        _ = camera.readinessPublisher
+        camera.readinessPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isReady in self?.ready = isReady }
+            .store(in: &cancellables)
+        camera.statePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] st in
+                switch st {
+                case .idle: self?.status = "Idle"
+                case .preparing: self?.status = "Preparing…"
+                case .ready: self?.status = "Ready"
+                case .capturing: self?.status = "Capturing…"
+                case .saving: self?.status = "Saving…"
+                case .error(let err): self?.status = err.localizedDescription
+                }
+            }
+            .store(in: &cancellables)
     }
     func stop() { camera.stop() }
     func toggleTorch() { torchOn.toggle(); camera.setTorch(enabled: torchOn) }
@@ -60,4 +74,6 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     func cameraService(_ service: CameraService, didCapture image: UIImage) {
         capturedSubject.send(image)
     }
+
+    private var cancellables: Set<AnyCancellable> = []
 }
