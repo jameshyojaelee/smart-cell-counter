@@ -23,6 +23,7 @@ final class ReviewViewModel: ObservableObject {
             let geom = GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron)
             let tally = CountingService.tallyByLargeSquare(objects: objects, geometry: geom)
             let ms = Date().timeIntervalSince(start) * 1000
+            PerformanceLogger.shared.record("pipelineTotal", ms)
             await MainActor.run {
                 appState.segmentation = seg
                 appState.objects = objects

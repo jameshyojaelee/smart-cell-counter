@@ -117,7 +117,8 @@ public final class PDFExporter: PDFExporting {
 public extension PDFExporter {
     static func makeOverlayImage(base: UIImage, labeled: [CellObjectLabeled]) -> UIImage {
         let r = UIGraphicsImageRenderer(size: base.size)
-        return r.image { ctx in
+        let start = Date()
+        let img = r.image { ctx in
             base.draw(at: .zero)
             for item in labeled {
                 let c = item.base.centroid
@@ -126,5 +127,7 @@ public extension PDFExporter {
                 ctx.cgContext.strokeEllipse(in: CGRect(x: c.x-6, y: c.y-6, width: 12, height: 12), width: 2)
             }
         }
+        PerformanceLogger.shared.record("renderOverlay", Date().timeIntervalSince(start) * 1000)
+        return img
     }
 }

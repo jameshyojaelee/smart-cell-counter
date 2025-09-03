@@ -13,7 +13,7 @@ public final class CameraService: NSObject {
     private let photoOutput = AVCapturePhotoOutput()
     private let videoOutput = AVCaptureVideoDataOutput()
     private let queue = DispatchQueue(label: "camera.queue")
-    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+    private let ciContext = ImageContext.ciContext
 
     public weak var delegate: CameraServiceDelegate?
     public var captureSession: AVCaptureSession { session }
@@ -34,7 +34,10 @@ public final class CameraService: NSObject {
     public func capturePhoto() {
         let settings = AVCapturePhotoSettings()
         settings.isHighResolutionPhotoEnabled = true
+        let start = Date()
         photoOutput.capturePhoto(with: settings, delegate: self)
+        // Record when finished in delegate
+        captureStart = start
     }
 
     public func setFocusExposure(point: CGPoint) {
@@ -114,10 +117,19 @@ public final class CameraService: NSObject {
     }
 }
 
+private var captureStartKey: UInt8 = 0
+extension CameraService {
+    private var captureStart: Date? {
+        get { objc_getAssociatedObject(self, &captureStartKey) as? Date }
+        set { objc_setAssociatedObject(self, &captureStartKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+    }
+}
+
 extension CameraService: AVCapturePhotoCaptureDelegate {
     public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error { Logger.log("Photo capture error: \(error)"); return }
         guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else { return }
+        if let start = captureStart { PerformanceLogger.shared.record("capture", Date().timeIntervalSince(start) * 1000) }
         delegate?.cameraService(self, didCapture: image)
     }
 }

@@ -3,6 +3,7 @@ import UIKit
 import Vision
 import CoreImage
 import CoreML
+import Metal
 
 public enum ImagingPipeline {
     // MARK: - Grid Detection
@@ -18,13 +19,16 @@ public enum ImagingPipeline {
         request.minimumSize = 0.2
         request.quadratureTolerance = 20.0
         do {
+            let start = Date()
             try handler.perform([request])
             if let obs = request.results?.first as? VNRectangleObservation {
                 let corners = [obs.topLeft, obs.topRight, obs.bottomRight, obs.bottomLeft].map { p in
                     CGPoint(x: CGFloat(p.x) * CGFloat(cg.width), y: CGFloat(1 - p.y) * CGFloat(cg.height))
                 }
+                PerformanceLogger.shared.record("detectRectangle", Date().timeIntervalSince(start) * 1000)
                 return RectangleDetectionResult(found: true, corners: corners, confidence: obs.confidence)
             }
+            PerformanceLogger.shared.record("detectRectangle", Date().timeIntervalSince(start) * 1000)
             return RectangleDetectionResult(found: false, corners: [], confidence: 0)
         } catch {
             return RectangleDetectionResult(found: false, corners: [], confidence: 0)
@@ -35,17 +39,19 @@ public enum ImagingPipeline {
     public static func perspectiveCorrect(_ image: UIImage, corners: [CGPoint]) -> UIImage {
         guard corners.count == 4, let cg = image.cgImage else { return image }
         let ciImage = CIImage(cgImage: cg)
+        let start = Date()
         let filter = CIFilter.perspectiveCorrection()
         filter.inputImage = ciImage
         filter.topLeft = corners[0]
         filter.topRight = corners[1]
         filter.bottomRight = corners[2]
         filter.bottomLeft = corners[3]
-        let context = CIContext(options: [.useSoftwareRenderer: false])
+        let context = ImageContext.ciContext
         guard let output = filter.outputImage,
               let outCG = context.createCGImage(output, from: output.extent) else {
             return image
         }
+        PerformanceLogger.shared.record("perspective", Date().timeIntervalSince(start) * 1000)
         return UIImage(cgImage: outCG)
     }
 
@@ -79,12 +85,13 @@ public enum ImagingPipeline {
 
     // MARK: - Segmentation
     public static func segmentCells(in image: UIImage, params: ImagingParams) -> SegmentationResult {
+        let input = resizedForProcessing(image, maxLongSide: 2048)
         // Try to load Core ML model; if not found, fallback
         if let _ = try? UNet256Loader.model() {
             // Placeholder: for now, use fallback until model is provided; keep API ready
-            return classicalSegmentation(on: image, params: params)
+            return classicalSegmentation(on: input, params: params)
         } else {
-            return classicalSegmentation(on: image, params: params)
+            return classicalSegmentation(on: input, params: params)
         }
     }
 
@@ -101,7 +108,7 @@ public enum ImagingPipeline {
         let invert = shouldInvertPolarity(for: image)
         var grayD = gray.map { Double($0)/255.0 }
         if invert { grayD = grayD.map { 1.0 - $0 } }
-
+        let start = Date()
         let mask: [Bool]
         switch params.thresholdMethod {
         case .adaptive:
@@ -110,12 +117,13 @@ public enum ImagingPipeline {
             let t = otsuThreshold(grayD)
             mask = grayD.map { $0 > t }
         }
-
+        PerformanceLogger.shared.record("segmentation", Date().timeIntervalSince(start) * 1000)
         return SegmentationResult(width: dw, height: dh, mask: mask)
     }
 
     // MARK: - Object Features
     public static func objectFeatures(from seg: SegmentationResult, pxPerMicron: Double?) -> [CellObject] {
+        let start = Date()
         let (labels, count) = connectedComponents(seg.mask, w: seg.width, h: seg.height)
         var objects: [CellObject] = []
         objects.reserveCapacity(count)
@@ -163,12 +171,14 @@ public enum ImagingPipeline {
                                   bbox: bbox)
             objects.append(obj)
         }
+        PerformanceLogger.shared.record("features", Date().timeIntervalSince(start) * 1000)
         return objects
     }
 
     // MARK: - Color and Labels
     public static func colorStatsAndLabels(for objects: [CellObject], on image: UIImage) -> [CellObjectLabeled] {
         guard let cg = image.cgImage else { return [] }
+        let start = Date()
         let data = rgbaPixels(from: cg)
         let w = cg.width
         // Compute global brightness median approx
@@ -207,13 +217,16 @@ public enum ImagingPipeline {
             let conf = [hueInBlue ? 0.34 : 0, highSat ? 0.33 : 0, lowV ? 0.33 : 0].reduce(0,+)
             labeled.append(CellObjectLabeled(id: obj.id, base: obj, color: stats, label: isDead ? "dead" : "live", confidence: conf))
         }
+        PerformanceLogger.shared.record("viability", Date().timeIntervalSince(start) * 1000)
         return labeled
     }
 
     // MARK: - Helpers
+    private static var grayBuffer: [UInt8] = []
     private static func grayscalePixels(from cg: CGImage, width: Int, height: Int) -> [UInt8] {
         let colorSpace = CGColorSpaceCreateDeviceGray()
-        var data = [UInt8](repeating: 0, count: width * height)
+        if grayBuffer.count != width * height { grayBuffer = [UInt8](repeating: 0, count: width * height) }
+        var data = grayBuffer
         if let ctx = CGContext(data: &data, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width, space: colorSpace, bitmapInfo: 0) {
             ctx.interpolationQuality = .low
             ctx.draw(cg, in: CGRect(x: 0, y: 0, width: width, height: height))
@@ -221,10 +234,13 @@ public enum ImagingPipeline {
         return data
     }
 
+    private static var rgbaBuffer: [UInt8] = []
     private static func rgbaPixels(from cg: CGImage) -> [UInt8] {
         let w = cg.width, h = cg.height
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        var data = [UInt8](repeating: 0, count: Int(w*h*4))
+        let count = Int(w*h*4)
+        if rgbaBuffer.count != count { rgbaBuffer = [UInt8](repeating: 0, count: count) }
+        var data = rgbaBuffer
         if let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w*4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
             ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
         }
@@ -360,6 +376,18 @@ public enum ImagingPipeline {
         let a = 500*(fx - fy)
         let b = 200*(fy - fz)
         return (L, a, b)
+    }
+
+    // MARK: - Resize for processing
+    private static func resizedForProcessing(_ image: UIImage, maxLongSide: Int) -> UIImage {
+        let w = Int(image.size.width), h = Int(image.size.height)
+        let longSide = max(w, h)
+        guard longSide > maxLongSide else { return image }
+        let scale = Double(longSide) / Double(maxLongSide)
+        let nw = Int(Double(w) / scale)
+        let nh = Int(Double(h) / scale)
+        let r = UIGraphicsImageRenderer(size: CGSize(width: nw, height: nh))
+        return r.image { _ in image.draw(in: CGRect(x: 0, y: 0, width: nw, height: nh)) }
     }
 }
 

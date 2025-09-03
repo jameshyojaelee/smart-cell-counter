@@ -48,6 +48,7 @@ struct SettingsView: View {
                 NavigationLink("Paywall", destination: PaywallView())
                 NavigationLink("Help", destination: HelpView())
                 NavigationLink("Debug", destination: DebugView())
+                NavigationLink("About", destination: AboutView())
             }
         }
         .navigationTitle("Settings")

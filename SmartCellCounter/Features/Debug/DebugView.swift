@@ -26,6 +26,7 @@ struct DebugView: View {
                 // Placeholder; real timings can be stored into appState.debugImages or a separate store
                 Text("Segmentation/Counting timings are displayed here when available.")
                     .font(.caption).foregroundColor(.secondary)
+                NavigationLink("Run QA Fixtures", destination: QATestsView())
             }
             .padding([.horizontal, .bottom])
         }

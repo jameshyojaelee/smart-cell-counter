@@ -23,6 +23,10 @@ settings:
     Release:
       SWIFT_COMPILATION_MODE: wholemodule
       SWIFT_OPTIMIZATION_LEVEL: -O
+      DEAD_CODE_STRIPPING: YES
+      STRIP_INSTALLED_PRODUCT: YES
+      OTHER_LDFLAGS: "$(inherited) -dead_strip"
+      ENABLE_TESTABILITY: NO
 
 targets:
   SmartCellCounter:

@@ -32,6 +32,7 @@ final class AppState: ObservableObject {
     override init() {
         super.init()
         do { try AppDatabase.shared.setup() } catch { Logger.log("DB setup failed: \(error)") }
+        CrashReporter.shared.start()
     }
 }
 

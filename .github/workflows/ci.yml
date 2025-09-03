@@ -38,10 +38,24 @@ jobs:
           # Resolve SPM first (helps isolate dependency issues)
           xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -resolvePackageDependencies
 
-          # Try common device names to maximize compatibility
-          DEST="platform=iOS Simulator,OS=latest,name=iPhone 15"
-          xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -destination "$DEST" test || {
-            echo "Retrying on iPhone 14..."
-            DEST="platform=iOS Simulator,OS=latest,name=iPhone 14"
-            xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -destination "$DEST" test
-          }
+          # Pick an available simulator dynamically (prefer iPhone 16 Pro)
+          echo "Selecting available iOS Simulator..."
+          DEV_NAMES=("iPhone 16 Pro" "iPhone 16" "iPhone 16 Pro Max" "iPhone SE (3rd generation)")
+          DEST=""
+          for NAME in "${DEV_NAMES[@]}"; do
+            if xcrun simctl list devices available | grep -q "$NAME"; then
+              DEST="platform=iOS Simulator,name=$NAME"
+              echo "Using simulator: $NAME"
+              break
+            fi
+          done
+          if [ -z "$DEST" ]; then
+            echo "Falling back to Any iOS Simulator Device"
+            DEST="platform=iOS Simulator"
+          fi
+
+          xcodebuild -project SmartCellCounter.xcodeproj \
+            -scheme SmartCellCounter \
+            -destination "$DEST" \
+            -destination-timeout 300 \
+            test
