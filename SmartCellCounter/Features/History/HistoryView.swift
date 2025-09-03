@@ -21,15 +21,20 @@ struct HistoryView: View {
             if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
             #endif
             List(filtered) { s in
-            HStack(spacing: 12) {
-                if let img = s.thumbnail { Image(uiImage: img).resizable().scaledToFill().frame(width: 48, height: 48).clipped().cornerRadius(6) }
-                VStack(alignment: .leading) {
-                    Text("\(s.date.formatted(.dateTime))").font(.subheadline)
-                    Text("Live: \(s.liveCount)  Dead: \(s.deadCount)").font(.caption).foregroundColor(.secondary)
+                HStack(spacing: 12) {
+                    if let img = s.thumbnail {
+                        Image(uiImage: img).resizable().scaledToFill().frame(width: 56, height: 56).clipped().cornerRadius(8)
+                    } else {
+                        ZStack { RoundedRectangle(cornerRadius: 8).fill(Theme.card); Image(systemName: "photo").foregroundColor(Theme.textSecondary) }.frame(width: 56, height: 56)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(s.date.formatted(.dateTime)).font(.subheadline).foregroundColor(Theme.textPrimary)
+                        Text("Live: \(s.liveCount)  Dead: \(s.deadCount)").font(.caption).foregroundColor(Theme.textSecondary)
+                    }
+                    Spacer()
+                    Text(String(format: "%.2e", s.concentrationPerML)).font(.caption2).foregroundColor(Theme.textSecondary)
                 }
-                Spacer()
-                Text(String(format: "%.2e", s.concentrationPerML)).font(.caption2)
-            }
+                .listRowBackground(Theme.surface)
             }
             .searchable(text: $viewModel.query, prompt: "Search project/operator")
             .navigationTitle("History")

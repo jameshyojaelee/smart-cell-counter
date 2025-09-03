@@ -58,15 +58,19 @@ struct ReviewView: View {
     @StateObject private var viewModel = ReviewViewModel()
     @State private var goToResults = false
     @State private var drawingLasso = false
+    @State private var filter: String = "All" // All, Live, Dead
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             ZStack {
                 if let img = appState.correctedImage ?? appState.capturedImage {
                     Image(uiImage: img)
                         .resizable()
                         .scaledToFit()
-                        .overlay(DetectionOverlay(labeled: appState.labeled) { id in viewModel.toggleLabel(for: id, in: appState) })
+                        .overlay(DetectionOverlay(labeled: filteredLabeled()) { id in
+                            viewModel.toggleLabel(for: id, in: appState)
+                            Haptics.impact(.light)
+                        })
                         .gesture(lassoGesture())
                 } else {
                     Text("No image to review.").foregroundColor(.secondary)
@@ -78,7 +82,8 @@ struct ReviewView: View {
 
             if !viewModel.perSquare.isEmpty {
                 PerSquareTable(tally: viewModel.perSquare)
-                    .frame(maxHeight: 120)
+                    .frame(maxHeight: 140)
+                    .cardStyle()
             }
 
             HStack {
@@ -90,6 +95,14 @@ struct ReviewView: View {
                 .buttonStyle(.borderedProminent)
             }
             .padding(.horizontal)
+
+            Picker("Filter", selection: $filter) {
+                Text("All").tag("All")
+                Text("Live").tag("Live")
+                Text("Dead").tag("Dead")
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
         }
         .navigationTitle("Review")
         .onAppear {
@@ -98,6 +111,15 @@ struct ReviewView: View {
             }
         }
         .toolbar { ToolbarItem(placement: .navigationBarTrailing) { NavigationLink(destination: ResultsView(), isActive: $goToResults) { EmptyView() } } }
+        .appBackground()
+    }
+
+    private func filteredLabeled() -> [CellObjectLabeled] {
+        switch filter {
+        case "Live": return appState.labeled.filter { $0.label == "live" }
+        case "Dead": return appState.labeled.filter { $0.label == "dead" }
+        default: return appState.labeled
+        }
     }
 
     private func lassoGesture() -> some Gesture {
@@ -144,15 +166,16 @@ private struct DetectionOverlay: View {
 private struct PerSquareTable: View {
     let tally: [Int: Int]
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Per-Square Counts").font(.headline)
-            HStack {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Per-Square Counts").font(.headline).foregroundColor(Theme.textPrimary)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
                 ForEach(0..<9) { i in
                     let count = tally[i] ?? 0
-                    Text("\(count)")
-                        .frame(width: 32, height: 24)
-                        .background(Color.gray.opacity(0.1))
-                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.gray.opacity(0.2)))
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8).fill(Theme.surface)
+                        Text("\(count)").foregroundColor(Theme.textPrimary)
+                    }
+                    .frame(height: 36)
                 }
             }
         }

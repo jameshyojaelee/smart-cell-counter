@@ -15,6 +15,7 @@ struct HelpView: View {
             .padding()
         }
         .navigationTitle("Help")
+        .appBackground()
     }
 }
 

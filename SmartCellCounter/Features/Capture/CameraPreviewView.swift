@@ -25,10 +25,10 @@ struct CameraPreviewView: UIViewRepresentable {
 @MainActor
 final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate {
     let camera = CameraService()
-    let session = AVCaptureSession()
     @Published var focusScore: Double = 0
     @Published var glareRatio: Double = 0
     @Published var torchOn: Bool = false
+    @Published var ready: Bool = false
     @Published var navigatingToCrop = false
     private let capturedSubject = PassthroughSubject<UIImage, Never>()
     var captured: AnyPublisher<UIImage, Never> { capturedSubject.eraseToAnyPublisher() }
@@ -40,7 +40,13 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
         // CameraService manages its own session; for preview, expose it via KVC
     }
 
-    func start() { camera.start() }
+    func start() {
+        camera.start()
+        // Observe readiness
+        _ = camera.readinessPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isReady in self?.ready = isReady }
+    }
     func stop() { camera.stop() }
     func toggleTorch() { torchOn.toggle(); camera.setTorch(enabled: torchOn) }
     func capture() { camera.capturePhoto() }

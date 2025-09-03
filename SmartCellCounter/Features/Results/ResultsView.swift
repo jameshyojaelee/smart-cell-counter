@@ -119,17 +119,26 @@ struct ResultsView: View {
     var body: some View {
         let metrics = viewModel.compute(appState: appState)
         ScrollView {
-            VStack(spacing: 12) {
-                HStack { Text("Concentration").bold(); Spacer(); Text(String(format: "%.3e cells/mL", metrics.conc)) }
-                    .card()
-                HStack { Text("Viability").bold(); Spacer(); Text(String(format: "%.1f%%", metrics.viability)) }
-                    .card()
-                HStack { Text("Live / Dead").bold(); Spacer(); Text("\(metrics.live) / \(metrics.dead)") }
-                    .card()
-                HStack { Text("Squares Used").bold(); Spacer(); Text("4") }
-                    .card()
-                HStack { Text("Dilution").bold(); Spacer(); Stepper(String(format: "%.1fx", viewModel.dilution), value: $viewModel.dilution, in: 0.1...100, step: 0.1) }
-                    .card()
+            VStack(spacing: DS.Spacing.lg) {
+                AnimatedGradientHeader(title: "Results", subtitle: "Final metrics and exports")
+                HStack(spacing: DS.Spacing.lg) {
+                    ZStack {
+                        StatCard(title: "Viability", value: String(format: "%.1f%%", metrics.viability), subtitle: nil, icon: "cross.case.fill", gradient: Theme.gradientSuccess)
+                        RingGauge(progress: min(max(metrics.viability/100.0, 0), 1), lineWidth: 10, gradient: Theme.gradientSuccess)
+                            .frame(width: 110, height: 110)
+                            .padding(.trailing, 12)
+                            .opacity(0.25)
+                    }
+                    StatCard(title: "Concentration", value: String(format: "%.3e cells/mL", metrics.conc), subtitle: nil, icon: "chart.bar.fill", gradient: Theme.gradient1)
+                }
+                .frame(height: 140)
+                StatCard(title: "Live / Dead", value: "\(metrics.live) / \(metrics.dead)", subtitle: nil, icon: "heart.text.square.fill", gradient: Theme.gradient2)
+                    .frame(height: 120)
+                VStack(spacing: DS.Spacing.sm) {
+                    HStack { Text("Squares Used").foregroundColor(Theme.textSecondary); Spacer(); Text("4").foregroundColor(Theme.textPrimary) }
+                    HStack { Text("Dilution").foregroundColor(Theme.textSecondary); Spacer(); Stepper(String(format: "%.1fx", viewModel.dilution), value: $viewModel.dilution, in: 0.1...100, step: 0.1) }
+                }
+                .cardStyle()
 
                 if appState.focusScore < 0.1 { QCRow(text: "Low focus score", color: .orange) }
                 if appState.glareRatio > 0.1 { QCRow(text: "High glare detected", color: .orange) }
@@ -146,7 +155,7 @@ struct ResultsView: View {
                     }
                     if let url = viewModel.exportURL { ShareLink(item: url) { Text("Share") } }
                     Spacer()
-                    Button("Save Sample") { viewModel.saveSample(appState: appState) }
+                    Button("Save Sample") { viewModel.saveSample(appState: appState); Haptics.success() }
                     Button("Export PDF") {
                         let header = ReportHeader(project: Settings.shared.project, operatorName: Settings.shared.operatorName, timestamp: Date())
                         let tally = CountingService.tallyByLargeSquare(objects: appState.objects, geometry: GridGeometry(originPx: .zero, pxPerMicron: appState.pxPerMicron ?? 1.0))
@@ -155,6 +164,7 @@ struct ResultsView: View {
                         let watermark = !PurchaseManager.shared.isPro
                         if let url = try? exporter.exportReport(header: header, images: images, tally: tally, params: ImagingParams(), watermark: watermark, filename: "report.pdf") {
                             viewModel.exportURL = url
+                            Haptics.success()
                         }
                     }
                     if let corrected = appState.correctedImage { Button("Save Image") { UIImageWriteToSavedPhotosAlbum(corrected, nil, nil, nil) } }
@@ -168,6 +178,7 @@ struct ResultsView: View {
         }
         .navigationTitle("Results")
         .toolbar { ToolbarItem(placement: .navigationBarTrailing) { NavigationLink(destination: PaywallView(), isActive: $showPaywall) { EmptyView() } } }
+        .appBackground()
     }
 }
 

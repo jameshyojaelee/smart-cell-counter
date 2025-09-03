@@ -13,12 +13,12 @@ struct CaptureView: View {
                 CameraPreviewView(session: viewModel.camera.captureSession)
                     .onAppear { viewModel.start() }
                     .onDisappear { viewModel.stop() }
-                    .overlay(GridGuides().stroke(Color.white.opacity(0.25), lineWidth: 1))
+                    .overlay(GridGuides().stroke(Theme.border.opacity(0.6), lineWidth: 1))
                     .edgesIgnoringSafeArea(.all)
 
                 HStack(spacing: 8) {
-                    StatusChip(title: "Focus", value: String(format: "%.2f", viewModel.focusScore))
-                    StatusChip(title: "Glare", value: String(format: "%.2f", viewModel.glareRatio))
+                    Chip("Focus: " + String(format: "%.2f", viewModel.focusScore), systemImage: "viewfinder", color: Theme.surface.opacity(0.6))
+                    Chip("Glare: " + String(format: "%.2f", viewModel.glareRatio), systemImage: "sun.max", color: Theme.surface.opacity(0.6))
                     Spacer()
                     Toggle(isOn: $viewModel.torchOn) { Image(systemName: viewModel.torchOn ? "flashlight.on.fill" : "flashlight.off.fill") }
                         .labelsHidden()
@@ -44,13 +44,12 @@ struct CaptureView: View {
                     }
                 }
 
-                Button(action: {
-                    viewModel.capture()
-                }) {
+                Button(action: { viewModel.capture() }) {
                     Label("Capture", systemImage: "camera.circle.fill").font(.title2)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(!viewModel.ready)
             }
             .padding()
         }
@@ -64,18 +63,7 @@ struct CaptureView: View {
             appState.capturedImage = image
             goToCrop = true
         }
-    }
-}
-
-private struct StatusChip: View {
-    let title: String
-    let value: String
-    var body: some View {
-        Text("\(title): \(value)")
-            .font(.caption)
-            .padding(6)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
+        .appBackground()
     }
 }
 

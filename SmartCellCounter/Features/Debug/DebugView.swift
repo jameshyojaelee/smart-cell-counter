@@ -31,6 +31,7 @@ struct DebugView: View {
             .padding([.horizontal, .bottom])
         }
         .navigationTitle("Debug")
+        .appBackground()
     }
 }
 

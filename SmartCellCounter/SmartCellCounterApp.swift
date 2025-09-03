@@ -49,6 +49,9 @@ struct RootView: View {
             NavigationStack { SettingsView() }
                 .tabItem { Label("Settings", systemImage: "gearshape") }
         }
+        .tint(Theme.accent)
+        .background(Theme.background.ignoresSafeArea())
+        .preferredColorScheme(.dark)
         .task { await purchases.loadProducts() }
         .sheet(isPresented: .constant(!consentShown)) {
             ConsentView(consentShown: $consentShown)

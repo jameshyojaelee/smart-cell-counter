@@ -52,6 +52,7 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .appBackground()
     }
 }
 

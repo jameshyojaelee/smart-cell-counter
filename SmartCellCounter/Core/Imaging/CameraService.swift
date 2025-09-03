@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 import UIKit
 import CoreImage
+import Combine
 
 public protocol CameraServiceDelegate: AnyObject {
     func cameraService(_ service: CameraService, didUpdateFocusScore score: Double, glareRatio: Double)
@@ -17,11 +18,29 @@ public final class CameraService: NSObject {
 
     public weak var delegate: CameraServiceDelegate?
     public var captureSession: AVCaptureSession { session }
+    private(set) var isReady: Bool = false { didSet { readinessSubject.send(isReady) } }
+    private let readinessSubject = PassthroughSubject<Bool, Never>()
+    public var readinessPublisher: AnyPublisher<Bool, Never> { readinessSubject.eraseToAnyPublisher() }
 
     public func start() {
+        let auth = AVCaptureDevice.authorizationStatus(for: .video)
+        if auth == .notDetermined {
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                if granted { self.startSessionOnQueue() }
+            }
+        } else if auth == .authorized {
+            startSessionOnQueue()
+        } else {
+            Logger.log("Camera permission not granted")
+        }
+    }
+
+    private func startSessionOnQueue() {
         queue.async {
             self.configureSession()
             self.session.startRunning()
+            let hasConnection = (self.photoOutput.connection(with: .video) != nil)
+            DispatchQueue.main.async { self.isReady = self.session.isRunning && hasConnection }
         }
     }
 
@@ -32,12 +51,16 @@ public final class CameraService: NSObject {
     }
 
     public func capturePhoto() {
-        let settings = AVCapturePhotoSettings()
-        settings.isHighResolutionPhotoEnabled = true
-        let start = Date()
-        photoOutput.capturePhoto(with: settings, delegate: self)
-        // Record when finished in delegate
-        captureStart = start
+        queue.async {
+            guard self.session.isRunning, self.photoOutput.connection(with: .video)?.isEnabled == true else {
+                Logger.log("Capture requested before session ready; ignoring")
+                return
+            }
+            let settings = AVCapturePhotoSettings()
+            settings.isHighResolutionPhotoEnabled = true
+            self.captureStart = Date()
+            self.photoOutput.capturePhoto(with: settings, delegate: self)
+        }
     }
 
     public func setFocusExposure(point: CGPoint) {
