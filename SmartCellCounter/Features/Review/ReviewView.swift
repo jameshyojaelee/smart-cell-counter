@@ -59,6 +59,8 @@ struct ReviewView: View {
     @State private var goToResults = false
     @State private var drawingLasso = false
     @State private var filter: String = "All" // All, Live, Dead
+    @State private var showOverlays = false
+    @State private var overlayKind = "Candidates" // Candidates, Blue Mask, Grid Mask, Illumination
 
     var body: some View {
         VStack(spacing: 12) {
@@ -71,6 +73,24 @@ struct ReviewView: View {
                             viewModel.toggleLabel(for: id, in: appState)
                             Haptics.impact(.light)
                         })
+                        .overlay(alignment: .topTrailing) {
+                            Menu {
+                                Toggle("Show Overlays", isOn: $showOverlays)
+                                Picker("Overlay", selection: $overlayKind) {
+                                    Text("Candidates").tag("Candidates")
+                                    Text("Blue Mask").tag("Blue Mask")
+                                    Text("Grid Mask").tag("Grid Mask")
+                                    Text("Illumination").tag("Illumination")
+                                }
+                            } label: {
+                                Image(systemName: "eye").padding(8)
+                            }
+                        }
+                        .overlay {
+                            if showOverlays {
+                                DebugOverlayView(debugImages: appState.debugImages, kind: overlayKind)
+                            }
+                        }
                         .gesture(lassoGesture())
                 } else {
                     Text("No image to review.").foregroundColor(.secondary)
@@ -110,7 +130,7 @@ struct ReviewView: View {
                 viewModel.recompute(on: img, appState: appState)
             }
         }
-        .toolbar { ToolbarItem(placement: .navigationBarTrailing) { NavigationLink(destination: ResultsView(), isActive: $goToResults) { EmptyView() } } }
+        .modifier(ReviewNavigation(goToResults: $goToResults))
         .appBackground()
     }
 
@@ -133,6 +153,24 @@ struct ReviewView: View {
                 drawingLasso = false
                 viewModel.applyLassoErase(in: appState)
             }
+    }
+}
+
+// MARK: - Navigation modernization
+private struct ReviewNavigation: ViewModifier {
+    @Binding var goToResults: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .navigationDestination(isPresented: $goToResults) { ResultsView() }
+        } else {
+            content
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: ResultsView(), isActive: $goToResults) { EmptyView() }
+                    }
+                }
+        }
     }
 }
 

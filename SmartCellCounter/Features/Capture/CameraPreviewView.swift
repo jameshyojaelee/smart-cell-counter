@@ -24,7 +24,7 @@ struct CameraPreviewView: UIViewRepresentable {
 
 @MainActor
 final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate {
-    let camera = CameraService()
+    let camera: CameraServicing
     @Published var focusScore: Double = 0
     @Published var glareRatio: Double = 0
     @Published var torchOn: Bool = false
@@ -36,10 +36,15 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     var captured: AnyPublisher<UIImage, Never> { capturedSubject.eraseToAnyPublisher() }
 
     override init() {
+        self.camera = CameraService()
         super.init()
         camera.delegate = self
-        // Reuse internal session for preview
-        // CameraService manages its own session; for preview, expose it via KVC
+    }
+
+    init(service: CameraServicing) {
+        self.camera = service
+        super.init()
+        camera.delegate = self
     }
 
     func start() {
@@ -67,6 +72,8 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     func stop() { camera.stop() }
     func toggleTorch() { torchOn.toggle(); camera.setTorch(enabled: torchOn) }
     func capture() { camera.capturePhoto() }
+
+    var captureSession: AVCaptureSession { camera.captureSession }
 
     // MARK: - CameraServiceDelegate
     func cameraService(_ service: CameraService, didUpdateFocusScore score: Double, glareRatio: Double) {

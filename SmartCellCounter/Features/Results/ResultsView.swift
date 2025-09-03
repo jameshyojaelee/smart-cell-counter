@@ -177,7 +177,7 @@ struct ResultsView: View {
             .padding()
         }
         .navigationTitle("Results")
-        .toolbar { ToolbarItem(placement: .navigationBarTrailing) { NavigationLink(destination: PaywallView(), isActive: $showPaywall) { EmptyView() } } }
+        .modifier(ResultsNavigation(showPaywall: $showPaywall))
         .appBackground()
     }
 }
@@ -185,3 +185,21 @@ struct ResultsView: View {
 private struct QCRow: View { let text: String; let color: Color; var body: some View { Label(text, systemImage: "exclamationmark.triangle.fill").foregroundStyle(color) .frame(maxWidth: .infinity, alignment: .leading).padding(8).background(color.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 8)) } }
 
 private extension View { func card() -> some View { self.padding(12).background(Color(.secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 8)) } }
+
+// MARK: - Navigation modernization
+private struct ResultsNavigation: ViewModifier {
+    @Binding var showPaywall: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .navigationDestination(isPresented: $showPaywall) { PaywallView() }
+        } else {
+            content
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: PaywallView(), isActive: $showPaywall) { EmptyView() }
+                    }
+                }
+        }
+    }
+}

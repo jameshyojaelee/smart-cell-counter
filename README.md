@@ -210,6 +210,29 @@ Features:
 
 ## Performance & QA
 
+## Cell Detection v2 (Classical CV + Optional ML)
+
+Pipeline (on-device, deterministic):
+1) Input normalization: sRGB → linear luminance; HSV computed. Focus check via variance of Laplacian.
+2) Illumination correction: large Gaussian background estimation and division; histogram equalization on luminance.
+3) Grid/debris suppression: directional edges projection → line mask; texture mask via Laplacian energy.
+4) Candidate detection: multi-scale DoG on luminance; local maxima kept as centers; radii from scale (≈1.6σ); diameter constrained by calibration.
+5) Classification: rule-based (blue HSV mask → dead; bright blob → live) with confidence; optional tiny ML stub for refinement.
+6) NMS: IoU-based circle merging to suppress duplicates.
+7) ROI: compute in ROI space then remap to image space.
+8) Calibration: supports µm-per-pixel via hemocytometer square; settings expose min/max cell diameter and thresholds.
+9) Overlays: blue mask, grid mask, illumination field, candidate circles; enable from Review → eye menu.
+
+Settings (persisted):
+- minCellDiameterUm, maxCellDiameterUm
+- blueHueMin, blueHueMax, minBlueSaturation
+- blobScoreThreshold, nmsIoU, focusMinLaplacian
+- enableGridSuppression
+
+Testing:
+- Add PNGs under test bundle and JSON labels under TestLabels. See `CellDetectionTests.swift`.
+- Acceptance: precision ≥ 0.9, recall ≥ 0.85 on goldens; blank control yields no circles.
+
 - PerformanceLogger records per‑stage timings; view via Debug.
 - QA Fixtures: 10 fixture images (place your PNGs under Assets as `fixture01`…`fixture10`).
   - Debug → QA Fixtures → Run All: shows counts, pass/fail (min/max), and durations.

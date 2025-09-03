@@ -11,7 +11,7 @@ struct CaptureView: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                CameraPreviewView(session: viewModel.camera.captureSession)
+                CameraPreviewView(session: viewModel.captureSession)
                     .onAppear { viewModel.start() }
                     .onDisappear { viewModel.stop() }
                     .overlay(
@@ -89,9 +89,7 @@ struct CaptureView: View {
             }
         }
         .navigationTitle("Capture")
-        .background(
-            NavigationLink(destination: CropView(), isActive: $goToCrop) { EmptyView() }
-        )
+        .modifier(CaptureNavigation(goToCrop: $goToCrop))
         .onReceive(viewModel.$focusScore) { appState.focusScore = $0 }
         .onReceive(viewModel.$glareRatio) { appState.glareRatio = $0 }
         .onReceive(viewModel.captured) { image in
@@ -99,6 +97,22 @@ struct CaptureView: View {
             goToCrop = true
         }
         .appBackground()
+    }
+}
+
+// MARK: - Navigation modernization
+private struct CaptureNavigation: ViewModifier {
+    @Binding var goToCrop: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .navigationDestination(isPresented: $goToCrop) { CropView() }
+        } else {
+            content
+                .background(
+                    NavigationLink(destination: CropView(), isActive: $goToCrop) { EmptyView() }
+                )
+        }
     }
 }
 

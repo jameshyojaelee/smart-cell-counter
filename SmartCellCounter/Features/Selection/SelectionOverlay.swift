@@ -8,6 +8,8 @@ struct SelectionOverlay: View {
 
     @State private var dragOffset: CGSize = .zero
     @State private var activeHandle: Int? = nil // 0..3 tl,tr,br,bl
+    @State private var startRect: CGRect? = nil
+    @State private var history: [CGRect] = []
 
     var body: some View {
         ZStack {
@@ -28,6 +30,19 @@ struct SelectionOverlay: View {
                     .gesture(resizeGesture(i))
                     .accessibilityLabel("Resize Handle")
             }
+
+            // Undo button near top-left of the selection
+            if !history.isEmpty {
+                Button(action: undo) {
+                    Image(systemName: "arrow.uturn.left")
+                        .font(.system(size: 14, weight: .medium))
+                        .padding(6)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                }
+                .position(undoButtonPosition())
+                .accessibilityLabel("Undo selection change")
+            }
         }
     }
 
@@ -43,6 +58,7 @@ struct SelectionOverlay: View {
     private func dragGesture() -> some Gesture {
         DragGesture()
             .onChanged { g in
+                if startRect == nil { startRect = rect }
                 var r = rect
                 r.origin.x += g.translation.width
                 r.origin.y += g.translation.height
@@ -50,11 +66,16 @@ struct SelectionOverlay: View {
                 if r.width < minSize.width || r.height < minSize.height { return }
                 rect = r
             }
+            .onEnded { _ in
+                if let start = startRect, start != rect { history.append(start) }
+                startRect = nil
+            }
     }
 
     private func resizeGesture(_ index: Int) -> some Gesture {
         DragGesture()
             .onChanged { g in
+                if startRect == nil { startRect = rect }
                 var r = rect
                 switch index {
                 case 0: // TL
@@ -84,6 +105,21 @@ struct SelectionOverlay: View {
                 r = GeometryUtils.clamp(r, to: bounds)
                 rect = r
             }
+            .onEnded { _ in
+                if let start = startRect, start != rect { history.append(start) }
+                startRect = nil
+            }
+    }
+
+    private func undo() {
+        guard let prev = history.popLast() else { return }
+        rect = GeometryUtils.clamp(prev, to: bounds)
+    }
+
+    private func undoButtonPosition() -> CGPoint {
+        // Place slightly above top-left corner, clamped within bounds
+        let x = max(bounds.minX + 16, min(rect.minX, bounds.maxX - 16))
+        let y = max(bounds.minY + 16, min(rect.minY - 20, bounds.maxY - 16))
+        return CGPoint(x: x, y: y)
     }
 }
-

@@ -36,6 +36,24 @@ struct CropView: View {
         }
         .onAppear { if let img = appState.capturedImage { viewModel.image = img } }
         .navigationTitle("Select Area")
-        .toolbar { ToolbarItem(placement: .navigationBarTrailing) { NavigationLink(destination: ReviewView(), isActive: $goToReview) { EmptyView() } } }
+        .modifier(CropNavigation(goToReview: $goToReview))
+    }
+}
+
+// MARK: - Navigation modernization
+private struct CropNavigation: ViewModifier {
+    @Binding var goToReview: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, *) {
+            content
+                .navigationDestination(isPresented: $goToReview) { ReviewView() }
+        } else {
+            content
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: ReviewView(), isActive: $goToReview) { EmptyView() }
+                    }
+                }
+        }
     }
 }

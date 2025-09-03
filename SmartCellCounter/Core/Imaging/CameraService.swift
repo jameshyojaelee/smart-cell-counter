@@ -9,8 +9,7 @@ public protocol CameraServiceDelegate: AnyObject {
     func cameraService(_ service: CameraService, didCapture image: UIImage)
 }
 
-public final class CameraService: NSObject {
-    public enum State: Equatable { case idle, preparing, ready, capturing, saving, error(AppError) }
+public final class CameraService: NSObject, CameraServicing {
 
     private let session = AVCaptureSession()
     private let photoOutput = AVCapturePhotoOutput()
@@ -23,8 +22,8 @@ public final class CameraService: NSObject {
     private(set) var isReady: Bool = false { didSet { readinessSubject.send(isReady) } }
     private let readinessSubject = PassthroughSubject<Bool, Never>()
     public var readinessPublisher: AnyPublisher<Bool, Never> { readinessSubject.eraseToAnyPublisher() }
-    private let stateSubject = CurrentValueSubject<State, Never>(.idle)
-    public var statePublisher: AnyPublisher<State, Never> { stateSubject.eraseToAnyPublisher() }
+    private let stateSubject = CurrentValueSubject<CameraState, Never>(.idle)
+    public var statePublisher: AnyPublisher<CameraState, Never> { stateSubject.eraseToAnyPublisher() }
 
     public func start() {
         stateSubject.send(.preparing)
