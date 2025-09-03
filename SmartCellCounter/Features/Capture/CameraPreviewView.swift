@@ -30,6 +30,7 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     @Published var torchOn: Bool = false
     @Published var ready: Bool = false
     @Published var status: String = "Preparing…"
+    @Published var permissionDenied: Bool = false
     @Published var navigatingToCrop = false
     private let capturedSubject = PassthroughSubject<UIImage, Never>()
     var captured: AnyPublisher<UIImage, Never> { capturedSubject.eraseToAnyPublisher() }
@@ -56,7 +57,9 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
                 case .ready: self?.status = "Ready"
                 case .capturing: self?.status = "Capturing…"
                 case .saving: self?.status = "Saving…"
-                case .error(let err): self?.status = err.localizedDescription
+                case .error(let err):
+                    self?.status = err.localizedDescription
+                    if case .permissionDenied = err { self?.permissionDenied = true } else { self?.permissionDenied = false }
                 }
             }
             .store(in: &cancellables)

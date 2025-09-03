@@ -138,7 +138,9 @@ Archive of the previous React Native code lives under `archive/rn/` for referenc
 ## Screens & Workflows
 
 - Capture: live camera preview with grid guide, focus/glare chips, torch toggle, capture still, import from Photos.
+- Redesigned capture UI: large centered shutter (haptics), left import, right settings, top-right torch; status label shows Ready/Focusing/Captured/Errors. Shutter disables during capture to prevent double-taps.
 - Crop: direct‑manipulation corner editor (pan/pinch; large handles with snapping). Low‑res warp while dragging; full‑res perspective on Apply.
+  - Alternate selection: non-rotating, draggable, resizable rectangular ROI overlay with numeric size readouts. Confirm Selection produces a cropped image or rect coordinates in image space.
 - Review: vector overlay of detections; tap toggles live/dead; freehand lasso removes debris; per‑square counts; Recompute.
 - Results: cards for concentration, viability, live/dead, squares, dilution. QC banners for low focus/glare/overcrowding. Export CSV/PDF; save sample.
 - History: GRDB‑backed saved samples with thumbnail, date, counts; search by project/operator.
@@ -185,6 +187,15 @@ Features:
 - DAO for insert sample + detections; query by project/operator; per‑sample folder with images/PDF.
 
 ## Export
+
+## Settings & Persistence
+
+- SettingsStore persists expert parameters with @AppStorage. Direct numeric input supported via NumericField, with validation and inline hints.
+- Key numeric parameters: dilutionFactor (default 1.0), areaMinUm2 (50), areaMaxUm2 (50000), threshold method, block size, and C offset. Reset to defaults available.
+
+## Area Selection Coordinates
+
+- ImageSelectionView renders image “fit-to-view” and manages a selection rectangle in view space. On Confirm Selection, the overlay rect is converted back to image coordinates via GeometryUtils.scale(rect:from:to:), so you can crop or pass the ROI to downstream processing.
 
 - CSV: Summary row; optional per‑object detections (Pro‑gated).
 - PDF: Header (project, operator, timestamp); original/corrected/overlay images; 3×3 count table; formulas/params; optional watermark (removed for Pro).

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -28,7 +28,10 @@
 		6B4884BF303006F67D4FC4CB /* ImagingPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A8C60925A651D2EF8C7F4 /* ImagingPipelineTests.swift */; };
 		6E52EAA43CB6A3958C3F8D44 /* CropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B5BECC3BB7540869D5E9C8 /* CropView.swift */; };
 		718FFD02C085DBA7DB6DD7D1 /* SmartCellCounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */; };
+		74C01A1124416963F450BD40 /* NumericField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4CBE8F6CD6E57BC6992498F /* NumericField.swift */; };
 		74FB0D9469B1BA67A97491AE /* CornerEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E83A41FAEC9587C3AF9C6F /* CornerEditorView.swift */; };
+		773E0EAC6FED293599CDFBFA /* GeometryUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7425E1FF26485AC6F9954C56 /* GeometryUtils.swift */; };
+		77602A971663CB20781E1C44 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9EA0E66A99D62656B0EE3FB /* SettingsStore.swift */; };
 		806AE622B961C4C6AF39C4F3 /* ImageContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA04D8E7B2205C117983C2C /* ImageContext.swift */; };
 		80B5A1FA887A6AF168D2A6A3 /* Sample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90B52B1B99C9CF6D56A38792 /* Sample.swift */; };
 		814D7337B3B68DA71532CE16 /* RingGauge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68D1B6D14F5302F5CBCD404D /* RingGauge.swift */; };
@@ -39,8 +42,13 @@
 		A500FDFD524FCB5A14D4C1BB /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8C603FE00EB67221FC099E /* CSVExporter.swift */; };
 		A66279C5CF3E97F7AF6997CC /* TimerUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C37F03B22060C4902EB66E2 /* TimerUtil.swift */; };
 		A78715B68D81FF8323CD651D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B2B434974A98FE00B12F /* Theme.swift */; };
+		AC91D64C829DEA3D72164D18 /* GeometryUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AA1BB248B3E09196107107 /* GeometryUtilsTests.swift */; };
 		ADDC57E1A87825294C2BBFB1 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F8A0344E7950FFEC7510615 /* PDFExporter.swift */; };
+		AE0F1A64B9104629708E8093 /* SelectionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E878F82A1A9144F678DD89A /* SelectionOverlay.swift */; };
+		B356FC573AF04EF408F50013 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C028E9C96D015E23383BA699 /* AppError.swift */; };
 		B5C6390AC55AE821BC07D792 /* CrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 197B89CB02DEA1324F29BC81 /* CrashReporter.swift */; };
+		B73A782033E6437803C03CB6 /* ImageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC1C1E01127C3BBFBA34C86 /* ImageSelectionView.swift */; };
+		BD3A079FC375273A3C320B4A /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82D1D72F93C4FBC47CFD6CAA /* SettingsStoreTests.swift */; };
 		C43ADF84B284F3589A39D1AB /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8252830951ED10CFC153B9CD /* CaptureView.swift */; };
 		C52B5F06745C35C2DC7B0B8C /* CountingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64F49ABA701172259F4B219 /* CountingService.swift */; };
 		C77E280851390A8D6CF7392A /* PerformanceLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2282C2113E909F85DC5F41A3 /* PerformanceLogger.swift */; };
@@ -78,7 +86,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartCellCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SmartCellCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E878F82A1A9144F678DD89A /* SelectionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlay.swift; sourceTree = "<group>"; };
 		0EA04D8E7B2205C117983C2C /* ImageContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageContext.swift; sourceTree = "<group>"; };
 		0EA53055068990142ACD4F02 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		1367B2B434974A98FE00B12F /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -87,6 +96,7 @@
 		2282C2113E909F85DC5F41A3 /* PerformanceLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceLogger.swift; sourceTree = "<group>"; };
 		23A647251A1D6F2D674FDACD /* AdsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsManager.swift; sourceTree = "<group>"; };
 		31D3AA1E768626EFD30A9D46 /* ConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentView.swift; sourceTree = "<group>"; };
+		35AA1BB248B3E09196107107 /* GeometryUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtilsTests.swift; sourceTree = "<group>"; };
 		3721347F542BC55A32B0B427 /* SmartCellCounterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCellCounterApp.swift; sourceTree = "<group>"; };
 		38158770F4F566A20F3F96ED /* CountingServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountingServiceTests.swift; sourceTree = "<group>"; };
 		3B72B26CEEE620C63B19631C /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
@@ -105,9 +115,12 @@
 		68D1B6D14F5302F5CBCD404D /* RingGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingGauge.swift; sourceTree = "<group>"; };
 		6E1D4F3099BE5D080CDB9BD7 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		6E268C3BF9E25579EBCD7822 /* Hemocytometer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hemocytometer.swift; sourceTree = "<group>"; };
-		7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartCellCounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7425E1FF26485AC6F9954C56 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
 		7871EE52A64C8DA9C8A29BC9 /* ImagingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingService.swift; sourceTree = "<group>"; };
+		7AC1C1E01127C3BBFBA34C86 /* ImageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSelectionView.swift; sourceTree = "<group>"; };
 		8252830951ED10CFC153B9CD /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
+		82D1D72F93C4FBC47CFD6CAA /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
 		886B4740D0BEB7CEB491B528 /* ResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultsView.swift; sourceTree = "<group>"; };
 		8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCellCounterTests.swift; sourceTree = "<group>"; };
 		90B52B1B99C9CF6D56A38792 /* Sample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sample.swift; sourceTree = "<group>"; };
@@ -116,21 +129,24 @@
 		A4054A962C34CDB218813B9F /* AnimatedGradientHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatedGradientHeader.swift; sourceTree = "<group>"; };
 		A4F2B0F341D4C853057E9FE0 /* ImagingTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingTypes.swift; sourceTree = "<group>"; };
 		AB0A8C60925A651D2EF8C7F4 /* ImagingPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingPipelineTests.swift; sourceTree = "<group>"; };
-		B2624F1FF610679C8D4F8AF9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B2624F1FF610679C8D4F8AF9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B71668675CC691585C3A2EAE /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		C028E9C96D015E23383BA699 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		C239B3C72A80A99850D1315C /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		CA8C603FE00EB67221FC099E /* CSVExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExporter.swift; sourceTree = "<group>"; };
 		CD38F742DAC92C8C732A2536 /* CoreModules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreModules.swift; sourceTree = "<group>"; };
 		CD635FB8FD45C51DC2C1ADE0 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		CFD946E613F34297025C4B29 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		D53862D9283229C96B5EC52D /* ViabilityClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViabilityClassifier.swift; sourceTree = "<group>"; };
+		D9EA0E66A99D62656B0EE3FB /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		DC5AA0BC35250819AC74A731 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		DFCE452BBF3E0568DDF044A3 /* CameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraService.swift; sourceTree = "<group>"; };
 		E64F49ABA701172259F4B219 /* CountingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountingService.swift; sourceTree = "<group>"; };
 		EC3E348B1640225A5B90494B /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		F4B129C19624AEF4BC8EE05B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F4CBE8F6CD6E57BC6992498F /* NumericField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericField.swift; sourceTree = "<group>"; };
 		F6193C664196E3FA1DE98CF9 /* ImagingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingTests.swift; sourceTree = "<group>"; };
-		FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartCellCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD59135E3D16A0C4F39C1515 /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -158,6 +174,8 @@
 			isa = PBXGroup;
 			children = (
 				47830B05FD4BBF8A7B619425 /* AboutView.swift */,
+				F4CBE8F6CD6E57BC6992498F /* NumericField.swift */,
+				D9EA0E66A99D62656B0EE3FB /* SettingsStore.swift */,
 				F4B129C19624AEF4BC8EE05B /* SettingsView.swift */,
 			);
 			path = Settings;
@@ -182,6 +200,15 @@
 				31D3AA1E768626EFD30A9D46 /* ConsentView.swift */,
 			);
 			path = Consent;
+			sourceTree = "<group>";
+		};
+		1CAE6901AB7ECB52795960DA /* Selection */ = {
+			isa = PBXGroup;
+			children = (
+				7AC1C1E01127C3BBFBA34C86 /* ImageSelectionView.swift */,
+				0E878F82A1A9144F678DD89A /* SelectionOverlay.swift */,
+			);
+			path = Selection;
 			sourceTree = "<group>";
 		};
 		241926D6B48E24EDAFA3E6E4 /* Models */ = {
@@ -256,6 +283,7 @@
 				BF046AEE9B1B1B138EC47695 /* Paywall */,
 				E746799FF1E1FFFA20A98794 /* Results */,
 				5986AC2F333FDADC5F384596 /* Review */,
+				1CAE6901AB7ECB52795960DA /* Selection */,
 				0B0BDD731FE488EF95755596 /* Settings */,
 			);
 			path = Features;
@@ -374,9 +402,11 @@
 			children = (
 				38158770F4F566A20F3F96ED /* CountingServiceTests.swift */,
 				58925C0FF4AC7E9514D34557 /* CountingTests.swift */,
+				35AA1BB248B3E09196107107 /* GeometryUtilsTests.swift */,
 				AB0A8C60925A651D2EF8C7F4 /* ImagingPipelineTests.swift */,
 				F6193C664196E3FA1DE98CF9 /* ImagingTests.swift */,
 				66992722B486127F3719A485 /* PurchaseManagerTests.swift */,
+				82D1D72F93C4FBC47CFD6CAA /* SettingsStoreTests.swift */,
 				8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */,
 			);
 			path = SmartCellCounterTests;
@@ -417,8 +447,10 @@
 		FD692E391E1CD6347B4CCB19 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				C028E9C96D015E23383BA699 /* AppError.swift */,
 				197B89CB02DEA1324F29BC81 /* CrashReporter.swift */,
 				EC3E348B1640225A5B90494B /* DesignSystem.swift */,
+				7425E1FF26485AC6F9954C56 /* GeometryUtils.swift */,
 				CFD946E613F34297025C4B29 /* Haptics.swift */,
 				0EA04D8E7B2205C117983C2C /* ImageContext.swift */,
 				2282C2113E909F85DC5F41A3 /* PerformanceLogger.swift */,
@@ -499,13 +531,16 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					48C5367F77709ED7AE925347 = {
+						DevelopmentTeam = ABCDE12345;
 						ProvisioningStyle = Automatic;
 					};
 					D934DE857D5EEEE3C4F96DFE = {
+						DevelopmentTeam = ABCDE12345;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 48C5367F77709ED7AE925347;
 					};
 					E1CF21FFB29F6F7262E4FDAF = {
+						DevelopmentTeam = ABCDE12345;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -521,8 +556,9 @@
 			mainGroup = AABB5BC949F3F00ED3F8D243;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB" */,
+				ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -553,6 +589,7 @@
 				CC0FA8D0839E0A504177C5F0 /* AboutView.swift in Sources */,
 				5AEF4788214AC0CC1F4F669E /* AdsManager.swift in Sources */,
 				F973885D41452FEF169769B7 /* AnimatedGradientHeader.swift in Sources */,
+				B356FC573AF04EF408F50013 /* AppError.swift in Sources */,
 				A500FDFD524FCB5A14D4C1BB /* CSVExporter.swift in Sources */,
 				90ACD79EE92B941B54EAE6B4 /* CameraPreviewView.swift in Sources */,
 				56CC3510C611BEA822F0EB4D /* CameraService.swift in Sources */,
@@ -566,14 +603,17 @@
 				6E52EAA43CB6A3958C3F8D44 /* CropView.swift in Sources */,
 				F511309A5BC1C1CF7D7C8E2A /* DebugView.swift in Sources */,
 				CE1CB165AFF549E5D22F42D8 /* DesignSystem.swift in Sources */,
+				773E0EAC6FED293599CDFBFA /* GeometryUtils.swift in Sources */,
 				663B26F128B794D57036018A /* Haptics.swift in Sources */,
 				9C7628E57B22AD241F8B7EC6 /* HelpView.swift in Sources */,
 				FC356E0147F6162FED9D64DC /* Hemocytometer.swift in Sources */,
 				095E99A5D2906790F573F2F6 /* HistoryView.swift in Sources */,
 				806AE622B961C4C6AF39C4F3 /* ImageContext.swift in Sources */,
+				B73A782033E6437803C03CB6 /* ImageSelectionView.swift in Sources */,
 				5317F5976366CB54EB277A07 /* ImagingPipeline.swift in Sources */,
 				23247CF6EBA52F94E506B67B /* ImagingService.swift in Sources */,
 				9282D36E5D406FC2270F9811 /* ImagingTypes.swift in Sources */,
+				74C01A1124416963F450BD40 /* NumericField.swift in Sources */,
 				ADDC57E1A87825294C2BBFB1 /* PDFExporter.swift in Sources */,
 				84CCE5D1EED44AD43BFE5F84 /* PaywallView.swift in Sources */,
 				C77E280851390A8D6CF7392A /* PerformanceLogger.swift in Sources */,
@@ -583,7 +623,9 @@
 				EE1BB8890FEBF478BDADF1B7 /* ReviewView.swift in Sources */,
 				814D7337B3B68DA71532CE16 /* RingGauge.swift in Sources */,
 				80B5A1FA887A6AF168D2A6A3 /* Sample.swift in Sources */,
+				AE0F1A64B9104629708E8093 /* SelectionOverlay.swift in Sources */,
 				2DFD78C5A10DCA1ECF95EB2C /* Settings.swift in Sources */,
+				77602A971663CB20781E1C44 /* SettingsStore.swift in Sources */,
 				CDC4BF648FBD491706BE9077 /* SettingsView.swift in Sources */,
 				FA3A00E25D70BC57F666A150 /* SmartCellCounterApp.swift in Sources */,
 				0C802BC8E6F17F7BFB15823D /* StorageService.swift in Sources */,
@@ -608,9 +650,11 @@
 			files = (
 				67FB5746994843071E5A9CA7 /* CountingServiceTests.swift in Sources */,
 				D252566550805FFB3A527440 /* CountingTests.swift in Sources */,
+				AC91D64C829DEA3D72164D18 /* GeometryUtilsTests.swift in Sources */,
 				6B4884BF303006F67D4FC4CB /* ImagingPipelineTests.swift in Sources */,
 				E5DDD45B291111A6BB61FC7B /* ImagingTests.swift in Sources */,
 				E7B0824053989B55E4B1434F /* PurchaseManagerTests.swift in Sources */,
+				BD3A079FC375273A3C320B4A /* SettingsStoreTests.swift in Sources */,
 				718FFD02C085DBA7DB6DD7D1 /* SmartCellCounterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -635,7 +679,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -651,7 +694,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -717,10 +759,7 @@
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-dead_strip",
-				);
+				OTHER_LDFLAGS = "$(inherited) -dead_strip";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -735,7 +774,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -752,7 +790,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 954S543L87;
 				INFOPLIST_FILE = SmartCellCounter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -836,7 +873,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -853,7 +889,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 954S543L87;
 				INFOPLIST_FILE = SmartCellCounter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -907,7 +942,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+		ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
 			requirement = {
@@ -920,7 +955,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		DEED0CD32F3A1C11ED660D90 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB" */;
+			package = ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */

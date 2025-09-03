@@ -76,9 +76,6 @@ public final class CameraService: NSObject {
             }
             DispatchQueue.main.async { self.stateSubject.send(.capturing) }
             let settings = AVCapturePhotoSettings()
-            if self.photoOutput.availablePhotoCodecTypes.contains(.jpeg) {
-                settings.format = [AVVideoCodecKey: AVVideoCodecType.jpeg]
-            }
             settings.isHighResolutionPhotoEnabled = self.photoOutput.isHighResolutionCaptureEnabled
             self.captureStart = Date()
             self.photoOutput.capturePhoto(with: settings, delegate: self)
