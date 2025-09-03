@@ -6,8 +6,8 @@ enum ColorSpaces {
     static func linearLuminance(_ image: CIImage) -> CIImage {
         let linear = image.applyingFilter("CIGammaAdjust", parameters: ["inputPower": 2.2])
         let lumaKernel = "kernel vec4 luma(__sample s) { float y = dot(s.rgb, vec3(0.2126, 0.7152, 0.0722)); return vec4(y,y,y,1.0); }"
-        let k = CIKernel(source: lumaKernel)!
-        return k.apply(extent: image.extent, roiCallback: { _, r in r }, arguments: [linear]) ?? linear
+        guard let k = CIColorKernel(source: lumaKernel), let out = k.apply(extent: image.extent, arguments: [linear]) else { return linear }
+        return out
     }
 
     static func hsvImage(_ image: CIImage) -> HSVImage {
@@ -28,8 +28,9 @@ enum ColorSpaces {
             return vec4(h, s2, maxv, 1.0);
         }
         """
-        let k = CIKernel(source: kernel)!
-        let hsv = k.apply(extent: image.extent, roiCallback: { _, r in r }, arguments: [image])!
+        guard let k = CIColorKernel(source: kernel), let hsv = k.apply(extent: image.extent, arguments: [image]) else {
+            return HSVImage(h: image, s: image, value: image)
+        }
         let h = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x:1,y:0,z:0,w:0),
                                                                  "inputGVector": CIVector(x:0,y:0,z:0,w:0),
                                                                  "inputBVector": CIVector(x:0,y:0,z:0,w:0)])

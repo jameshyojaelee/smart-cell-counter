@@ -15,7 +15,12 @@ struct CameraPreviewView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UIView, context: Context) {
-        context.coordinator.previewLayer?.frame = uiView.bounds
+        if let layer = context.coordinator.previewLayer {
+            layer.frame = uiView.bounds
+            if let conn = layer.connection, conn.isVideoOrientationSupported {
+                conn.videoOrientation = .portrait
+            }
+        }
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -32,6 +37,7 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     @Published var status: String = "Preparing…"
     @Published var permissionDenied: Bool = false
     @Published var navigatingToCrop = false
+    @Published var previewEnabled: Bool = false
     private let capturedSubject = PassthroughSubject<UIImage, Never>()
     var captured: AnyPublisher<UIImage, Never> { capturedSubject.eraseToAnyPublisher() }
 

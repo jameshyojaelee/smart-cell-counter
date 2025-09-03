@@ -15,7 +15,7 @@ enum Classifier {
                          gridMask: CIImage,
                          eqLuma: CIImage,
                          context: CIContext,
-                         settings: SettingsStore) -> [LabeledCandidate] {
+                         params: DetectorParams) -> [LabeledCandidate] {
         var out: [LabeledCandidate] = []
         for c in candidates {
             let pt = c.center
@@ -27,7 +27,7 @@ enum Classifier {
             if isBlue {
                 label = "dead"
                 conf = min(1.0, 0.6 + 0.4 * brightBlob)
-            } else if brightBlob >= settings.blobScoreThreshold {
+            } else if brightBlob >= params.blobScoreThreshold {
                 label = "live"
                 conf = min(1.0, brightBlob)
             } else {

@@ -22,7 +22,14 @@ enum IlluminationCorrector {
         let small = luminance.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         guard let cg = context.createCGImage(small, from: small.extent) else { return luminance }
         var src = vImage_Buffer()
-        var fmt = vImage_CGImageFormat(bitsPerComponent: 8, bitsPerPixel: 32, colorSpace: nil, bitmapInfo: CGBitmapInfo.byteOrder32Big.union(.premultipliedLast), version: 0, decode: nil, renderingIntent: .defaultIntent)
+        let alphaInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
+        var fmt = vImage_CGImageFormat(bitsPerComponent: 8,
+                                       bitsPerPixel: 32,
+                                       colorSpace: nil,
+                                       bitmapInfo: CGBitmapInfo.byteOrder32Big.union(alphaInfo),
+                                       version: 0,
+                                       decode: nil,
+                                       renderingIntent: .defaultIntent)
         defer { free(src.data) }
         var error = vImageBuffer_InitWithCGImage(&src, &fmt, nil, cg, vImage_Flags(kvImageNoFlags))
         if error != kvImageNoError { return luminance }

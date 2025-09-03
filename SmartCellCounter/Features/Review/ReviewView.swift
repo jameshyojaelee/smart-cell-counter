@@ -13,21 +13,20 @@ final class ReviewViewModel: ObservableObject {
 
     func recompute(on image: UIImage, appState: AppState) {
         isComputing = true
-        Task.detached {
+        Task.detached(priority: .userInitiated) {
             let start = Date()
-            let params = ImagingParams()
-            let seg = ImagingPipeline.segmentCells(in: image, params: params)
-            let objects = ImagingPipeline.objectFeatures(from: seg, pxPerMicron: nil)
-            let labeled = ImagingPipeline.colorStatsAndLabels(for: objects, on: image)
-            let pxPerMicron = min(Double(image.size.width)/3000.0, Double(image.size.height)/3000.0)
+            let params = await DetectorParams.from(SettingsStore.shared)
+            let pxPerMicronSnapshot = await MainActor.run { appState.pxPerMicron }
+            let det = CellDetector.detect(on: image, roi: nil, pxPerMicron: pxPerMicronSnapshot, params: params)
+            let pxPerMicron = det.pxPerMicron ?? min(Double(image.size.width)/3000.0, Double(image.size.height)/3000.0)
             let geom = GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron)
-            let tally = CountingService.tallyByLargeSquare(objects: objects, geometry: geom)
+            let tally = CountingService.tallyByLargeSquare(objects: det.objects, geometry: geom)
             let ms = Date().timeIntervalSince(start) * 1000
             PerformanceLogger.shared.record("pipelineTotal", ms)
             await MainActor.run {
-                appState.segmentation = seg
-                appState.objects = objects
-                appState.labeled = labeled
+                appState.segmentation = nil
+                appState.objects = det.objects
+                appState.labeled = det.labeled
                 appState.pxPerMicron = pxPerMicron
                 self.perSquare = tally
                 self.lastDurationMs = ms

@@ -85,22 +85,17 @@ public enum ImagingPipeline {
 
     // MARK: - Segmentation
     public static func segmentCells(in image: UIImage, params: ImagingParams) -> SegmentationResult {
-        let input = resizedForProcessing(image, maxLongSide: 2048)
-        // Try to load Core ML model; if not found, fallback
-        if let _ = try? UNet256Loader.model() {
-            // Placeholder: for now, use fallback until model is provided; keep API ready
-            return classicalSegmentation(on: input, params: params)
-        } else {
-            return classicalSegmentation(on: input, params: params)
-        }
+        // For performance, avoid double-resizing. Use classical fast path directly
+        // (UNet path remains stubbed until a compiled model is present).
+        return classicalSegmentation(on: image, params: params)
     }
 
     private static func classicalSegmentation(on image: UIImage, params: ImagingParams) -> SegmentationResult {
         guard let cg = image.cgImage else { return SegmentationResult(width: 0, height: 0, mask: []) }
         let width = cg.width
         let height = cg.height
-        // Downscale for speed if very large
-        let maxDim = 512
+        // Downscale for speed if very large (tuned for responsiveness)
+        let maxDim = 384
         let scale = max(1, max(width, height) / maxDim)
         let dw = width / scale
         let dh = height / scale
@@ -112,7 +107,7 @@ public enum ImagingPipeline {
         let mask: [Bool]
         switch params.thresholdMethod {
         case .adaptive:
-            mask = adaptiveThreshold(grayD, w: dw, h: dh, block: max(3, params.blockSize/scale | 1), C: Double(params.C)/255.0)
+            mask = adaptiveThreshold(grayD, w: dw, h: dh, block: max(3, (params.blockSize/scale) | 1), C: Double(params.C)/255.0)
         case .otsu:
             let t = otsuThreshold(grayD)
             mask = grayD.map { $0 > t }
@@ -247,21 +242,39 @@ public enum ImagingPipeline {
         return data
     }
 
+    private static var integralBuffer: [Double] = []
     private static func adaptiveThreshold(_ gray: [Double], w: Int, h: Int, block: Int, C: Double) -> [Bool] {
+        // O(1) mean per pixel using an integral image (summed area table)
+        // Build integral image with (w+1)*(h+1) to simplify boundary handling
+        let iw = w + 1
+        let ih = h + 1
+        let needed = iw * ih
+        if integralBuffer.count != needed { integralBuffer = [Double](repeating: 0, count: needed) }
+        // Row 0 and col 0 remain zeros
+        for y in 0..<h {
+            var rowSum = 0.0
+            let base = (y+1) * iw
+            let prev = y * iw
+            for x in 0..<w {
+                rowSum += gray[y*w + x]
+                integralBuffer[base + (x+1)] = integralBuffer[prev + (x+1)] + rowSum
+            }
+        }
         let r = max(1, block/2)
         var out = [Bool](repeating: false, count: w*h)
+        @inline(__always) func sumRect(_ x0: Int, _ y0: Int, _ x1: Int, _ y1: Int) -> Double {
+            let xa = x0, ya = y0, xb = x1 + 1, yb = y1 + 1
+            return integralBuffer[yb*iw + xb] - integralBuffer[ya*iw + xb] - integralBuffer[yb*iw + xa] + integralBuffer[ya*iw + xa]
+        }
         for y in 0..<h {
+            let y0 = max(0, y - r)
+            let y1 = min(h - 1, y + r)
             for x in 0..<w {
-                var sum = 0.0
-                var count = 0
-                for j in max(0,y-r)...min(h-1,y+r) {
-                    for i in max(0,x-r)...min(w-1,x+r) {
-                        sum += gray[j*w+i]
-                        count += 1
-                    }
-                }
-                let mean = sum / Double(count)
-                out[y*w+x] = gray[y*w+x] > (mean - C)
+                let x0 = max(0, x - r)
+                let x1 = min(w - 1, x + r)
+                let count = Double((x1 - x0 + 1) * (y1 - y0 + 1))
+                let mean = sumRect(x0, y0, x1, y1) / count
+                out[y*w + x] = gray[y*w + x] > (mean - C)
             }
         }
         return out

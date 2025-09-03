@@ -11,16 +11,31 @@ struct CaptureView: View {
     var body: some View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                CameraPreviewView(session: viewModel.captureSession)
-                    .onAppear { viewModel.start() }
-                    .onDisappear { viewModel.stop() }
-                    .overlay(
-                        Group {
-                            if showGrid { GridGuides().stroke(Theme.border.opacity(0.4), lineWidth: 1) }
-                            TargetRect()
+                Group {
+                    if viewModel.previewEnabled {
+                        CameraPreviewView(session: viewModel.captureSession)
+                            .onAppear { viewModel.start() }
+                            .onDisappear { viewModel.stop() }
+                    } else {
+                        ZStack {
+                            Rectangle().fill(Theme.surface)
+                            VStack(spacing: 12) {
+                                Image(systemName: "camera.fill").font(.largeTitle).foregroundColor(Theme.textSecondary)
+                                Text("Camera is off").foregroundColor(Theme.textSecondary)
+                                Button("Start Camera") { viewModel.start(); viewModel.previewEnabled = true }
+                                    .buttonStyle(.borderedProminent)
+                            }
                         }
-                    )
-                    .edgesIgnoringSafeArea(.all)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(
+                    Group {
+                        if showGrid { GridGuides().stroke(Theme.border.opacity(0.4), lineWidth: 1) }
+                        TargetRect()
+                    }
+                )
+                .edgesIgnoringSafeArea(.all)
 
                 HStack(spacing: 8) {
                     Chip("Focus: " + String(format: "%.2f", viewModel.focusScore), systemImage: "viewfinder", color: Theme.surface.opacity(0.6))
