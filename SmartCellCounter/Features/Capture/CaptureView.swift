@@ -30,10 +30,11 @@ struct CaptureView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(
-                    Group {
+                    ZStack {
                         if showGrid { GridGuides().stroke(Theme.border.opacity(0.4), lineWidth: 1) }
                         TargetRect()
                     }
+                    .allowsHitTesting(false)
                 )
                 .edgesIgnoringSafeArea(.all)
 
@@ -150,11 +151,26 @@ private struct GridGuides: Shape {
 private struct TargetRect: View {
     var body: some View {
         GeometryReader { geo in
-            RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Theme.accent.opacity(0.35), style: StrokeStyle(lineWidth: 2, dash: [6,6]))
-                .frame(width: geo.size.width * 0.6, height: geo.size.height * 0.4)
-                .position(x: geo.size.width/2, y: geo.size.height/2.6)
-                .accessibilityHidden(true)
+            let rectW = geo.size.width * 0.6
+            let rectH = geo.size.height * 0.4
+            let centerX = geo.size.width / 2
+            let centerY = geo.size.height / 2
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(Theme.accent.opacity(0.35), style: StrokeStyle(lineWidth: 2, dash: [6,6]))
+                    .frame(width: rectW, height: rectH)
+                    .position(x: centerX, y: centerY)
+
+                Text("Frame the hemocytometer inside this box")
+                    .font(.footnote)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Theme.surface.opacity(0.7))
+                    .foregroundColor(Theme.textPrimary)
+                    .clipShape(Capsule())
+                    .position(x: centerX, y: centerY + rectH/2 + 18)
+            }
+            .accessibilityHidden(true)
         }
     }
 }
