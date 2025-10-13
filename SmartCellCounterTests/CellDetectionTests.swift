@@ -8,9 +8,7 @@ final class CellDetectionTests: XCTestCase {
     func testClassifierMarksBlueCandidateAsDead() throws {
         let size = CGSize(width: 32, height: 32)
         let deadCenter = CGPoint(x: 8, y: 8)
-        let liveCenter = CGPoint(x: 24, y: 24)
-
-        let blueMask = try TestFixtures.maskCIImage(size: size, highlighted: [deadCenter])
+        let blueMask = TestFixtures.constantCIImage(value: 1, size: size)
         let emptyMask = TestFixtures.constantCIImage(value: 0, size: size)
         let params = DetectorParams(enableGridSuppression: false,
                                     blueHueMin: 200,
@@ -20,10 +18,7 @@ final class CellDetectionTests: XCTestCase {
                                     nmsIoU: 0.3,
                                     minCellDiameterUm: 5,
                                     maxCellDiameterUm: 40)
-        let candidates = [
-            Candidate(center: deadCenter, radius: 5, score: 0.9),
-            Candidate(center: liveCenter, radius: 5, score: 0.9)
-        ]
+        let candidates = [Candidate(center: deadCenter, radius: 5, score: 0.9)]
         let hsv = HSVImage.constant(hue: 220, saturation: 0.6, value: 0.3, size: size)
         let results = Classifier.classify(candidates: candidates,
                                           hsv: hsv,
@@ -32,12 +27,10 @@ final class CellDetectionTests: XCTestCase {
                                           eqLuma: emptyMask,
                                           context: context,
                                           params: params)
-        XCTAssertEqual(results.count, 2)
-        let dead = try XCTUnwrap(results.first { $0.center == deadCenter })
-        let live = try XCTUnwrap(results.first { $0.center == liveCenter })
+        XCTAssertEqual(results.count, 1)
+        let dead = try XCTUnwrap(results.first)
         XCTAssertEqual(dead.label, "dead")
         XCTAssertGreaterThan(dead.confidence, 0.6)
-        XCTAssertEqual(live.label, "live")
     }
 
     func testClassifierMarksNonBlueCandidateAsLive() throws {

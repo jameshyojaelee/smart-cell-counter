@@ -42,8 +42,9 @@ enum TestFixtures {
             UIColor.black.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
             UIColor.white.setFill()
-            for pt in points {
-                ctx.fill(CGRect(x: pt.x, y: pt.y, width: 1, height: 1))
+            for point in points {
+                let y = size.height - point.y - 1
+                ctx.fill(CGRect(x: point.x, y: y, width: 2, height: 2))
             }
         }
         return try ciImage(from: img)

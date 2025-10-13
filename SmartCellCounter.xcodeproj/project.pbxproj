@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,6 +23,7 @@
 		38FB0CD6369D65F82232F0DC /* ViabilityClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53862D9283229C96B5EC52D /* ViabilityClassifier.swift */; };
 		3AEB0FEF74EB584D439C5541 /* CellDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EEB642A6484EA79D5521B4E /* CellDetectionTests.swift */; };
 		3E265A5D0117BDF6E8BE5D76 /* BlueMask.swift in Sources */ = {isa = PBXBuildFile; fileRef = A83355FBA66846019C26F5EF /* BlueMask.swift */; };
+		415CA58FB44691329B3FEEC0 /* CameraServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650238D6B02EDBCD00D0FEA0 /* CameraServiceTests.swift */; };
 		451B0C15AFC9C33F8869CC21 /* DebugOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60B963F57A723A47C7C04D01 /* DebugOverlayView.swift */; };
 		5317F5976366CB54EB277A07 /* ImagingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E928E2463FC31741B52823 /* ImagingPipeline.swift */; };
 		548840BF84AB8C8A1D265951 /* QATestsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21561A828D34A407426A872D /* QATestsView.swift */; };
@@ -53,6 +54,7 @@
 		90ACD79EE92B941B54EAE6B4 /* CameraPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B72B26CEEE620C63B19631C /* CameraPreviewView.swift */; };
 		9282D36E5D406FC2270F9811 /* ImagingTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4F2B0F341D4C853057E9FE0 /* ImagingTypes.swift */; };
 		9C7628E57B22AD241F8B7EC6 /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5AA0BC35250819AC74A731 /* HelpView.swift */; };
+		9D1C37F41C61F6D1913D57CC /* SyntheticImageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B21FAEF1A8217841F7EC35 /* SyntheticImageFactory.swift */; };
 		A500FDFD524FCB5A14D4C1BB /* CSVExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA8C603FE00EB67221FC099E /* CSVExporter.swift */; };
 		A66279C5CF3E97F7AF6997CC /* TimerUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C37F03B22060C4902EB66E2 /* TimerUtil.swift */; };
 		A78715B68D81FF8323CD651D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B2B434974A98FE00B12F /* Theme.swift */; };
@@ -104,7 +106,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartCellCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		06B9BF9C9C72F1D9261C9C4C /* SmartCellCounter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SmartCellCounter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E878F82A1A9144F678DD89A /* SelectionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlay.swift; sourceTree = "<group>"; };
 		0EA04D8E7B2205C117983C2C /* ImageContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageContext.swift; sourceTree = "<group>"; };
 		0EA53055068990142ACD4F02 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -133,13 +135,14 @@
 		58925C0FF4AC7E9514D34557 /* CountingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountingTests.swift; sourceTree = "<group>"; };
 		60B963F57A723A47C7C04D01 /* DebugOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOverlayView.swift; sourceTree = "<group>"; };
 		64E83A41FAEC9587C3AF9C6F /* CornerEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerEditorView.swift; sourceTree = "<group>"; };
+		650238D6B02EDBCD00D0FEA0 /* CameraServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraServiceTests.swift; sourceTree = "<group>"; };
 		659E804717F5692ECFFC048D /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		65B5BECC3BB7540869D5E9C8 /* CropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropView.swift; sourceTree = "<group>"; };
 		66992722B486127F3719A485 /* PurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseManagerTests.swift; sourceTree = "<group>"; };
 		68D1B6D14F5302F5CBCD404D /* RingGauge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingGauge.swift; sourceTree = "<group>"; };
 		6E1D4F3099BE5D080CDB9BD7 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		6E268C3BF9E25579EBCD7822 /* Hemocytometer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hemocytometer.swift; sourceTree = "<group>"; };
-		7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartCellCounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7314A96F12CA94A1BA4C7B82 /* SmartCellCounterUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7425E1FF26485AC6F9954C56 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
 		752CB579F54F1C50810B62F2 /* TextureFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextureFilter.swift; sourceTree = "<group>"; };
 		7871EE52A64C8DA9C8A29BC9 /* ImagingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingService.swift; sourceTree = "<group>"; };
@@ -161,7 +164,8 @@
 		A4F2B0F341D4C853057E9FE0 /* ImagingTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingTypes.swift; sourceTree = "<group>"; };
 		A83355FBA66846019C26F5EF /* BlueMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueMask.swift; sourceTree = "<group>"; };
 		AB0A8C60925A651D2EF8C7F4 /* ImagingPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingPipelineTests.swift; sourceTree = "<group>"; };
-		B2624F1FF610679C8D4F8AF9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B2624F1FF610679C8D4F8AF9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B4B21FAEF1A8217841F7EC35 /* SyntheticImageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntheticImageFactory.swift; sourceTree = "<group>"; };
 		B71668675CC691585C3A2EAE /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		B82306571B64FF33FA909C16 /* CellDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellDetector.swift; sourceTree = "<group>"; };
 		C028E9C96D015E23383BA699 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -182,7 +186,7 @@
 		F4CBE8F6CD6E57BC6992498F /* NumericField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericField.swift; sourceTree = "<group>"; };
 		F6193C664196E3FA1DE98CF9 /* ImagingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingTests.swift; sourceTree = "<group>"; };
 		F628BA1129D8E4655F6F79F1 /* FakeCameraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeCameraService.swift; sourceTree = "<group>"; };
-		FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartCellCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD59135E3D16A0C4F39C1515 /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -245,6 +249,14 @@
 				0E878F82A1A9144F678DD89A /* SelectionOverlay.swift */,
 			);
 			path = Selection;
+			sourceTree = "<group>";
+		};
+		2375DD63A3221D5A7B07D94D /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				B4B21FAEF1A8217841F7EC35 /* SyntheticImageFactory.swift */,
+			);
+			path = Fixtures;
 			sourceTree = "<group>";
 		};
 		241926D6B48E24EDAFA3E6E4 /* Models */ = {
@@ -466,6 +478,7 @@
 		E5938F8D8DA8745FBD70DF30 /* SmartCellCounterTests */ = {
 			isa = PBXGroup;
 			children = (
+				650238D6B02EDBCD00D0FEA0 /* CameraServiceTests.swift */,
 				1671582FE5BE4559F2C3188A /* CaptureViewModelTests.swift */,
 				9EEB642A6484EA79D5521B4E /* CellDetectionTests.swift */,
 				38158770F4F566A20F3F96ED /* CountingServiceTests.swift */,
@@ -477,6 +490,7 @@
 				66992722B486127F3719A485 /* PurchaseManagerTests.swift */,
 				82D1D72F93C4FBC47CFD6CAA /* SettingsStoreTests.swift */,
 				8EC4C53A34E726DA8F829C4E /* SmartCellCounterTests.swift */,
+				2375DD63A3221D5A7B07D94D /* Fixtures */,
 			);
 			path = SmartCellCounterTests;
 			sourceTree = "<group>";
@@ -601,13 +615,16 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					48C5367F77709ED7AE925347 = {
+						DevelopmentTeam = ABCDE12345;
 						ProvisioningStyle = Automatic;
 					};
 					D934DE857D5EEEE3C4F96DFE = {
+						DevelopmentTeam = ABCDE12345;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 48C5367F77709ED7AE925347;
 					};
 					E1CF21FFB29F6F7262E4FDAF = {
+						DevelopmentTeam = ABCDE12345;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -623,8 +640,9 @@
 			mainGroup = AABB5BC949F3F00ED3F8D243;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB" */,
+				ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -729,6 +747,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				415CA58FB44691329B3FEEC0 /* CameraServiceTests.swift in Sources */,
 				B2008999D14959D73D30B6DA /* CaptureViewModelTests.swift in Sources */,
 				3AEB0FEF74EB584D439C5541 /* CellDetectionTests.swift in Sources */,
 				67FB5746994843071E5A9CA7 /* CountingServiceTests.swift in Sources */,
@@ -740,6 +759,7 @@
 				E7B0824053989B55E4B1434F /* PurchaseManagerTests.swift in Sources */,
 				BD3A079FC375273A3C320B4A /* SettingsStoreTests.swift in Sources */,
 				718FFD02C085DBA7DB6DD7D1 /* SmartCellCounterTests.swift in Sources */,
+				9D1C37F41C61F6D1913D57CC /* SyntheticImageFactory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -763,7 +783,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -779,7 +798,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -845,10 +863,7 @@
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					"-dead_strip",
-				);
+				OTHER_LDFLAGS = "$(inherited) -dead_strip";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -863,7 +878,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -880,7 +894,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 954S543L87;
 				INFOPLIST_FILE = SmartCellCounter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -964,7 +977,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				DEVELOPMENT_TEAM = 954S543L87;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -981,7 +993,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 954S543L87;
 				INFOPLIST_FILE = SmartCellCounter/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1035,7 +1046,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+		ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
 			requirement = {
@@ -1048,7 +1059,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		DEED0CD32F3A1C11ED660D90 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB" */;
+			package = ACA78C0AEE9005ACE2F42BC8 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
 			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
