@@ -16,6 +16,7 @@ final class FakeCameraService: CameraServicing {
 
     var permissionGranted: Bool
     var readyImmediately: Bool
+    private(set) var torchEnabledHistory: [Bool] = []
 
     init(permissionGranted: Bool = true, readyImmediately: Bool = true) {
         self.permissionGranted = permissionGranted
@@ -45,6 +46,7 @@ final class FakeCameraService: CameraServicing {
         delegate?.cameraService(CameraService(), didCapture: img)
     }
 
-    func setTorch(enabled: Bool) {}
+    func setTorch(enabled: Bool) {
+        torchEnabledHistory.append(enabled)
+    }
 }
-

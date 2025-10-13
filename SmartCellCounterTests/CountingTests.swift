@@ -2,23 +2,26 @@ import XCTest
 @testable import SmartCellCounter
 
 final class CountingTests: XCTestCase {
-    func testInclusionRule() {
-        XCTAssertTrue(CountingService.inclusionRule(x: 1, y: 1, left: 0, top: 0, right: 10, bottom: 10))
-        XCTAssertFalse(CountingService.inclusionRule(x: 10, y: 5, left: 0, top: 0, right: 10, bottom: 10))
-        XCTAssertFalse(CountingService.inclusionRule(x: 5, y: 10, left: 0, top: 0, right: 10, bottom: 10))
+    func testMapCentroidToGridRespectsBounds() {
+        let geometry = GridGeometry(originPx: .zero, pxPerMicron: 1.0)
+        let inside = CountingService.mapCentroidToGrid(ptPx: CGPoint(x: 50, y: 50), geometry: geometry)
+        XCTAssertNotNil(inside)
+        let outside = CountingService.mapCentroidToGrid(ptPx: CGPoint(x: 4000, y: 4000), geometry: geometry)
+        XCTAssertNil(outside)
     }
 
-    func testMADRejection() {
-        let counts = [100, 102, 98, 300]
-        let res = CountingService.MADOutlierReject(counts: counts)
-        XCTAssertTrue(res.rejected.contains(300))
-        XCTAssertEqual(res.kept.count, 3)
+    func testRobustInliersRejectsOutliers() {
+        let values = [100.0, 102.0, 98.0, 300.0]
+        let mask = CountingService.robustInliers(values, threshold: 2.5)
+        XCTAssertEqual(mask.count, values.count)
+        XCTAssertTrue(mask[0])
+        XCTAssertFalse(mask[3])
     }
 
     func testConcentrationAndViability() {
-        let conc = CountingService.concentrationPerMl(meanCountPerLargeSquare: 50, dilutionFactor: 2)
-        XCTAssertEqual(conc, 50 * 10000 * 2)
-        let viab = CountingService.viabilityPercent(live: 80, dead: 20)
-        XCTAssertEqual(viab, 80)
+        let concentration = CountingService.concentrationPerML(meanCountPerLargeSquare: 50, dilutionFactor: 2)
+        XCTAssertEqual(concentration, 1_000_000, accuracy: 0.0001)
+        let viability = CountingService.viabilityPercent(live: 80, dead: 20)
+        XCTAssertEqual(viability, 80)
     }
 }

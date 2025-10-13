@@ -205,17 +205,36 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
     }
 
     private func glareRatio(_ image: CIImage) -> Double {
-        let hist = image.applyingFilter("CIAreaHistogram", parameters: [kCIInputExtentKey: CIVector(cgRect: image.extent), "inputCount": 64])
-        var data = [UInt8](repeating: 0, count: 64*4)
-        ciContext.render(hist, toBitmap: &data, rowBytes: 64*4, bounds: CGRect(x: 0, y: 0, width: 64, height: 1), format: .RGBA8, colorSpace: CGColorSpaceCreateDeviceRGB())
-        var sumAll = 0.0
-        var sumBright = 0.0
-        for i in stride(from: 0, to: data.count, by: 4) {
-            let count = Double(UInt32(data[i]) | (UInt32(data[i+1])<<8) | (UInt32(data[i+2])<<16) | (UInt32(data[i+3])<<24))
-            sumAll += count
-            if i/4 >= 56 { sumBright += count } // top ~12.5%
+        let bins = 64
+        let histogram = image.applyingFilter(
+            "CIAreaHistogram",
+            parameters: [
+                kCIInputExtentKey: CIVector(cgRect: image.extent),
+                "inputCount": bins,
+                "inputScale": 1.0
+            ]
+        )
+        var data = [Float](repeating: 0, count: bins * 4)
+        let rowBytes = bins * 4 * MemoryLayout<Float>.size
+        ciContext.render(
+            histogram,
+            toBitmap: &data,
+            rowBytes: rowBytes,
+            bounds: CGRect(x: 0, y: 0, width: bins, height: 1),
+            format: .RGBAf,
+            colorSpace: CGColorSpaceCreateDeviceRGB()
+        )
+        var total: Float = 0
+        var bright: Float = 0
+        let brightStart = Int(Double(bins) * 0.875) // top ~12.5%
+        for bin in 0..<bins {
+            let count = data[bin * 4]
+            total += count
+            if bin >= brightStart {
+                bright += count
+            }
         }
-        if sumAll == 0 { return 0 }
-        return sumBright / sumAll
+        guard total > 0 else { return 0 }
+        return Double(bright / total)
     }
 }

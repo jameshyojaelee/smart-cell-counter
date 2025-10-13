@@ -2,6 +2,7 @@ import XCTest
 import Combine
 @testable import SmartCellCounter
 
+@MainActor
 final class SmartCellCounterTests: XCTestCase {
     private var cancellables: Set<AnyCancellable> = []
 

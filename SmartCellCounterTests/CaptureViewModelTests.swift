@@ -2,6 +2,7 @@ import XCTest
 import Combine
 @testable import SmartCellCounter
 
+@MainActor
 final class CaptureViewModelTests: XCTestCase {
     private var cancellables: Set<AnyCancellable> = []
 
@@ -10,9 +11,12 @@ final class CaptureViewModelTests: XCTestCase {
         let vm = CaptureViewModel(service: fake)
 
         let exp = expectation(description: "Permission denied updates flag")
-        vm.$status.dropFirst().sink { _ in
-            if vm.permissionDenied { exp.fulfill() }
-        }.store(in: &cancellables)
+        vm.$permissionDenied
+            .dropFirst()
+            .sink { allowed in
+                if allowed { exp.fulfill() }
+            }
+            .store(in: &cancellables)
 
         vm.start()
         wait(for: [exp], timeout: 1.0)
@@ -33,5 +37,17 @@ final class CaptureViewModelTests: XCTestCase {
         fake.capturePhoto()
         wait(for: [captureExp], timeout: 1.0)
     }
-}
 
+    func testTorchStatePropagatesToService() {
+        let fake = FakeCameraService(permissionGranted: true, readyImmediately: true)
+        let vm = CaptureViewModel(service: fake)
+
+        vm.setTorch(enabled: true)
+        XCTAssertEqual(fake.torchEnabledHistory, [true])
+        XCTAssertTrue(vm.torchOn)
+
+        vm.setTorch(enabled: false)
+        XCTAssertEqual(fake.torchEnabledHistory, [true, false])
+        XCTAssertFalse(vm.torchOn)
+    }
+}

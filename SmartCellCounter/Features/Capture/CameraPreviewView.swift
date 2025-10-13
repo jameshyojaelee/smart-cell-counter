@@ -54,29 +54,34 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     }
 
     func start() {
-        camera.start()
-        camera.readinessPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] isReady in self?.ready = isReady }
-            .store(in: &cancellables)
-        camera.statePublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] st in
-                switch st {
-                case .idle: self?.status = "Idle"
-                case .preparing: self?.status = "Preparing…"
-                case .ready: self?.status = "Ready"
-                case .capturing: self?.status = "Capturing…"
-                case .saving: self?.status = "Saving…"
-                case .error(let err):
-                    self?.status = err.localizedDescription
-                    if case .permissionDenied = err { self?.permissionDenied = true } else { self?.permissionDenied = false }
+        if cancellables.isEmpty {
+            camera.readinessPublisher
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] isReady in self?.ready = isReady }
+                .store(in: &cancellables)
+            camera.statePublisher
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] st in
+                    switch st {
+                    case .idle: self?.status = "Idle"
+                    case .preparing: self?.status = "Preparing…"
+                    case .ready: self?.status = "Ready"
+                    case .capturing: self?.status = "Capturing…"
+                    case .saving: self?.status = "Saving…"
+                    case .error(let err):
+                        self?.status = err.localizedDescription
+                        if case .permissionDenied = err { self?.permissionDenied = true } else { self?.permissionDenied = false }
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
+        }
+        camera.start()
     }
     func stop() { camera.stop() }
-    func toggleTorch() { torchOn.toggle(); camera.setTorch(enabled: torchOn) }
+    func setTorch(enabled: Bool) {
+        if torchOn != enabled { torchOn = enabled }
+        camera.setTorch(enabled: enabled)
+    }
     func capture() { camera.capturePhoto() }
 
     var captureSession: AVCaptureSession { camera.captureSession }

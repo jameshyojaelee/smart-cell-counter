@@ -55,7 +55,7 @@ enum CellDetector {
         dbg["07_candidates"] = Debug.drawCandidates(on: cropped, candidates: candidates, context: context)
 
         // Blue mask for dead classification
-        let blueMask = BlueMask.mask(fromHSV: hsv, hueRange: p.blueHueMin...p.blueHueMax, minS: p.minBlueSaturation, maxV: 0.9, context: context)
+        let blueMask = BlueMask.mask(fromHSV: hsv, hueMin: p.blueHueMin, hueMax: p.blueHueMax, minS: p.minBlueSaturation, maxV: 0.9, context: context)
         dbg["08_blue_mask"] = Debug.makeMaskPreview(ci: blueMask, context: context)
 
         // 5) Rule-based classification (+ optional ML stub)
@@ -122,5 +122,4 @@ public struct Candidate {
     public let radius: CGFloat
     public let score: Double
 }
-
 

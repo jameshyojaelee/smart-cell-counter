@@ -51,7 +51,7 @@ struct CaptureView: View {
                     Toggle(isOn: $viewModel.torchOn) { Image(systemName: viewModel.torchOn ? "flashlight.on.fill" : "flashlight.off.fill") }
                         .labelsHidden()
                         .toggleStyle(.switch)
-                        .onChange(of: viewModel.torchOn) { _ in viewModel.toggleTorch() }
+                        .onChange(of: viewModel.torchOn) { newValue in viewModel.setTorch(enabled: newValue) }
                         .accessibilityLabel("Toggle Flashlight")
                 }
                 .padding(8)

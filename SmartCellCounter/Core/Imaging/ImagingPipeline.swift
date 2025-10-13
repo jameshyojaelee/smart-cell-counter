@@ -139,12 +139,11 @@ public enum ImagingPipeline {
                 s.sumX += Double(x)
                 s.sumY += Double(y)
                 s.pix += 1
-                // Perimeter increment if any 4-neighbor is background
+                // Perimeter increments for each background neighbor (4-connectivity)
                 let neighbors = [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
                 for (nx,ny) in neighbors {
                     if nx < 0 || ny < 0 || nx >= seg.width || ny >= seg.height || !seg.mask[ny*seg.width + nx] {
                         s.perimeter += 1
-                        break
                     }
                 }
                 stats[id] = s
