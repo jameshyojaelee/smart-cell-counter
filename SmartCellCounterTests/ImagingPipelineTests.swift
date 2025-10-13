@@ -53,9 +53,8 @@ final class ImagingPipelineTests: XCTestCase {
         let hsvHigh = HSVImage(h: hueHigh, s: sat, value: val)
         let hsvMid = HSVImage(h: hueMid, s: sat, value: val)
         let ctx = CIContext()
-        let wrapRange = ClosedRange<Double>(uncheckedBounds: (lower: 350, upper: 10))
-        let maskHigh = BlueMask.mask(fromHSV: hsvHigh, hueRange: wrapRange, minS: 0.3, maxV: 0.8, context: ctx)
-        let maskMid = BlueMask.mask(fromHSV: hsvMid, hueRange: wrapRange, minS: 0.3, maxV: 0.8, context: ctx)
+        let maskHigh = BlueMask.mask(fromHSV: hsvHigh, hueMin: 350, hueMax: 10, minS: 0.3, maxV: 0.8, context: ctx)
+        let maskMid = BlueMask.mask(fromHSV: hsvMid, hueMin: 350, hueMax: 10, minS: 0.3, maxV: 0.8, context: ctx)
 
         XCTAssertTrue(pixelIsSet(maskHigh, context: ctx))
         XCTAssertFalse(pixelIsSet(maskMid, context: ctx))

@@ -28,10 +28,17 @@ final class CaptureViewModelTests: XCTestCase {
         let fake = FakeCameraService(permissionGranted: true, readyImmediately: true)
         let vm = CaptureViewModel(service: fake)
 
+        let readyExp = expectation(description: "View model is ready")
+        vm.$ready
+            .dropFirst()
+            .sink { isReady in if isReady { readyExp.fulfill() } }
+            .store(in: &cancellables)
+
         let captureExp = expectation(description: "Capture publishes image")
         vm.captured.sink { _ in captureExp.fulfill() }.store(in: &cancellables)
 
         vm.start()
+        wait(for: [readyExp], timeout: 1.0)
         XCTAssertTrue(vm.ready)
 
         fake.capturePhoto()
