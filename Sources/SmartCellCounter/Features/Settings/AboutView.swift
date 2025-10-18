@@ -14,8 +14,12 @@ struct AboutView: View {
                 Text("Version: \(appVersion)").font(.subheadline).foregroundColor(.secondary)
 
                 GroupBox("Important Notice") {
-                    Text("Research use only. Not a medical device. This app is not intended for diagnosis or treatment and has not been evaluated or approved by regulatory authorities.")
-                        .font(.subheadline)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("This app is under active development and is not ready for production deployment. Expect frequent changes and incomplete functionality.")
+                            .font(.subheadline)
+                        Text("Research use only. Not a medical device. This app is not intended for diagnosis or treatment and has not been evaluated or approved by regulatory authorities.")
+                            .font(.subheadline)
+                    }
                 }
 
                 GroupBox("Privacy") {
@@ -44,4 +48,3 @@ struct AboutView: View {
         .navigationTitle("About")
     }
 }
-

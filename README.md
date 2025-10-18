@@ -1,6 +1,10 @@
 # Smart Cell Counter (iOS · SwiftUI)
 
-Automated hemocytometer cell counting on iPhone and iPad with on‑device Vision, Core Image, and (optional) Core ML. Built in SwiftUI with MVVM and modular Core services. Research use only — not a medical device.
+Automated hemocytometer cell counting on iPhone and iPad with on‑device Vision, Core Image, and (optional) Core ML. Built in SwiftUI with MVVM and modular Core services.
+
+Active development build, not production ready.
+
+> Note: Expect frequent changes and incomplete functionality while the app is under active development.
 
 ## Why Smart Cell Counter?
 
@@ -12,18 +16,21 @@ The world's first automated cell counter on mobile devices. Replace expensive la
 - Portability: Works anywhere — only your phone is required
 
 ### Professional‑Grade Automation
+
 - Laboratory‑grade algorithms: Vision‑based grid detection, robust perspective correction, segmentation, and feature analysis
 - Native iOS pipeline: Apple Vision + Core Image + optional Core ML (on‑device, offline)
 - Real‑time analysis: Complete count and viability in a few seconds
 - 100% on‑device: No internet connection required
 
 ### Superior to Traditional Methods
+
 - Automated grid detection: Eliminates manual corner alignment errors
 - Intelligent segmentation: Separates touching cells; polarity and threshold adaptivity
 - Quality assurance: Built‑in focus, glare, and density validation
 - Statistical confidence: MAD‑based outlier rejection across squares
 
 ### Complete Laboratory Solution
+
 - Research‑grade viability: Trypan blue classification with adaptive thresholds
 - Reporting: Professional PDF with images, tables, and formulas; CSV for analysis
 - Data traceability: Local history with project/operator fields
@@ -31,16 +38,16 @@ The world's first automated cell counter on mobile devices. Replace expensive la
 
 ### Cost Comparison: Mobile vs Benchtop
 
-| Feature | Smart Cell Counter | Thermo Countess 3 |
-|---------|-------------------|------------------|
-| Initial Cost | Free download | $15,000+ |
-| Pro Upgrade | $4.99 (one‑time) | N/A |
-| Processing Speed | ~3 s | ~10 s |
-| Accuracy | Sub‑pixel pipeline | High precision |
-| Portability | Smartphone | Benchtop |
-| Maintenance | None | Annual service |
-| Data Export | PDF, CSV, Images | Limited |
-| Quality Control | Focus/glare/density checks | Basic |
+| Feature          | Smart Cell Counter         | Thermo Countess 3 |
+| ---------------- | -------------------------- | ----------------- |
+| Initial Cost     | Free download              | $15,000+          |
+| Pro Upgrade      | $4.99 (one‑time)          | N/A               |
+| Processing Speed | ~3 s                       | ~10 s             |
+| Accuracy         | Sub‑pixel pipeline        | High precision    |
+| Portability      | Smartphone                 | Benchtop          |
+| Maintenance      | None                       | Annual service    |
+| Data Export      | PDF, CSV, Images           | Limited           |
+| Quality Control  | Focus/glare/density checks | Basic             |
 
 Total Savings: $17,000+ in the first year versus automated counters
 
@@ -80,60 +87,60 @@ make test     # generate and run tests on default simulator
 ## Project Structure
 
 ```
-SmartCellCounter/
-  SmartCellCounterApp.swift          # App entry + Root tab navigation
-  Info.plist                         # iOS keys (camera, photos, tracking strings)
-  PrivacyInfo.xcprivacy              # Privacy manifest (no tracking, on‑device)
-  Assets.xcassets/                   # App icons, (optional) QA fixtures
-  Core/
-    CoreModules.swift                # Module markers
-    Math/Hemocytometer.swift         # Concentration, viability, area unit conversion
-    Imaging/                         # Camera, pipeline, types
-      CameraService.swift            # AVFoundation still capture + focus/glare metrics
-      ImagingPipeline.swift          # Vision + CI + (optional) ML segmentation
-      ImagingTypes.swift             # DTOs for pipeline
-      ImagingService.swift           # Protocols (grid, perspective, segmenter)
-    Counting/CountingService.swift   # Grid indexing, inclusion rules, robust tallies
-    Viability/ViabilityClassifier.swift
-    Export/CSVExporter.swift         # Summary + detections CSV
-    Export/PDFExporter.swift         # Report with images, tables, formulas
-    Storage/StorageService.swift     # GRDB migrations + DAO + file helpers
-    Monetization/ProPurchase.swift   # StoreKit 2 purchase/restore, entitlement
-    Ads/AdsManager.swift             # Optional Google Mobile Ads (flag: ADS)
-    Privacy/ConsentManager.swift     # ATT request if personalized ads
-    Utilities/Utilities.swift        # Logger
-    Utilities/Settings.swift         # User‑tunable parameters
-    Utilities/TimerUtil.swift        # Lightweight timing helper
-    Utilities/ImageContext.swift     # Metal‑backed CIContext (shared)
-    Utilities/PerformanceLogger.swift# Per‑stage timing (capture→render)
-  Features/
-    Capture/                         # Live preview, focus/glare, torch, import
-      CameraPreviewView.swift
-      CaptureView.swift
-    Crop/
-      CornerEditorView.swift         # Pan/zoom + corner handles with snapping
-      CropView.swift                 # Live low‑res warp preview; apply full‑res
-    Review/ReviewView.swift          # Overlay toggles, lasso erase, per‑square table
-    Results/ResultsView.swift        # Cards, QC banners, CSV/PDF export, save sample
-    History/HistoryView.swift        # GRDB‑backed list with search
-    Settings/SettingsView.swift      # Chamber/stain/dilution/segmentation/privacy
-    Settings/AboutView.swift         # Version, licenses, disclaimer, links
-    Paywall/PaywallView.swift        # Pro upsell, price, restore
-    Help/HelpView.swift              # Counting rules diagram and tips
-    Debug/DebugView.swift            # Thumbnails + QA entry
-    Debug/QATestsView.swift          # Batch fixtures runner (counts + timings)
-SmartCellCounterTests/
-  SmartCellCounterTests.swift        # AppState publisher + formulas
-  ImagingPipelineTests.swift         # Polarity inversion, fallback segmentation
-  CountingServiceTests.swift         # Inclusion, MAD mean, concentration/viability
-  PurchaseManagerTests.swift         # Gating + mock purchase/restore
-SmartCellCounterUITests/
-  SmartCellCounterUITests.swift      # Screenshot attachments for ASC
+Sources/
+  SmartCellCounter/
+    SmartCellCounterApp.swift          # App entry + Root tab navigation
+    Info.plist                         # iOS keys (camera, photos, tracking strings)
+    PrivacyInfo.xcprivacy              # Privacy manifest (no tracking, on‑device)
+    Assets.xcassets/                   # App icons, (optional) QA fixtures
+    Core/
+      CoreModules.swift                # Module markers
+      Math/Hemocytometer.swift         # Concentration, viability, area unit conversion
+      Imaging/                         # Camera, pipeline, types
+        CameraService.swift            # AVFoundation still capture + focus/glare metrics
+        ImagingPipeline.swift          # Vision + CI + (optional) ML segmentation
+        ImagingTypes.swift             # DTOs for pipeline
+        ImagingService.swift           # Protocols (grid, perspective, segmenter)
+      Counting/CountingService.swift   # Grid indexing, inclusion rules, robust tallies
+      Viability/ViabilityClassifier.swift
+      Export/CSVExporter.swift         # Summary + detections CSV
+      Export/PDFExporter.swift         # Report with images, tables, formulas
+      Storage/StorageService.swift     # GRDB migrations + DAO + file helpers
+      Monetization/ProPurchase.swift   # StoreKit 2 purchase/restore, entitlement
+      Ads/AdsManager.swift             # Optional Google Mobile Ads (flag: ADS)
+      Privacy/ConsentManager.swift     # ATT request if personalized ads
+      Utilities/Utilities.swift        # Logger
+      Utilities/Settings.swift         # User‑tunable parameters
+      Utilities/TimerUtil.swift        # Lightweight timing helper
+      Utilities/ImageContext.swift     # Metal‑backed CIContext (shared)
+      Utilities/PerformanceLogger.swift# Per‑stage timing (capture→render)
+    Features/
+      Capture/                         # Live preview, focus/glare, torch, import
+        CameraPreviewView.swift
+        CaptureView.swift
+      Crop/
+        CornerEditorView.swift         # Pan/zoom + corner handles with snapping
+        CropView.swift                 # Live low‑res warp preview; apply full‑res
+      Review/ReviewView.swift          # Overlay toggles, lasso erase, per‑square table
+      Results/ResultsView.swift        # Cards, QC banners, CSV/PDF export, save sample
+      History/HistoryView.swift        # GRDB‑backed list with search
+      Settings/SettingsView.swift      # Chamber/stain/dilution/segmentation/privacy
+      Settings/AboutView.swift         # Version, licenses, disclaimer, links
+      Paywall/PaywallView.swift        # Pro upsell, price, restore
+      Help/HelpView.swift              # Counting rules diagram and tips
+      Debug/DebugView.swift            # Thumbnails + QA entry
+      Debug/QATestsView.swift          # Batch fixtures runner (counts + timings)
+Tests/
+  SmartCellCounterTests/
+    SmartCellCounterTests.swift        # AppState publisher + formulas
+    ImagingPipelineTests.swift         # Polarity inversion, fallback segmentation
+    CountingServiceTests.swift         # Inclusion, MAD mean, concentration/viability
+    PurchaseManagerTests.swift         # Gating + mock purchase/restore
+  SmartCellCounterUITests/
+    SmartCellCounterUITests.swift      # Screenshot attachments for ASC
 project.yml                          # XcodeGen project (SPM, build settings)
 .github/workflows/ci.yml             # macOS build, dynamic simulator selection
 ```
-
-Archive of the previous React Native code lives under `archive/rn/` for reference only.
 
 ## Screens & Workflows
 
@@ -161,6 +168,7 @@ Archive of the previous React Native code lives under `archive/rn/` for referenc
 5) Viability: 5×5 mean HSV/LAB around centroid. Dead if hue in blue band (200–260°), saturation above adaptive percentile, and V below global median.
 
 Performance:
+
 - Metal‑backed CIContext; reused pixel buffers to minimize allocations.
 - `PerformanceLogger` times: capture, detectRectangle, perspective, segmentation, features, viability, render overlay, pipeline total.
 - Target: < 5 s from corrected image to detections on iPhone 12+ for 1080p input.
@@ -179,10 +187,12 @@ Performance:
 ## Persistence (GRDB)
 
 Tables:
+
 - `sample(id, createdAt, operator, project, chamberType, dilutionFactor, stainType, liveTotal, deadTotal, concentrationPerMl, viabilityPercent, squaresUsed, rejectedSquares, focusScore, glareRatio, pxPerMicron, imagePath, maskPath, pdfPath, notes)`
 - `detection(sampleId, objectId, x, y, areaPx, circularity, solidity, isLive)`
 
 Features:
+
 - Migrations on first run.
 - DAO for insert sample + detections; query by project/operator; per‑sample folder with images/PDF.
 
@@ -196,7 +206,6 @@ Features:
 ## Area Selection Coordinates
 
 - ImageSelectionView renders image “fit-to-view” and manages a selection rectangle in view space. On Confirm Selection, the overlay rect is converted back to image coordinates via GeometryUtils.scale(rect:from:to:), so you can crop or pass the ROI to downstream processing.
-
 - CSV: Summary row; optional per‑object detections (Pro‑gated).
 - PDF: Header (project, operator, timestamp); original/corrected/overlay images; 3×3 count table; formulas/params; optional watermark (removed for Pro).
 - Share: System share sheets for CSV/PDF; can also save corrected image to Photos.
@@ -213,6 +222,7 @@ Features:
 ## Cell Detection v2 (Classical CV + Optional ML)
 
 Pipeline (on-device, deterministic):
+
 1) Input normalization: sRGB → linear luminance; HSV computed. Focus check via variance of Laplacian.
 2) Illumination correction: large Gaussian background estimation and division; histogram equalization on luminance.
 3) Grid/debris suppression: directional edges projection → line mask; texture mask via Laplacian energy.
@@ -224,22 +234,25 @@ Pipeline (on-device, deterministic):
 9) Overlays: blue mask, grid mask, illumination field, candidate circles; enable from Review → eye menu.
 
 Settings (persisted):
+
 - minCellDiameterUm, maxCellDiameterUm
 - blueHueMin, blueHueMax, minBlueSaturation
 - blobScoreThreshold, nmsIoU, focusMinLaplacian
 - enableGridSuppression
 
 Testing:
+
 - Add PNGs under test bundle and JSON labels under TestLabels. See `CellDetectionTests.swift`.
 - Acceptance: precision ≥ 0.9, recall ≥ 0.85 on goldens; blank control yields no circles.
-
 - PerformanceLogger records per‑stage timings; view via Debug.
 - QA Fixtures: 10 fixture images (place your PNGs under Assets as `fixture01`…`fixture10`).
+
   - Debug → QA Fixtures → Run All: shows counts, pass/fail (min/max), and durations.
 
 ## CI
 
 GitHub Actions workflow `.github/workflows/ci.yml`:
+
 - Generates project (XcodeGen)
 - Resolves SPM (GRDB)
 - Dynamically picks an available iOS Simulator (prefers iPhone 16 family) and runs tests

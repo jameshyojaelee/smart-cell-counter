@@ -10,8 +10,8 @@ Each section below is a ready-to-run instruction block for GPT-5 Codex. Copy a s
 You are GPT-5 Codex. Goal: make the SmartCellCounter test targets build and deliver stronger coverage.
 
 Tasks:
-1. Update or replace tests in `SmartCellCounterTests/CountingTests.swift`, `CellDetectionTests.swift`, and `ImagingTests.swift` that call removed APIs (`CountingService.inclusionRule`, `Segmenter.segmentCells`, `CellDetector.detect(... settings:)`). Use current entry points such as `CountingService.mapCentroidToGrid`, `CountingService.tallyByLargeSquare`, and `ImagingPipeline.segmentCells`.
-2. Introduce lightweight fixtures (e.g. under `SmartCellCounterTests/Fixtures/`) for synthetic images or labeled points needed by the updated tests. Avoid external dependencies.
+1. Update or replace tests in `Tests/SmartCellCounterTests/CountingTests.swift`, `Tests/SmartCellCounterTests/CellDetectionTests.swift`, and `Tests/SmartCellCounterTests/ImagingTests.swift` that call removed APIs (`CountingService.inclusionRule`, `Segmenter.segmentCells`, `CellDetector.detect(... settings:)`). Use current entry points such as `CountingService.mapCentroidToGrid`, `CountingService.tallyByLargeSquare`, and `ImagingPipeline.segmentCells`.
+2. Introduce lightweight fixtures (e.g. under `Tests/SmartCellCounterTests/Fixtures/`) for synthetic images or labeled points needed by the updated tests. Avoid external dependencies.
 3. Add regression tests that cover the bug fixes from Prompt 1 (glare ratio, blue mask bounds, perimeter counting, torch toggle behavior, SettingsStore clamping).
 4. Ensure tests do not require camera hardware or database writes; mock or stub services as needed.
 
@@ -175,7 +175,7 @@ You are GPT-5 Codex. Goal: establish automated validation for SmartCellCounter.
 
 Tasks:
 1. Add a GitHub Actions (or preferred CI) workflow that runs `xcodebuild test` on PRs, including SwiftLint (if available) and swift-format checks.
-2. Create at least one XCTUI test in `SmartCellCounterUITests` that walks through capture → crop → review with mocked data.
+2. Create at least one XCTUI test in `Tests/SmartCellCounterUITests` that walks through capture → crop → review with mocked data.
 3. Generate code coverage reports and publish them as CI artifacts.
 4. Document how to run CI locally via a `Makefile` target.
 

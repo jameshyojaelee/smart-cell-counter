@@ -33,9 +33,9 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: SmartCellCounter
+      - path: Sources/SmartCellCounter
     info:
-      path: SmartCellCounter/Info.plist
+      path: Sources/SmartCellCounter/Info.plist
       properties:
         CFBundleDisplayName: SmartCellCounter
         CFBundleIdentifier: com.example.SmartCellCounter
@@ -56,7 +56,7 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: SmartCellCounterTests
+      - path: Tests/SmartCellCounterTests
     dependencies:
       - target: SmartCellCounter
 
@@ -64,6 +64,6 @@ targets:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - path: SmartCellCounterUITests
+      - path: Tests/SmartCellCounterUITests
     dependencies:
       - target: SmartCellCounter
