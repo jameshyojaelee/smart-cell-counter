@@ -1,35 +1,3 @@
-## Prompt 7 – Improve Onboarding, Consent, and Help
-
-```
-You are GPT-5 Codex. Objective: guide users through first-run setup and compliance requirements.
-
-Tasks:
-1. Create a multi-step onboarding carousel explaining capture best practices, privacy, and data storage. Display it on first launch before the consent sheet.
-2. Expand `ConsentView` with explicit opt-in/opt-out toggles for crash reporting and analytics (wired into `Settings.shared.personalizedAds` / new settings as needed).
-3. Refresh `HelpView` with searchable FAQs, quick links to troubleshooting topics, and inline tutorial videos (use placeholders if assets are not yet available).
-4. Log completion events so future analytics can measure onboarding effectiveness.
-
-Validation:
-- Add snapshot tests or SwiftUI previews for the onboarding screens.
-- Ensure onboarding state is persisted (e.g. via `@AppStorage`) and can be reset for QA.
-```
-
-## Prompt 8 – Accessibility and Localization Pass
-
-```
-You are GPT-5 Codex. Goal: ensure SmartCellCounter meets accessibility standards and is ready for localization.
-
-Tasks:
-1. Audit all SwiftUI views for accessibility labels, traits, Dynamic Type scaling, and VoiceOver order. Add explicit `accessibilityLabel`, `Hint`, and `Value` where appropriate.
-2. Replace hard-coded strings with localized keys in `.strings` files (start with English). Group keys by feature module.
-3. Add support for right-to-left layouts by verifying geometry calculations (e.g. in `SelectionOverlay`, `DetectionOverlay`) respect Mirroring.
-4. Create an `AccessibilityGuide.md` summarizing key behaviors and testing steps.
-
-Validation:
-- Run the app with VoiceOver in the simulator and confirm critical workflows are navigable.
-- Add an XCTest UI test that exercises a Dynamic Type change and verifies layout constraints hold.
-```
-
 ## Prompt 9 – Performance Instrumentation and Diagnostics
 
 ```

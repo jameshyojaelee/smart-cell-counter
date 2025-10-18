@@ -31,14 +31,20 @@ final class AppState: ObservableObject {
     @Published var selectedLargeSquares: [Int] = [0, 2, 6, 8]
 
     init() {
-        do { try AppDatabase.shared.setup() } catch { Logger.log("DB setup failed: \(error)") }
-        CrashReporter.shared.start()
+        Task {
+            do { try await AppDatabase.shared.setup() }
+            catch { Logger.log("DB setup failed: \(error)") }
+        }
     }
 }
 
 struct RootView: View {
     @AppStorage("consent.shown") private var consentShown: Bool = false
+    @AppStorage("onboarding.completed") private var onboardingCompleted: Bool = false
     @StateObject private var purchases = PurchaseManager.shared
+    @State private var showConsent = false
+    @State private var showOnboarding = false
+
     var body: some View {
         TabView {
             NavigationStack { CaptureView() }
@@ -54,8 +60,23 @@ struct RootView: View {
         .background(Theme.background.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .task { await purchases.loadProducts() }
-        .sheet(isPresented: .constant(!consentShown)) {
+        .sheet(isPresented: $showConsent) {
             ConsentView(consentShown: $consentShown)
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView {
+                onboardingCompleted = true
+                AnalyticsLogger.shared.log(event: "onboarding_completed")
+                showOnboarding = false
+                showConsent = !consentShown
+            }
+        }
+        .onAppear {
+            if !onboardingCompleted {
+                showOnboarding = true
+            } else {
+                showConsent = !consentShown
+            }
         }
     }
 }

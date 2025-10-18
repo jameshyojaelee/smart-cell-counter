@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct AnimatedGradientHeader: View {
-    let title: String
-    let subtitle: String?
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey?
     @State private var animate = false
 
     var body: some View {
@@ -22,4 +22,3 @@ struct AnimatedGradientHeader: View {
         .shadow(color: Theme.accent.opacity(0.25), radius: 12, x: 0, y: 6)
     }
 }
-

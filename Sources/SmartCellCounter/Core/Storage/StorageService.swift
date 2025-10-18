@@ -3,7 +3,7 @@ import UIKit
 import GRDB
 
 public protocol Storage {
-    func setup() throws
+    func setup() async throws
 }
 
 // MARK: - Records
@@ -28,12 +28,16 @@ public struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, 
     var imagePath: String?
     var maskPath: String?
     var pdfPath: String?
+    var thumbnailPath: String?
+    var thumbnailWidth: Double = 0
+    var thumbnailHeight: Double = 0
+    var csvPath: String?
     var notes: String?
 
     enum CodingKeys: String, CodingKey {
         case id, createdAt
         case operatorName = "operator"
-        case project, chamberType, dilutionFactor, stainType, liveTotal, deadTotal, concentrationPerMl, viabilityPercent, squaresUsed, rejectedSquares, focusScore, glareRatio, pxPerMicron, imagePath, maskPath, pdfPath, notes
+        case project, chamberType, dilutionFactor, stainType, liveTotal, deadTotal, concentrationPerMl, viabilityPercent, squaresUsed, rejectedSquares, focusScore, glareRatio, pxPerMicron, imagePath, maskPath, pdfPath, thumbnailPath, thumbnailWidth, thumbnailHeight, csvPath, notes
     }
 }
 
@@ -50,22 +54,32 @@ public struct DetectionRecord: Codable, FetchableRecord, MutablePersistableRecor
 }
 
 // MARK: - App Database
-public final class AppDatabase: Storage {
+public actor AppDatabase: Storage {
     public static let shared = AppDatabase()
-    private(set) var dbQueue: DatabaseQueue?
 
-    private init() {}
+    private var dbQueue: DatabaseQueue?
+    private let databasePath: String?
+    private var configuration: Configuration
 
-    public func setup() throws {
-        let baseDir = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        let dbURL = baseDir.appendingPathComponent("smartcellcounter.sqlite")
-        var config = Configuration()
-        config.prepareDatabase { db in
+    public init(databasePath: String? = nil, configuration: Configuration = Configuration()) {
+        self.databasePath = databasePath
+        self.configuration = configuration
+        self.configuration.prepareDatabase { db in
             db.trace(options: .statement) { event in
                 Logger.log("SQL: \(event)")
             }
         }
-        dbQueue = try DatabaseQueue(path: dbURL.path, configuration: config)
+    }
+
+    public func setup() async throws {
+        guard dbQueue == nil else { return }
+        if let databasePath {
+            dbQueue = try DatabaseQueue(path: databasePath, configuration: configuration)
+        } else {
+            let baseDir = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            let dbURL = baseDir.appendingPathComponent("smartcellcounter.sqlite")
+            dbQueue = try DatabaseQueue(path: dbURL.path, configuration: configuration)
+        }
         try migrate()
     }
 
@@ -106,22 +120,33 @@ public final class AppDatabase: Storage {
                 t.column("isLive", .boolean).notNull()
             }
         }
+        migrator.registerMigration("v2_add_metadata") { db in
+            try db.alter(table: "sample") { t in
+                t.add(column: "thumbnailPath", .text)
+                t.add(column: "thumbnailWidth", .double).defaults(to: 0)
+                t.add(column: "thumbnailHeight", .double).defaults(to: 0)
+                t.add(column: "csvPath", .text)
+            }
+        }
         try migrator.migrate(dbQueue)
     }
 
     // MARK: - DAO
-    public func insertSample(_ record: SampleRecord, detections: [DetectionRecord]) throws {
+    public func insertSample(_ record: SampleRecord, detections: [DetectionRecord]) async throws {
         guard let dbQueue else { throw NSError(domain: "DB", code: -1) }
-        try dbQueue.write { db in
+        try await dbQueue.write { db in
             var rec = record
             try rec.insert(db)
-            for det in detections { var d = det; try d.insert(db) }
+            for det in detections {
+                var d = det
+                try d.insert(db)
+            }
         }
     }
 
-    public func fetchSamples(matching query: String? = nil, limit: Int = 100) throws -> [SampleRecord] {
+    public func fetchSamples(matching query: String? = nil, limit: Int = 100) async throws -> [SampleRecord] {
         guard let dbQueue else { return [] }
-        return try dbQueue.read { db in
+        return try await dbQueue.read { db in
             if let q = query, !q.isEmpty {
                 return try SampleRecord
                     .filter(sql: "project LIKE ? OR \"operator\" LIKE ?", arguments: ["%\(q)%", "%\(q)%"])
@@ -137,10 +162,17 @@ public final class AppDatabase: Storage {
         }
     }
 
-    public func fetchDetections(for sampleId: String) throws -> [DetectionRecord] {
+    public func fetchDetections(for sampleId: String) async throws -> [DetectionRecord] {
         guard let dbQueue else { return [] }
-        return try dbQueue.read { db in
+        return try await dbQueue.read { db in
             try DetectionRecord.filter(Column("sampleId") == sampleId).fetchAll(db)
+        }
+    }
+
+    public func updateSamplePaths(sampleId: String, csvPath: String?) async throws {
+        guard let dbQueue else { return }
+        try await dbQueue.write { db in
+            try db.execute(sql: "UPDATE sample SET csvPath = ? WHERE id = ?", arguments: [csvPath, sampleId])
         }
     }
 

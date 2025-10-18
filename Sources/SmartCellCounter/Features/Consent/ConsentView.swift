@@ -2,15 +2,17 @@ import SwiftUI
 
 struct ConsentView: View {
     @Binding var consentShown: Bool
-    @State private var personalizedAds = false
-    @State private var crashReports = false
+    @State private var personalizedAds = Settings.shared.personalizedAds
+    @State private var crashReports = Settings.shared.crashReportingEnabled
+    @State private var analytics = Settings.shared.analyticsEnabled
 
     var body: some View {
         NavigationStack {
             Form {
                 Section(header: Text("Privacy & Consent")) {
                     Toggle("Personalized Ads", isOn: $personalizedAds)
-                    Toggle("Crash Reports", isOn: $crashReports)
+                    Toggle("Crash Reporting", isOn: $crashReports)
+                    Toggle("Anonymous Analytics", isOn: $analytics)
                     Text("You can change these anytime in Settings.")
                         .font(.footnote)
                         .foregroundColor(.secondary)
@@ -18,14 +20,21 @@ struct ConsentView: View {
                 Section {
                     Button("Continue") {
                         Settings.shared.personalizedAds = personalizedAds
+                        Settings.shared.crashReportingEnabled = crashReports
+                        Settings.shared.analyticsEnabled = analytics
                         // If user opted-in, request ATT (if available)
                         if personalizedAds { ConsentManager().requestTrackingIfNeeded() }
+                        AnalyticsLogger.shared.log(event: "consent_completed", metadata: ["ads": String(personalizedAds), "crash": String(crashReports), "analytics": String(analytics)])
                         consentShown = true
                     }.buttonStyle(.borderedProminent)
                 }
             }
             .navigationTitle("Consent")
         }
+        .onAppear {
+            personalizedAds = Settings.shared.personalizedAds
+            crashReports = Settings.shared.crashReportingEnabled
+            analytics = Settings.shared.analyticsEnabled
+        }
     }
 }
-

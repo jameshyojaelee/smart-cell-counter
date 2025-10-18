@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @StateObject private var store = SettingsStore.shared
     @State private var validationMessage: String = ""
+    @AppStorage("onboarding.completed") private var onboardingCompleted: Bool = false
 
     var body: some View {
         List {
@@ -63,6 +64,10 @@ struct SettingsView: View {
                 NavigationLink("Help", destination: HelpView())
                 NavigationLink("Debug", destination: DebugView())
                 NavigationLink("About", destination: AboutView())
+                Button("Reset Onboarding") {
+                    onboardingCompleted = false
+                }
+                .foregroundColor(.orange)
             }
         }
         .navigationTitle("Settings")
