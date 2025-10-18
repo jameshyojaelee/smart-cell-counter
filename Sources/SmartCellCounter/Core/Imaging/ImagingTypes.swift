@@ -12,12 +12,19 @@ public struct RectangleDetectionResult {
     }
 }
 
-public enum ThresholdMethod: String {
+public enum ThresholdMethod: String, CaseIterable {
     case adaptive
     case otsu
 }
 
+public enum SegmentationStrategy: String, CaseIterable {
+    case automatic
+    case classical
+    case coreML
+}
+
 public struct ImagingParams {
+    public var strategy: SegmentationStrategy = .automatic
     public var thresholdMethod: ThresholdMethod = .adaptive
     public var blockSize: Int = 51 // odd, 31...101
     public var C: Int = 0 // -10...10
@@ -32,10 +39,25 @@ public struct SegmentationResult {
     public let height: Int
     // Binary mask; true = foreground (cell)
     public let mask: [Bool]
-    public init(width: Int, height: Int, mask: [Bool]) {
+    public let downscaleFactor: Double
+    public let polarityInverted: Bool
+    public let usedStrategy: SegmentationStrategy
+    public let originalSize: CGSize
+
+    public init(width: Int,
+                height: Int,
+                mask: [Bool],
+                downscaleFactor: Double = 1.0,
+                polarityInverted: Bool = false,
+                usedStrategy: SegmentationStrategy = .classical,
+                originalSize: CGSize = .zero) {
         self.width = width
         self.height = height
         self.mask = mask
+        self.downscaleFactor = max(downscaleFactor, 1.0)
+        self.polarityInverted = polarityInverted
+        self.usedStrategy = usedStrategy
+        self.originalSize = originalSize == .zero ? CGSize(width: width, height: height) : originalSize
     }
 }
 
@@ -67,3 +89,16 @@ public struct CellObjectLabeled: Identifiable {
     public let confidence: Double // 0...1
 }
 
+@MainActor
+extension ImagingParams {
+    static func from(_ store: SettingsStore) -> ImagingParams {
+        var params = ImagingParams()
+        params.strategy = store.segmentationStrategy
+        params.thresholdMethod = store.thresholdMethod
+        params.blockSize = store.blockSize
+        params.C = store.thresholdC
+        params.minAreaUm2 = store.areaMinUm2
+        params.maxAreaUm2 = store.areaMaxUm2
+        return params
+    }
+}

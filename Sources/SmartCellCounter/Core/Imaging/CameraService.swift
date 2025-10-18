@@ -4,6 +4,7 @@ import UIKit
 import CoreImage
 import Combine
 
+@MainActor
 public protocol CameraServiceDelegate: AnyObject {
     func cameraService(_ service: CameraService, didUpdateFocusScore score: Double, glareRatio: Double)
     func cameraService(_ service: CameraService, didCapture image: UIImage)
@@ -62,6 +63,10 @@ public final class CameraService: NSObject, CameraServicing {
     public func stop() {
         queue.async {
             self.session.stopRunning()
+            DispatchQueue.main.async {
+                self.isReady = false
+                self.stateSubject.send(.idle)
+            }
         }
     }
 
@@ -82,16 +87,18 @@ public final class CameraService: NSObject, CameraServicing {
     }
 
     public func setFocusExposure(point: CGPoint) {
-        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { return }
-        do {
-            try device.lockForConfiguration()
-            if device.isFocusPointOfInterestSupported { device.focusPointOfInterest = point }
-            if device.isFocusModeSupported(.autoFocus) { device.focusMode = .autoFocus }
-            if device.isExposurePointOfInterestSupported { device.exposurePointOfInterest = point }
-            if device.isExposureModeSupported(.autoExpose) { device.exposureMode = .autoExpose }
-            device.unlockForConfiguration()
-        } catch {
-            Logger.log("Camera config error: \(error)")
+        queue.async {
+            guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else { return }
+            do {
+                try device.lockForConfiguration()
+                if device.isFocusPointOfInterestSupported { device.focusPointOfInterest = point }
+                if device.isFocusModeSupported(.autoFocus) { device.focusMode = .autoFocus }
+                if device.isExposurePointOfInterestSupported { device.exposurePointOfInterest = point }
+                if device.isExposureModeSupported(.autoExpose) { device.exposureMode = .autoExpose }
+                device.unlockForConfiguration()
+            } catch {
+                Logger.log("Camera config error: \(error)")
+            }
         }
     }
 
@@ -128,13 +135,15 @@ public final class CameraService: NSObject, CameraServicing {
     }
 
     public func setTorch(enabled: Bool) {
-        guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
-        do {
-            try device.lockForConfiguration()
-            device.torchMode = enabled ? .on : .off
-            device.unlockForConfiguration()
-        } catch {
-            Logger.log("Torch error: \(error)")
+        queue.async {
+            guard let device = AVCaptureDevice.default(for: .video), device.hasTorch else { return }
+            do {
+                try device.lockForConfiguration()
+                device.torchMode = enabled ? .on : .off
+                device.unlockForConfiguration()
+            } catch {
+                Logger.log("Torch error: \(error)")
+            }
         }
     }
 
@@ -174,7 +183,9 @@ extension CameraService: AVCapturePhotoCaptureDelegate {
         if let error = error { Logger.log("Photo capture error: \(error)"); return }
         guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else { return }
         if let start = captureStart { PerformanceLogger.shared.record("capture", Date().timeIntervalSince(start) * 1000) }
-        delegate?.cameraService(self, didCapture: image)
+        DispatchQueue.main.async {
+            self.delegate?.cameraService(self, didCapture: image)
+        }
     }
 }
 

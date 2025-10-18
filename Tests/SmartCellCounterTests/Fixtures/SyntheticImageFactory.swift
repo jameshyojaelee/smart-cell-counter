@@ -1,5 +1,6 @@
 import UIKit
 import AVFoundation
+@testable import SmartCellCounter
 
 enum TestFixtures {
     enum Error: Swift.Error {
@@ -104,5 +105,16 @@ enum TestFixtures {
                                                                     sampleBufferOut: &sampleBuffer)
         guard createStatus == noErr, let buffer = sampleBuffer else { throw Error.sampleBufferCreation }
         return buffer
+    }
+
+    static func cellObject(id: Int, centroid: CGPoint, pixelCount: Int = 12) -> CellObject {
+        CellObject(id: id,
+                   pixelCount: pixelCount,
+                   areaPx: Double(pixelCount),
+                   perimeterPx: Double(pixelCount),
+                   circularity: 0.9,
+                   solidity: 0.95,
+                   centroid: centroid,
+                   bbox: CGRect(x: centroid.x - 1, y: centroid.y - 1, width: 2, height: 2))
     }
 }

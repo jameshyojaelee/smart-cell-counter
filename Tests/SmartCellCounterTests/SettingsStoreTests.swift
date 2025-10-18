@@ -46,4 +46,13 @@ final class SettingsStoreTests: XCTestCase {
         s.blockSize = 130
         XCTAssertEqual(s.blockSize, 101)
     }
+
+    func testSegmentationStrategyPersistsAndResets() {
+        let s = SettingsStore.shared
+        defer { s.reset() }
+        s.segmentationStrategy = .coreML
+        XCTAssertEqual(s.segmentationStrategy, .coreML)
+        s.reset()
+        XCTAssertEqual(s.segmentationStrategy, .automatic)
+    }
 }

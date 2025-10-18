@@ -28,6 +28,33 @@ final class ImagingPipelineTests: XCTestCase {
         XCTAssertGreaterThan(fg, 0, "Fallback segmentation should produce some foreground")
     }
 
+    func testSegmentationMetadataTracksDownscaleAndPolarity() {
+        var params = ImagingParams()
+        params.strategy = .classical
+        params.thresholdMethod = .otsu
+        let img = Self.makeCircleImage(size: CGSize(width: 1024, height: 1024), radius: 80)
+        let seg = ImagingPipeline.segmentCells(in: img, params: params)
+        XCTAssertGreaterThan(seg.downscaleFactor, 1.0)
+        XCTAssertTrue(seg.polarityInverted)
+        XCTAssertEqual(seg.usedStrategy, .classical)
+        XCTAssertEqual(Int(seg.originalSize.width), 1024)
+        XCTAssertEqual(Int(seg.originalSize.height), 1024)
+    }
+
+    func testCoreMLStrategyFallsBackWhenModelMissing() {
+        var params = ImagingParams()
+        params.strategy = .coreML
+        let img = Self.makeCircleImage(size: CGSize(width: 128, height: 128), radius: 32)
+        let seg = ImagingPipeline.segmentCells(in: img, params: params)
+        if ImagingPipeline.isCoreMLSegmentationAvailable {
+            XCTAssertEqual(seg.usedStrategy, .coreML)
+        } else {
+            XCTAssertEqual(seg.usedStrategy, .classical)
+        }
+        XCTAssertTrue(seg.width > 0)
+        XCTAssertTrue(seg.height > 0)
+    }
+
     func testObjectFeaturesPerimeterCountsAllEdges() throws {
         let mask: [Bool] = [
             true, true, false,

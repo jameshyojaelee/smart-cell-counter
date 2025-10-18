@@ -28,6 +28,7 @@ final class AppState: ObservableObject {
     @Published var glareRatio: Double = 0
     @Published var samples: [Sample] = []
     @Published var debugImages: [String: UIImage] = [:]
+    @Published var selectedLargeSquares: [Int] = [0, 2, 6, 8]
 
     init() {
         do { try AppDatabase.shared.setup() } catch { Logger.log("DB setup failed: \(error)") }

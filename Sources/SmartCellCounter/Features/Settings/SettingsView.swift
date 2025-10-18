@@ -22,6 +22,17 @@ struct SettingsView: View {
             }
 
             Section(header: Text("Segmentation")) {
+                Picker("Strategy", selection: $store.segmentationStrategy) {
+                    Text("Automatic").tag(SegmentationStrategy.automatic)
+                    Text("Classical").tag(SegmentationStrategy.classical)
+                    Text("Core ML").tag(SegmentationStrategy.coreML)
+                }
+                .pickerStyle(.segmented)
+                if store.segmentationStrategy == .coreML && !ImagingPipeline.isCoreMLSegmentationAvailable {
+                    Text("UNet model not bundled – falling back to classical segmentation.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
                 Picker("Threshold", selection: $store.thresholdMethod) {
                     Text("Adaptive").tag(ThresholdMethod.adaptive)
                     Text("Otsu").tag(ThresholdMethod.otsu)

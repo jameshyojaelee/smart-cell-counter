@@ -3,42 +3,48 @@ import UIKit
 @testable import SmartCellCounter
 
 final class ImagingTests: XCTestCase {
-    func testAreaConversion() {
-        // pxPerMicron^2 conversion check using a known area
-        let pxPerMicron = 2.0 // 2 px / µm -> 4 px per µm^2
-        let areaUm2 = 100.0
-        let expectedPx = Int(areaUm2 * pow(pxPerMicron, 2))
-        XCTAssertEqual(expectedPx, 400)
+    func testAreaConversionMatchesHemocytometer() {
+        let pxPerMicron = 2.0 // 2 px / µm
+        let pixelCount = 400
+        let areaUm2 = Hemocytometer.areaUm2(pixelCount: pixelCount, pxPerMicron: pxPerMicron)
+        XCTAssertEqual(areaUm2, 100, accuracy: 1e-6)
+        let roundTrip = Int(areaUm2 * pow(pxPerMicron, 2))
+        XCTAssertEqual(roundTrip, pixelCount)
     }
 
-    func testSegmentationFallbackWhenModelMissing() {
-        let size = CGSize(width: 32, height: 32)
-        UIGraphicsBeginImageContextWithOptions(size, true, 1)
-        UIColor.white.setFill()
-        UIRectFill(CGRect(origin: .zero, size: size))
-        UIColor.black.setFill()
-        UIRectFill(CGRect(x: 10, y: 10, width: 12, height: 12))
-        let image = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        let params = ImagingParams()
-        let seg = ImagingPipeline.segmentCells(in: image, params: params)
-        XCTAssertEqual(seg.width > 0 && seg.height > 0, true)
+    func testSegmentationFallbackWhenModelMissingUsesClassicalPath() {
+        let circle = TestFixtures.circleImage(size: CGSize(width: 48, height: 48),
+                                              circleRect: CGRect(x: 18, y: 18, width: 12, height: 12),
+                                              fill: .black,
+                                              background: .white)
+        var params = ImagingParams()
+        params.thresholdMethod = .otsu
+        let seg = ImagingPipeline.segmentCells(in: circle, params: params)
+        XCTAssertTrue(seg.width > 0 && seg.height > 0)
         XCTAssertEqual(seg.mask.count, seg.width * seg.height)
+        let foregroundCount = seg.mask.filter { $0 }.count
+        XCTAssertGreaterThan(foregroundCount, 0, "Classical segmentation should mark the synthetic cell foreground.")
+        XCTAssertEqual(seg.usedStrategy, .classical)
+    }
+
+    func testSegmentationFeedsObjectFeatures() {
+        let circle = TestFixtures.circleImage(size: CGSize(width: 64, height: 64),
+                                              circleRect: CGRect(x: 24, y: 24, width: 16, height: 16),
+                                              fill: .black,
+                                              background: .white)
+        let seg = ImagingPipeline.segmentCells(in: circle, params: ImagingParams())
+        let objects = ImagingPipeline.objectFeatures(from: seg, pxPerMicron: nil)
+        XCTAssertFalse(objects.isEmpty)
+        let object = try? XCTUnwrap(objects.first)
+        XCTAssertGreaterThan(object?.pixelCount ?? 0, 0)
+        XCTAssertGreaterThan(object?.perimeterPx ?? 0, 0)
     }
 
     func testPolarityInversionCheck() {
-        // If background bright and objects dark vs inverted
-        // Here we just ensure our Otsu fallback yields valid thresholded mask
-        let size = CGSize(width: 64, height: 64)
-        UIGraphicsBeginImageContextWithOptions(size, true, 1)
-        UIColor.white.setFill(); UIRectFill(CGRect(origin: .zero, size: size))
-        UIColor.black.setFill(); UIBezierPath(ovalIn: CGRect(x: 20, y: 20, width: 24, height: 24)).fill()
-        let img = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
-        var params = ImagingParams()
-        params.thresholdMethod = .otsu
-        let seg = ImagingPipeline.segmentCells(in: img, params: params)
-        let sum = seg.mask.reduce(0) { $0 + ($1 ? 1 : 0) }
-        XCTAssertGreaterThan(sum, 0)
+        let bright = TestFixtures.solidImage(color: .white, size: CGSize(width: 32, height: 32))
+        XCTAssertTrue(ImagingPipeline.shouldInvertPolarity(for: bright))
+
+        let dark = TestFixtures.solidImage(color: .black, size: CGSize(width: 32, height: 32))
+        XCTAssertFalse(ImagingPipeline.shouldInvertPolarity(for: dark))
     }
 }

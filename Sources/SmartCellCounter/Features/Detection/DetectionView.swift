@@ -11,7 +11,12 @@ struct DetectionView: View {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFit()
-                    .overlay(DebugOverlayView(debugImages: appState.debugImages, kind: overlayKind).opacity(showOverlays ? 1 : 0))
+                    .overlay(
+                        DebugOverlayView(debugImages: appState.debugImages,
+                                         kind: overlayKind,
+                                         segmentation: appState.segmentation)
+                        .opacity(showOverlays ? 1 : 0)
+                    )
                 HStack {
                     Toggle("Overlays", isOn: $showOverlays).toggleStyle(.switch)
                     Picker("Kind", selection: $overlayKind) {
@@ -19,6 +24,8 @@ struct DetectionView: View {
                         Text("Blue Mask").tag("Blue Mask")
                         Text("Grid Mask").tag("Grid Mask")
                         Text("Illumination").tag("Illumination")
+                        Text("Segmentation Mask").tag("Segmentation Mask")
+                        Text("Segmentation Info").tag("Segmentation Info")
                     }.pickerStyle(.segmented)
                 }.padding()
             } else {
@@ -28,5 +35,4 @@ struct DetectionView: View {
         .navigationTitle("Detection")
     }
 }
-
 

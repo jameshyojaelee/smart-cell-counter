@@ -57,6 +57,31 @@ final class CellDetectionTests: XCTestCase {
         XCTAssertEqual(candidate.label, "live")
         XCTAssertGreaterThan(candidate.confidence, 0.7)
     }
+
+    func testBlueMaskRespectsInputExtent() throws {
+        let size = CGSize(width: 16, height: 16)
+        let hsv = HSVImage.constant(hue: 215, saturation: 0.7, value: 0.3, size: size)
+        let mask = BlueMask.mask(fromHSV: hsv,
+                                 hueMin: 200,
+                                 hueMax: 260,
+                                 minS: 0.3,
+                                 maxV: 0.8,
+                                 context: context)
+
+        let expectedExtent = CGRect(origin: .zero, size: size)
+        XCTAssertEqual(mask.extent.integral, expectedExtent.integral)
+
+        var pixels = [UInt8](repeating: 0, count: Int(size.width * size.height * 4))
+        context.render(mask,
+                       toBitmap: &pixels,
+                       rowBytes: Int(size.width) * 4,
+                       bounds: mask.extent,
+                       format: .RGBA8,
+                       colorSpace: CGColorSpaceCreateDeviceRGB())
+
+        XCTAssertEqual(pixels.count, Int(size.width * size.height * 4))
+        XCTAssertTrue(pixels.contains { $0 > 0 }, "Mask should mark blue region as foreground within bounds.")
+    }
 }
 
 private extension HSVImage {

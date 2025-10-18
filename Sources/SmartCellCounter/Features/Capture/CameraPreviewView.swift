@@ -4,13 +4,17 @@ import AVFoundation
 
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
+    var onFocusTap: ((CGPoint, CGPoint) -> Void)?
 
     func makeUIView(context: Context) -> UIView {
         let view = UIView()
         let layer = AVCaptureVideoPreviewLayer(session: session)
         layer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(layer)
+        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
+        view.addGestureRecognizer(tap)
         context.coordinator.previewLayer = layer
+        context.coordinator.onFocusTap = onFocusTap
         return view
     }
 
@@ -21,10 +25,26 @@ struct CameraPreviewView: UIViewRepresentable {
                 conn.videoOrientation = .portrait
             }
         }
+        context.coordinator.onFocusTap = onFocusTap
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
-    class Coordinator { var previewLayer: AVCaptureVideoPreviewLayer? }
+
+    class Coordinator: NSObject {
+        var previewLayer: AVCaptureVideoPreviewLayer?
+        var onFocusTap: ((CGPoint, CGPoint) -> Void)?
+
+        @objc func handleTap(_ gesture: UITapGestureRecognizer) {
+            guard
+                let view = gesture.view,
+                let layer = previewLayer,
+                let onFocusTap
+            else { return }
+            let layerPoint = gesture.location(in: view)
+            let devicePoint = layer.captureDevicePointConverted(fromLayerPoint: layerPoint)
+            onFocusTap(layerPoint, devicePoint)
+        }
+    }
 }
 
 @MainActor
@@ -36,65 +56,199 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     @Published var ready: Bool = false
     @Published var status: String = "Preparing…"
     @Published var permissionDenied: Bool = false
-    @Published var navigatingToCrop = false
     @Published var previewEnabled: Bool = false
+    @Published private(set) var authorizationStatus: AVAuthorizationStatus
+
     private let capturedSubject = PassthroughSubject<UIImage, Never>()
     var captured: AnyPublisher<UIImage, Never> { capturedSubject.eraseToAnyPublisher() }
 
+    private var cancellables: Set<AnyCancellable> = []
+    private var subscriptionsConfigured = false
+    private var isSessionRunning = false
+
     override init() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
         self.camera = CameraService()
+        self.authorizationStatus = status
+        self.permissionDenied = (status == .denied || status == .restricted)
+        self.previewEnabled = status == .authorized
         super.init()
         camera.delegate = self
     }
 
     init(service: CameraServicing) {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
         self.camera = service
+        self.authorizationStatus = status
+        self.permissionDenied = (status == .denied || status == .restricted)
+        self.previewEnabled = status == .authorized
         super.init()
         camera.delegate = self
     }
 
-    func start() {
-        if cancellables.isEmpty {
-            camera.readinessPublisher
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] isReady in self?.ready = isReady }
-                .store(in: &cancellables)
-            camera.statePublisher
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] st in
-                    switch st {
-                    case .idle: self?.status = "Idle"
-                    case .preparing: self?.status = "Preparing…"
-                    case .ready: self?.status = "Ready"
-                    case .capturing: self?.status = "Capturing…"
-                    case .saving: self?.status = "Saving…"
-                    case .error(let err):
-                        self?.status = err.localizedDescription
-                        if case .permissionDenied = err { self?.permissionDenied = true } else { self?.permissionDenied = false }
-                    }
-                }
-                .store(in: &cancellables)
+    // MARK: - Lifecycle
+    func onAppear() {
+        refreshAuthorizationStatus()
+        switch authorizationStatus {
+        case .authorized:
+            start()
+        case .notDetermined:
+            status = "Requesting access…"
+            requestAuthorization()
+        case .denied, .restricted:
+            permissionDenied = true
+            previewEnabled = false
+            status = "Camera access denied. Open Settings to continue."
+        @unknown default:
+            status = "Camera unavailable."
         }
-        camera.start()
     }
-    func stop() { camera.stop() }
+
+    func onDisappear() {
+        stop()
+    }
+
+    func handleScenePhase(_ phase: ScenePhase) {
+        switch phase {
+        case .active:
+            if authorizationStatus == .authorized {
+                start()
+            }
+        case .inactive, .background:
+            stop()
+        @unknown default:
+            break
+        }
+    }
+
+    // MARK: - Camera control
+    func start() {
+        guard !permissionDenied else {
+            status = "Camera access denied. Open Settings to continue."
+            previewEnabled = false
+            return
+        }
+        configureSubscriptionsIfNeeded()
+        guard !isSessionRunning else { return }
+        camera.start()
+        isSessionRunning = true
+    }
+
+    func stop() {
+        guard isSessionRunning else { return }
+        camera.stop()
+        isSessionRunning = false
+        ready = false
+        previewEnabled = false
+    }
+
+    func capture() {
+        guard ready else { return }
+        camera.capturePhoto()
+    }
+
     func setTorch(enabled: Bool) {
-        if torchOn != enabled { torchOn = enabled }
+        torchOn = enabled
         camera.setTorch(enabled: enabled)
     }
-    func capture() { camera.capturePhoto() }
+
+    func focus(at devicePoint: CGPoint) {
+        guard !permissionDenied else { return }
+        camera.setFocusExposure(point: devicePoint)
+        status = "Focusing…"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            if self.ready && !self.permissionDenied {
+                self.status = "Ready"
+            }
+        }
+    }
 
     var captureSession: AVCaptureSession { camera.captureSession }
 
     // MARK: - CameraServiceDelegate
     func cameraService(_ service: CameraService, didUpdateFocusScore score: Double, glareRatio: Double) {
-        self.focusScore = score
+        focusScore = score
         self.glareRatio = glareRatio
     }
 
     func cameraService(_ service: CameraService, didCapture image: UIImage) {
+        status = "Saving…"
         capturedSubject.send(image)
     }
 
-    private var cancellables: Set<AnyCancellable> = []
+    // MARK: - Private helpers
+    private func configureSubscriptionsIfNeeded() {
+        guard !subscriptionsConfigured else { return }
+        subscriptionsConfigured = true
+
+        camera.readinessPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isReady in
+                guard let self else { return }
+                self.ready = isReady
+                if isReady {
+                    self.previewEnabled = true
+                    self.status = "Ready"
+                } else if !self.permissionDenied {
+                    self.status = "Preparing…"
+                }
+            }
+            .store(in: &cancellables)
+
+        camera.statePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let self else { return }
+                switch state {
+                case .idle:
+                    self.status = "Idle"
+                    self.ready = false
+                case .preparing:
+                    self.status = "Preparing…"
+                case .ready:
+                    self.status = "Ready"
+                    self.ready = true
+                    self.permissionDenied = false
+                    self.previewEnabled = true
+                case .capturing:
+                    self.status = "Capturing…"
+                case .saving:
+                    self.status = "Saving…"
+                case .error(let error):
+                    self.ready = false
+                    self.status = error.errorDescription ?? "Camera error."
+                    if case .permissionDenied = error {
+                        self.permissionDenied = true
+                        self.previewEnabled = false
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func refreshAuthorizationStatus() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        authorizationStatus = status
+        permissionDenied = (status == .denied || status == .restricted)
+        if status != .authorized {
+            previewEnabled = false
+        }
+    }
+
+    private func requestAuthorization() {
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            Task { @MainActor in
+                let status: AVAuthorizationStatus = granted ? .authorized : .denied
+                self.authorizationStatus = status
+                self.permissionDenied = !granted
+                self.previewEnabled = granted
+                if granted {
+                    self.start()
+                } else {
+                    self.status = "Camera access denied. Open Settings to continue."
+                }
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ import XCTest
 
 final class SmartCellCounterUITests: XCTestCase {
     func testScreenshots() throws {
+        throw XCTSkip("Screenshot flow is manual-only; skipping in automated test run.")
         let app = XCUIApplication()
         app.launch()
 

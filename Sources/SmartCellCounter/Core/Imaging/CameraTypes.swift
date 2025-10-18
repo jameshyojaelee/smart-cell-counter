@@ -22,5 +22,5 @@ public protocol CameraServicing: AnyObject {
     func stop()
     func capturePhoto()
     func setTorch(enabled: Bool)
+    func setFocusExposure(point: CGPoint)
 }
-

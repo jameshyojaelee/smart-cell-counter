@@ -3,9 +3,18 @@ import UIKit
 import Vision
 import CoreImage
 import CoreML
+import CoreVideo
 import Metal
 
 public enum ImagingPipeline {
+    private static let unetLock = DispatchQueue(label: "com.smartcellcounter.unet.lock")
+    private static var cachedUNetModel: MLModel?
+    private static var unetLoadAttempted = false
+
+    public static var isCoreMLSegmentationAvailable: Bool {
+        loadUNetModel() != nil
+    }
+
     // MARK: - Grid Detection
     public static func detectGrid(in image: UIImage) -> RectangleDetectionResult {
         guard let cg = image.cgImage else {
@@ -85,20 +94,36 @@ public enum ImagingPipeline {
 
     // MARK: - Segmentation
     public static func segmentCells(in image: UIImage, params: ImagingParams) -> SegmentationResult {
-        // For performance, avoid double-resizing. Use classical fast path directly
-        // (UNet path remains stubbed until a compiled model is present).
-        return classicalSegmentation(on: image, params: params)
+        let requested = params.strategy
+        switch requested {
+        case .classical:
+            return classicalSegmentation(on: image, params: params, requested: requested)
+        case .coreML, .automatic:
+            if let model = loadUNetModel() {
+                do {
+                    return try coreMLSegmentation(on: image, params: params, model: model)
+                } catch {
+                    Logger.log("Core ML segmentation failed, falling back to classical. Error: \(error)")
+                }
+            } else if requested == .coreML {
+                Logger.log("Core ML segmentation requested but UNet model not found. Reverting to classical path.")
+            }
+            return classicalSegmentation(on: image, params: params, requested: .classical)
+        }
     }
 
-    private static func classicalSegmentation(on image: UIImage, params: ImagingParams) -> SegmentationResult {
-        guard let cg = image.cgImage else { return SegmentationResult(width: 0, height: 0, mask: []) }
+    private static func classicalSegmentation(on image: UIImage, params: ImagingParams, requested: SegmentationStrategy) -> SegmentationResult {
+        guard let cg = image.cgImage else {
+            return SegmentationResult(width: 0, height: 0, mask: [], usedStrategy: .classical, originalSize: image.size)
+        }
         let width = cg.width
         let height = cg.height
         // Downscale for speed if very large (tuned for responsiveness)
         let maxDim = 384
-        let scale = max(1, max(width, height) / maxDim)
-        let dw = width / scale
-        let dh = height / scale
+        let rawScale = max(1.0, Double(max(width, height)) / Double(maxDim))
+        let dw = max(1, Int(round(Double(width) / rawScale)))
+        let dh = max(1, Int(round(Double(height) / rawScale)))
+        let scale = max(1.0, Double(width) / Double(dw))
         let gray = grayscalePixels(from: cg, width: dw, height: dh)
         let invert = shouldInvertPolarity(for: image)
         var grayD = gray.map { Double($0)/255.0 }
@@ -107,13 +132,199 @@ public enum ImagingPipeline {
         let mask: [Bool]
         switch params.thresholdMethod {
         case .adaptive:
-            mask = adaptiveThreshold(grayD, w: dw, h: dh, block: max(3, (params.blockSize/scale) | 1), C: Double(params.C)/255.0)
+            let adjustedBlock = max(3, Int(Double(params.blockSize) / scale)) | 1
+            mask = adaptiveThreshold(grayD, w: dw, h: dh, block: adjustedBlock, C: Double(params.C)/255.0)
         case .otsu:
             let t = otsuThreshold(grayD)
             mask = grayD.map { $0 > t }
         }
         PerformanceLogger.shared.record("segmentation", Date().timeIntervalSince(start) * 1000)
-        return SegmentationResult(width: dw, height: dh, mask: mask)
+        return SegmentationResult(width: dw,
+                                  height: dh,
+                                  mask: mask,
+                                  downscaleFactor: scale,
+                                  polarityInverted: invert,
+                                  usedStrategy: .classical,
+                                  originalSize: CGSize(width: width, height: height))
+    }
+
+    private static func coreMLSegmentation(on image: UIImage, params _: ImagingParams, model: MLModel) throws -> SegmentationResult {
+        guard let cg = image.cgImage else {
+            throw NSError(domain: "Segmentation", code: -2, userInfo: [NSLocalizedDescriptionKey: "Missing CGImage"])
+        }
+        let originalWidth = cg.width
+        let originalHeight = cg.height
+        let invert = shouldInvertPolarity(for: image)
+        let start = Date()
+
+        let description = model.modelDescription
+        guard let (inputName, inputDescription) = description.inputDescriptionsByName.first else {
+            throw NSError(domain: "Segmentation", code: -3, userInfo: [NSLocalizedDescriptionKey: "Model has no inputs"])
+        }
+        guard inputDescription.type == .image, let constraint = inputDescription.imageConstraint else {
+            throw NSError(domain: "Segmentation", code: -4, userInfo: [NSLocalizedDescriptionKey: "Model input must be image"])
+        }
+        guard let pixelBuffer = pixelBuffer(from: image, width: constraint.pixelsWide, height: constraint.pixelsHigh) else {
+            throw NSError(domain: "Segmentation", code: -5, userInfo: [NSLocalizedDescriptionKey: "Could not create pixel buffer"])
+        }
+        let provider = try MLDictionaryFeatureProvider(dictionary: [inputName: MLFeatureValue(pixelBuffer: pixelBuffer)])
+        let output = try model.prediction(from: provider)
+
+        guard let (mask, mw, mh) = extractMask(from: output, description: description) else {
+            throw NSError(domain: "Segmentation", code: -6, userInfo: [NSLocalizedDescriptionKey: "Unsupported model output"])
+        }
+
+        PerformanceLogger.shared.record("segmentation", Date().timeIntervalSince(start) * 1000)
+        let downscale = max(Double(originalWidth) / Double(max(1, mw)),
+                            Double(originalHeight) / Double(max(1, mh)))
+
+        return SegmentationResult(width: mw,
+                                  height: mh,
+                                  mask: mask,
+                                  downscaleFactor: downscale,
+                                  polarityInverted: invert,
+                                  usedStrategy: .coreML,
+                                  originalSize: CGSize(width: originalWidth, height: originalHeight))
+    }
+
+    private static func loadUNetModel() -> MLModel? {
+        if let cached = cachedUNetModel { return cached }
+        return unetLock.sync {
+            if let cached = cachedUNetModel { return cached }
+            if unetLoadAttempted { return nil }
+            unetLoadAttempted = true
+            do {
+                let model = try UNet256Loader.model()
+                cachedUNetModel = model
+                return model
+            } catch {
+                Logger.log("UNet256 model unavailable: \(error)")
+                return nil
+            }
+        }
+    }
+
+    private static func pixelBuffer(from image: UIImage, width: Int, height: Int) -> CVPixelBuffer? {
+        let targetSize = CGSize(width: width, height: height)
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let scaled = renderer.image { ctx in
+            UIColor.black.setFill()
+            ctx.fill(CGRect(origin: .zero, size: targetSize))
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+        guard let cg = scaled.cgImage else { return nil }
+
+        var buffer: CVPixelBuffer?
+        let attrs: [CFString: Any] = [
+            kCVPixelBufferCGImageCompatibilityKey: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true
+        ]
+        let status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                         width,
+                                         height,
+                                         kCVPixelFormatType_32BGRA,
+                                         attrs as CFDictionary,
+                                         &buffer)
+        guard status == kCVReturnSuccess, let pixelBuffer = buffer else { return nil }
+
+        CVPixelBufferLockBaseAddress(pixelBuffer, [])
+        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, []) }
+        guard let base = CVPixelBufferGetBaseAddress(pixelBuffer) else { return nil }
+        guard let context = CGContext(data: base,
+                                      width: width,
+                                      height: height,
+                                      bitsPerComponent: 8,
+                                      bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) else {
+            return nil
+        }
+        context.interpolationQuality = .high
+        context.draw(cg, in: CGRect(origin: .zero, size: targetSize))
+        return pixelBuffer
+    }
+
+    private static func extractMask(from output: MLFeatureProvider, description: MLModelDescription) -> ([Bool], Int, Int)? {
+        for (name, desc) in description.outputDescriptionsByName {
+            guard let value = output.featureValue(for: name) else { continue }
+            switch desc.type {
+            case .multiArray:
+                if let array = value.multiArrayValue, let mask = mask(from: array) {
+                    return mask
+                }
+            case .image:
+                if let buffer = value.imageBufferValue, let mask = mask(from: buffer) {
+                    return mask
+                }
+            default:
+                continue
+            }
+        }
+        return nil
+    }
+
+    private static func mask(from multiArray: MLMultiArray) -> ([Bool], Int, Int)? {
+        let shape = multiArray.shape.map { Int(truncating: $0) }
+        guard !shape.isEmpty else { return nil }
+
+        var height = 0
+        var width = 0
+        if shape.count == 2 {
+            height = shape[shape.startIndex]
+            width = shape[shape.startIndex + 1]
+        } else if shape.count >= 3 {
+            // Collapse channel dimension if present
+            let dims = shape.filter { $0 > 1 }
+            guard dims.count >= 2 else { return nil }
+            height = dims[dims.count - 2]
+            width = dims[dims.count - 1]
+        } else {
+            return nil
+        }
+        if height <= 0 || width <= 0 { return nil }
+        let elementCount = height * width
+        var mask = [Bool](repeating: false, count: elementCount)
+
+        switch multiArray.dataType {
+        case .double:
+            let pointer = multiArray.dataPointer.bindMemory(to: Double.self, capacity: multiArray.count)
+            for i in 0..<elementCount {
+                mask[i] = pointer[i] > 0.5
+            }
+        case .float32:
+            let pointer = multiArray.dataPointer.bindMemory(to: Float32.self, capacity: multiArray.count)
+            for i in 0..<elementCount {
+                mask[i] = pointer[i] > 0.5
+            }
+        case .int32:
+            let pointer = multiArray.dataPointer.bindMemory(to: Int32.self, capacity: multiArray.count)
+            for i in 0..<elementCount {
+                mask[i] = pointer[i] > 0
+            }
+        default:
+            for i in 0..<elementCount {
+                mask[i] = multiArray[i].doubleValue > 0.5
+            }
+        }
+        return (mask, width, height)
+    }
+
+    private static func mask(from buffer: CVPixelBuffer) -> ([Bool], Int, Int)? {
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(buffer) else { return nil }
+        let width = CVPixelBufferGetWidth(buffer)
+        let height = CVPixelBufferGetHeight(buffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
+        var mask = [Bool](repeating: false, count: width * height)
+        let ptr = base.assumingMemoryBound(to: UInt8.self)
+        for y in 0..<height {
+            let row = ptr.advanced(by: y * bytesPerRow)
+            for x in 0..<width {
+                mask[y*width + x] = row[x] > 127
+            }
+        }
+        return (mask, width, height)
     }
 
     // MARK: - Object Features
@@ -149,20 +360,27 @@ public enum ImagingPipeline {
                 stats[id] = s
             }
         }
+        let scale = max(seg.downscaleFactor, 1.0)
+        let scaleSquared = scale * scale
         for (id, s) in stats.sorted(by: { $0.key < $1.key }) {
-            let areaPx = Double(s.pix)
-            let perimeterPx = Double(s.perimeter)
+            guard s.pix > 0 else { continue }
+            let areaPx = Double(s.pix) * scaleSquared
+            let perimeterPx = Double(s.perimeter) * scale
             let circularity = perimeterPx > 0 ? (4.0 * Double.pi * areaPx) / (perimeterPx * perimeterPx) : 0
-            let centroid = CGPoint(x: s.sumX / Double(s.pix), y: s.sumY / Double(s.pix))
-            let bbox = CGRect(x: s.minX, y: s.minY, width: s.maxX - s.minX + 1, height: s.maxY - s.minY + 1)
+            let centroid = CGPoint(x: (s.sumX / Double(s.pix)) * scale,
+                                   y: (s.sumY / Double(s.pix)) * scale)
+            let bbox = CGRect(x: Double(s.minX) * scale,
+                              y: Double(s.minY) * scale,
+                              width: Double(s.maxX - s.minX + 1) * scale,
+                              height: Double(s.maxY - s.minY + 1) * scale)
             let obj = CellObject(id: id,
-                                  pixelCount: s.pix,
+                                  pixelCount: Int(round(areaPx)),
                                   areaPx: areaPx,
                                   perimeterPx: perimeterPx,
                                   circularity: circularity,
                                   solidity: 1.0,
                                   centroid: centroid,
-                                  bbox: bbox)
+                                  bbox: bbox.integral)
             objects.append(obj)
         }
         PerformanceLogger.shared.record("features", Date().timeIntervalSince(start) * 1000)

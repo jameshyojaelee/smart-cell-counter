@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreGraphics
+import UIKit
 
 @MainActor
 final class ReviewViewModel: ObservableObject {
@@ -15,19 +16,29 @@ final class ReviewViewModel: ObservableObject {
         isComputing = true
         Task.detached(priority: .userInitiated) {
             let start = Date()
-            let params = await DetectorParams.from(SettingsStore.shared)
+            let settings = await MainActor.run { SettingsStore.shared }
+            let detectionParams = await MainActor.run { DetectorParams.from(settings) }
+            let imagingParams = await MainActor.run { ImagingParams.from(settings) }
+            let segmentation = ImagingPipeline.segmentCells(in: image, params: imagingParams)
             let pxPerMicronSnapshot = await MainActor.run { appState.pxPerMicron }
-            let det = CellDetector.detect(on: image, roi: nil, pxPerMicron: pxPerMicronSnapshot, params: params)
+            let det = CellDetector.detect(on: image, roi: nil, pxPerMicron: pxPerMicronSnapshot, params: detectionParams)
             let pxPerMicron = det.pxPerMicron ?? min(Double(image.size.width)/3000.0, Double(image.size.height)/3000.0)
             let geom = GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron)
             let tally = CountingService.tallyByLargeSquare(objects: det.objects, geometry: geom)
             let ms = Date().timeIntervalSince(start) * 1000
             PerformanceLogger.shared.record("pipelineTotal", ms)
+
+            var debugImages = det.debugImages
+
             await MainActor.run {
-                appState.segmentation = nil
+                if let mask = Self.makeSegmentationPreview(segmentation) {
+                    debugImages["00_segmentation_mask"] = mask
+                }
+                appState.segmentation = segmentation
                 appState.objects = det.objects
                 appState.labeled = det.labeled
                 appState.pxPerMicron = pxPerMicron
+                appState.debugImages = debugImages
                 self.perSquare = tally
                 self.lastDurationMs = ms
                 self.isComputing = false
@@ -50,6 +61,23 @@ final class ReviewViewModel: ObservableObject {
         }
         lassoPath = Path()
     }
+
+    @MainActor
+    private static func makeSegmentationPreview(_ seg: SegmentationResult) -> UIImage? {
+        guard seg.width > 0, seg.height > 0 else { return nil }
+        let size = CGSize(width: seg.width, height: seg.height)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { ctx in
+            UIColor.clear.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+            ctx.cgContext.setFillColor(UIColor.systemPink.withAlphaComponent(0.45).cgColor)
+            for idx in 0..<seg.mask.count where seg.mask[idx] {
+                let x = idx % seg.width
+                let y = idx / seg.width
+                ctx.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 1))
+            }
+        }
+    }
 }
 
 struct ReviewView: View {
@@ -59,7 +87,7 @@ struct ReviewView: View {
     @State private var drawingLasso = false
     @State private var filter: String = "All" // All, Live, Dead
     @State private var showOverlays = false
-    @State private var overlayKind = "Candidates" // Candidates, Blue Mask, Grid Mask, Illumination
+    @State private var overlayKind = "Candidates" // Candidates, Blue Mask, Grid Mask, Illumination, Segmentation Mask, Segmentation Info
 
     var body: some View {
         VStack(spacing: 12) {
@@ -80,6 +108,8 @@ struct ReviewView: View {
                                     Text("Blue Mask").tag("Blue Mask")
                                     Text("Grid Mask").tag("Grid Mask")
                                     Text("Illumination").tag("Illumination")
+                                    Text("Segmentation Mask").tag("Segmentation Mask")
+                                    Text("Segmentation Info").tag("Segmentation Info")
                                 }
                             } label: {
                                 Image(systemName: "eye").padding(8)
@@ -87,7 +117,9 @@ struct ReviewView: View {
                         }
                         .overlay {
                             if showOverlays {
-                                DebugOverlayView(debugImages: appState.debugImages, kind: overlayKind)
+                                DebugOverlayView(debugImages: appState.debugImages,
+                                                 kind: overlayKind,
+                                                 segmentation: appState.segmentation)
                             }
                         }
                         .gesture(lassoGesture())

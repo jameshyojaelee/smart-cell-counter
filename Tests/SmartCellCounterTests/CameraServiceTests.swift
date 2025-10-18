@@ -3,6 +3,7 @@ import AVFoundation
 import UIKit
 @testable import SmartCellCounter
 
+@MainActor
 final class CameraServiceTests: XCTestCase {
     func testGlareRatioReflectsBrightness() throws {
         let brightBuffer = try TestFixtures.sampleBuffer(width: 8, height: 8, color: .white)
@@ -37,6 +38,7 @@ final class CameraServiceTests: XCTestCase {
     }
 }
 
+@MainActor
 private final class RecordingDelegate: CameraServiceDelegate {
     var lastGlare: Double?
     var onUpdate: ((Double, Double) -> Void)?

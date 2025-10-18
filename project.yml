@@ -57,6 +57,9 @@ targets:
     platform: iOS
     sources:
       - path: Tests/SmartCellCounterTests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: SmartCellCounter
 
@@ -65,5 +68,8 @@ targets:
     platform: iOS
     sources:
       - path: Tests/SmartCellCounterUITests
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: SmartCellCounter

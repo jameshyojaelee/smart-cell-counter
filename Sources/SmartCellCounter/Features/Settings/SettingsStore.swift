@@ -42,6 +42,7 @@ final class SettingsStore: ObservableObject {
     }
     @AppStorage("enableGridSuppression") var enableGridSuppression: Bool = true
     @AppStorage("thresholdMethod") var thresholdMethodRaw: String = ThresholdMethod.adaptive.rawValue
+    @AppStorage("segmentationStrategy") var segmentationStrategyRaw: String = SegmentationStrategy.automatic.rawValue
     @AppStorage("blockSize") var blockSize: Int = 51 {
         didSet { normalize(\.blockSize) { max(31, min(101, $0 | 1)) } }
     }
@@ -56,6 +57,11 @@ final class SettingsStore: ObservableObject {
     var thresholdMethod: ThresholdMethod {
         get { ThresholdMethod(rawValue: thresholdMethodRaw) ?? .adaptive }
         set { thresholdMethodRaw = newValue.rawValue }
+    }
+
+    var segmentationStrategy: SegmentationStrategy {
+        get { SegmentationStrategy(rawValue: segmentationStrategyRaw) ?? .automatic }
+        set { segmentationStrategyRaw = newValue.rawValue }
     }
 
     private func normalizeAll() {
@@ -96,6 +102,7 @@ final class SettingsStore: ObservableObject {
         focusMinLaplacian = 150
         enableGridSuppression = true
         thresholdMethod = .adaptive
+        segmentationStrategy = .automatic
         blockSize = 51
         thresholdC = 0
         normalizeAll()

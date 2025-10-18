@@ -12,6 +12,7 @@
 		0AAC627CFD2E8660D1B7CBC5 /* CountingServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99828546F2E7C807461D0D1 /* CountingServiceTests.swift */; };
 		0B1BDE136C9BFAE849C6F58E /* TimerUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5484987B233C277AAA043707 /* TimerUtil.swift */; };
 		0D1D16AFFB6AC6A08391CF35 /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1549B05847B2641A0705AC /* SettingsStoreTests.swift */; };
+		12033C7845CF4CECE55E638A /* CaptureHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C4466022E290FC34B8BD5F /* CaptureHUDView.swift */; };
 		13CBB1C080FACDD5560DCB5D /* AnimatedGradientHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8F4E0724B8E4B54FF28CAF /* AnimatedGradientHeader.swift */; };
 		153CBD1D7FDBE7E3BE783150 /* PurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4B806875617ACB2E5307D3D /* PurchaseManagerTests.swift */; };
 		2124DC8942EFDC170770DDB7 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = DEED0CD32F3A1C11ED660D90 /* GRDB */; };
@@ -134,6 +135,7 @@
 		559A66CEF0F73369022D1611 /* PerformanceLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceLogger.swift; sourceTree = "<group>"; };
 		57C21B2EE6BDA914F6C890D2 /* BlueMask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueMask.swift; sourceTree = "<group>"; };
 		607321279683514E876607AF /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		61C4466022E290FC34B8BD5F /* CaptureHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureHUDView.swift; sourceTree = "<group>"; };
 		62B2692C0974CD9461CC7F02 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		66B326C372860666FACEA487 /* AdsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsManager.swift; sourceTree = "<group>"; };
 		6C0D0A5F2DD5B58E2E6C48A9 /* CellDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellDetectionTests.swift; sourceTree = "<group>"; };
@@ -392,6 +394,7 @@
 			isa = PBXGroup;
 			children = (
 				4DDE8A2AB24E9455806AB652 /* CameraPreviewView.swift */,
+				61C4466022E290FC34B8BD5F /* CaptureHUDView.swift */,
 				856725416984127B4F179D61 /* CaptureView.swift */,
 			);
 			path = Capture;
@@ -697,6 +700,7 @@
 				CCA16B94861722C19762CA71 /* CameraPreviewView.swift in Sources */,
 				8786569A3C145B37547C41D2 /* CameraService.swift in Sources */,
 				3817FB15BCCFDBD3BC3E824E /* CameraTypes.swift in Sources */,
+				12033C7845CF4CECE55E638A /* CaptureHUDView.swift in Sources */,
 				AFA3A2E664EEF1A7CD680EC1 /* CaptureView.swift in Sources */,
 				ACB4EE09310D940CF6039EF9 /* CellDetector.swift in Sources */,
 				B3A7D0CA9AB71DCA26EA48ED /* Classifier.swift in Sources */,
@@ -799,6 +803,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -814,6 +819,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -894,6 +900,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -993,6 +1000,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

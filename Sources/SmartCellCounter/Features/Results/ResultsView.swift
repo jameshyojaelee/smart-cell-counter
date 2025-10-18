@@ -45,7 +45,7 @@ final class ResultsViewModel: ObservableObject {
         let geom = GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron)
         let tally = CountingService.tallyByLargeSquare(objects: appState.objects, geometry: geom)
         let exporter = PDFExporter()
-        let params = ImagingParams()
+        let params = ImagingParams.from(SettingsStore.shared)
 
         guard let folder = try? AppDatabase.shared.sampleFolder(id: id) else { return }
         var imagePath: String? = nil
@@ -97,7 +97,7 @@ final class ResultsViewModel: ObservableObject {
         guard seg.width > 0, seg.height > 0 else { return nil }
         let size = CGSize(width: seg.width, height: seg.height)
         let r = UIGraphicsImageRenderer(size: size)
-        return r.image { ctx in
+        let base = r.image { ctx in
             UIColor.clear.setFill(); ctx.fill(CGRect(origin: .zero, size: size))
             ctx.cgContext.setFillColor(UIColor.red.withAlphaComponent(0.5).cgColor)
             for y in 0..<seg.height {
@@ -107,6 +107,12 @@ final class ResultsViewModel: ObservableObject {
                     }
                 }
             }
+        }
+        let targetSize = seg.originalSize == .zero ? CGSize(width: seg.width, height: seg.height) : seg.originalSize
+        guard targetSize != size else { return base }
+        let upscale = UIGraphicsImageRenderer(size: targetSize)
+        return upscale.image { _ in
+            base.draw(in: CGRect(origin: .zero, size: targetSize))
         }
     }
 }
@@ -162,7 +168,12 @@ struct ResultsView: View {
                         let images = ReportImages(original: appState.capturedImage, corrected: appState.correctedImage, overlay: appState.correctedImage.map { PDFExporter.makeOverlayImage(base: $0, labeled: appState.labeled) })
                         let exporter = PDFExporter()
                         let watermark = !PurchaseManager.shared.isPro
-                        if let url = try? exporter.exportReport(header: header, images: images, tally: tally, params: ImagingParams(), watermark: watermark, filename: "report.pdf") {
+                        if let url = try? exporter.exportReport(header: header,
+                                                                images: images,
+                                                                tally: tally,
+                                                                params: ImagingParams.from(SettingsStore.shared),
+                                                                watermark: watermark,
+                                                                filename: "report.pdf") {
                             viewModel.exportURL = url
                             Haptics.success()
                         }
