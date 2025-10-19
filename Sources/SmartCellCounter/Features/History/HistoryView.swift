@@ -66,12 +66,12 @@ struct HistoryView: View {
                 if viewModel.isLoading {
                     ProgressView()
                 } else if viewModel.rows.isEmpty {
-                    Text("No samples yet.")
+                    Text(L10n.History.emptyState)
                         .foregroundColor(Theme.textSecondary)
                 }
             }
-            .searchable(text: searchBinding, prompt: "Search project/operator")
-            .navigationTitle("History")
+            .searchable(text: searchBinding, prompt: Text(L10n.History.searchPrompt))
+            .navigationTitle(L10n.History.navigationTitle)
         }
         .task {
             viewModel.loadInitial()
@@ -89,7 +89,7 @@ private struct HistoryRowView: View {
                 Text(sample.date.formatted(.dateTime))
                     .font(.subheadline)
                     .foregroundColor(Theme.textPrimary)
-                Text("Live: \(sample.liveCount)  Dead: \(sample.deadCount)")
+                Text(L10n.History.summary(live: sample.liveCount, dead: sample.deadCount))
                     .font(.caption)
                     .foregroundColor(Theme.textSecondary)
             }
@@ -98,6 +98,15 @@ private struct HistoryRowView: View {
                 .font(.caption2)
                 .foregroundColor(Theme.textSecondary)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            L10n.History.accessibilitySummary(
+                date: sample.date.formatted(date: .abbreviated, time: .shortened),
+                live: sample.liveCount,
+                dead: sample.deadCount,
+                concentration: String(format: "%.2e", sample.concentrationPerML)
+            )
+        )
     }
 }
 
@@ -132,6 +141,7 @@ private struct HistoryThumbnailView: View {
             }
         }
         .task(id: path) { await loadImage() }
+        .accessibilityHidden(true)
     }
 
     private func loadImage() async {

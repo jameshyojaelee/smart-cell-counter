@@ -1,0 +1,12 @@
+"selection.instructions" = "Drag to move, use corners to resize";
+"selection.width.label" = "Width";
+"selection.height.label" = "Height";
+"selection.area.label" = "Area";
+"selection.confirm.button" = "Confirm Selection";
+"selection.overlay.label" = "Selection region";
+"selection.overlay.hint" = "Drag to adjust the selection area.";
+"selection.handle.label" = "Resize handle";
+"selection.undo.label" = "Undo selection change";
+"selection.undo.hint" = "Restores the previous selection.";
+"selection.value.format" = "%@ px";
+"selection.area.value" = "%@ px²";

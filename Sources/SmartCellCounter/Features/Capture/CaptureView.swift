@@ -21,15 +21,18 @@ struct CaptureView: View {
                         if showGrid {
                             GridGuides().stroke(Theme.border.opacity(0.4), lineWidth: 1)
                                 .allowsHitTesting(false)
+                                .accessibilityHidden(true)
                         }
 
                         TargetRect()
                             .allowsHitTesting(false)
+                            .accessibilityHidden(true)
 
                         if let indicator = focusIndicator {
                             FocusIndicatorView()
                                 .position(clamp(indicator.point, in: geo.size))
                                 .transition(.scale.combined(with: .opacity))
+                                .accessibilityHidden(true)
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -55,7 +58,9 @@ struct CaptureView: View {
                                 .padding(10)
                                 .background(.ultraThinMaterial, in: Circle())
                         }
-                        .accessibilityLabel(showGrid ? "Hide grid" : "Show grid")
+                        .accessibilityLabel(L10n.Capture.gridToggleLabel(isVisible: showGrid))
+                        .accessibilityHint(L10n.Capture.gridToggleHint)
+                        .accessibilityValue(L10n.Capture.gridToggleValue(isVisible: showGrid))
                     }
                     .padding(.horizontal, 12)
                     .padding(.top, 12)
@@ -63,8 +68,9 @@ struct CaptureView: View {
             }
 
             controlBar
+                .accessibilityElement(children: .contain)
         }
-        .navigationTitle("Capture")
+        .navigationTitle(L10n.Capture.navigationTitle)
         .modifier(CaptureNavigation(goToCrop: $goToCrop))
         .onAppear { viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }
@@ -84,6 +90,9 @@ struct CaptureView: View {
             CameraPreviewView(session: viewModel.captureSession) { layerPoint, devicePoint in
                 handleFocusTap(layerPoint: layerPoint, devicePoint: devicePoint, size: size)
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(L10n.Capture.cameraPreviewLabel)
+            .accessibilityHint(L10n.Capture.cameraPreviewHint)
             .transition(.opacity)
         } else {
             ZStack {
@@ -92,12 +101,15 @@ struct CaptureView: View {
                     Image(systemName: "camera.fill")
                         .font(.largeTitle)
                         .foregroundColor(Theme.textSecondary)
-                    Text(viewModel.permissionDenied ? "Camera access is disabled." : viewModel.status)
+                    Text(viewModel.permissionDenied ? L10n.Capture.permissionDisabledTitle : viewModel.status)
                         .foregroundColor(Theme.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 16)
                 }
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L10n.Capture.permissionDisabledTitle)
+            .accessibilityValue(viewModel.status)
         }
     }
 
@@ -108,6 +120,9 @@ struct CaptureView: View {
                     Image(systemName: "photo.on.rectangle")
                         .font(.title2)
                 }
+                .accessibilityLabel(L10n.Capture.importLabel)
+                .accessibilityHint(L10n.Capture.importHint)
+                .accessibilityAddTraits(.isButton)
                 .onChange(of: photoItem) { newItem in
                     guard let item = newItem else { return }
                     Task { @MainActor in
@@ -118,7 +133,7 @@ struct CaptureView: View {
                         }
                     }
                 }
-                .accessibilityLabel("Import from Photos")
+                .accessibilitySortPriority(1)
 
                 Button(action: shutterTapped) {
                     ZStack {
@@ -126,13 +141,18 @@ struct CaptureView: View {
                         Circle().stroke(Theme.background, lineWidth: 4).frame(width: 84, height: 84)
                     }
                 }
-                .accessibilityLabel("Shutter")
+                .accessibilityLabel(L10n.Capture.shutterLabel)
+                .accessibilityHint(L10n.Capture.shutterHint(isReady: viewModel.ready))
+                .accessibilityValue(L10n.Capture.shutterValue(isReady: viewModel.ready))
                 .disabled(!viewModel.ready)
+                .accessibilitySortPriority(3)
 
                 NavigationLink(destination: SettingsView()) {
                     Image(systemName: "slider.horizontal.3").font(.title2)
                 }
-                .accessibilityLabel("Settings")
+                .accessibilityLabel(L10n.Capture.settingsLabel)
+                .accessibilityHint(L10n.Capture.settingsHint)
+                .accessibilitySortPriority(2)
             }
             .padding(.bottom, 10)
         }
@@ -214,7 +234,7 @@ private struct TargetRect: View {
                     .frame(width: rectW, height: rectH)
                     .position(x: centerX, y: centerY)
 
-                Text("Frame the hemocytometer inside this box")
+                Text(L10n.Capture.framingHint)
                     .font(.footnote)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)

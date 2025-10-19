@@ -39,21 +39,41 @@ struct NumericField: View {
             Stepper("", onIncrement: { increment() }, onDecrement: { decrement() })
                 .labelsHidden()
         }
-        .onAppear { lastValid = value; text = formatter.string(from: NSNumber(value: value)) ?? "\(value)" }
-        .onChange(of: value) { newVal in text = formatter.string(from: NSNumber(value: newVal)) ?? "\(newVal)"; lastValid = newVal }
+        .onAppear {
+            lastValid = value
+            text = formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+        }
+        .onChange(of: value) { newVal in
+            text = formatter.string(from: NSNumber(value: newVal)) ?? "\(newVal)"
+            lastValid = newVal
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(text)
     }
 
     private func commit() {
-        guard let entered = Double(text.replacingOccurrences(of: ",", with: ".")) else { revert("Invalid number") ; return }
+        guard let entered = Double(text.replacingOccurrences(of: ",", with: ".")) else {
+            revert(L10n.Settings.Validation.invalidNumber)
+            return
+        }
         let clamped = min(max(entered, range.lowerBound), range.upperBound)
-        if clamped != entered { onInvalid("Clamped to \(clamped)") }
+        if clamped != entered {
+            onInvalid(L10n.Settings.Validation.clamped(clamped))
+        } else {
+            onInvalid("")
+        }
         value = clamped
         lastValid = clamped
         text = formatter.string(from: NSNumber(value: clamped)) ?? "\(clamped)"
     }
 
-    private func revert(_ msg: String) { onInvalid(msg); value = lastValid; text = formatter.string(from: NSNumber(value: lastValid)) ?? "\(lastValid)" }
+    private func revert(_ msg: String) {
+        onInvalid(msg)
+        value = lastValid
+        text = formatter.string(from: NSNumber(value: lastValid)) ?? "\(lastValid)"
+    }
+
     private func increment() { value = min(value + step, range.upperBound) }
     private func decrement() { value = max(value - step, range.lowerBound) }
 }
-

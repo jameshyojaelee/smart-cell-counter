@@ -4,44 +4,69 @@ import CoreImage
 
 struct DebugOverlayView: View {
     let debugImages: [String: UIImage]
-    let kind: String
+    let kind: DetectionOverlayKind
     let segmentation: SegmentationResult?
 
     var body: some View {
         switch kind {
-        case "Segmentation Info":
+        case .segmentationInfo:
             if let seg = segmentation {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Segmentation")
-                        .font(.headline)
-                    Text("Strategy: \(seg.usedStrategy.rawValue.capitalized)")
-                    Text(String(format: "Downscale: %.2fx", seg.downscaleFactor))
-                    Text("Polarity inverted: \(seg.polarityInverted ? "Yes" : "No")")
-                    Text("Resolution: \(seg.width)×\(seg.height) → \(Int(seg.originalSize.width))×\(Int(seg.originalSize.height))")
-                }
-                .padding(8)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                segmentationInfoView(seg)
             }
         default:
-            if let img = pickImage() {
+            if let img = pickImage(for: kind) {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFit()
                     .opacity(0.65)
+                    .accessibilityHidden(true)
             }
         }
     }
 
-    private func pickImage() -> UIImage? {
+    @ViewBuilder
+    private func segmentationInfoView(_ seg: SegmentationResult) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(L10n.Detection.Segmentation.heading)
+                .font(.headline)
+            Text(L10n.Detection.Segmentation.strategy(seg.usedStrategy.localizedName))
+            Text(L10n.Detection.Segmentation.downscale(seg.downscaleFactor))
+            Text(L10n.Detection.Segmentation.polarity(seg.polarityInverted))
+            Text(
+                L10n.Detection.Segmentation.resolution(
+                    width: seg.width,
+                    height: seg.height,
+                    originalWidth: Int(seg.originalSize.width),
+                    originalHeight: Int(seg.originalSize.height)
+                )
+            )
+        }
+        .padding(8)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(L10n.Detection.Overlay.segmentationInfo)
+    }
+
+    private func pickImage(for kind: DetectionOverlayKind) -> UIImage? {
         switch kind {
-        case "Blue Mask": return debugImages["08_blue_mask"]
-        case "Grid Mask": return debugImages["05_grid_mask"]
-        case "Illumination": return debugImages["03_illumination"]
-        case "Segmentation Mask": return debugImages["00_segmentation_mask"]
-        default: return debugImages["07_candidates"]
+        case .blueMask: return debugImages["08_blue_mask"]
+        case .gridMask: return debugImages["05_grid_mask"]
+        case .illumination: return debugImages["03_illumination"]
+        case .segmentationMask: return debugImages["00_segmentation_mask"]
+        case .candidates: return debugImages["07_candidates"]
+        case .segmentationInfo: return nil
         }
     }
 }
 
+private extension SegmentationStrategy {
+    var localizedName: String {
+        switch self {
+        case .automatic: return L10n.Settings.SegmentationStrategy.automatic
+        case .classical: return L10n.Settings.SegmentationStrategy.classical
+        case .coreML: return L10n.Settings.SegmentationStrategy.coreML
+        }
+    }
+}

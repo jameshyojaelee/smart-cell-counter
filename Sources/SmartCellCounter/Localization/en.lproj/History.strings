@@ -1,0 +1,5 @@
+"history.navigation.title" = "History";
+"history.search.prompt" = "Search project or operator";
+"history.empty_state" = "No samples yet.";
+"history.summary" = "Live %@, Dead %@";
+"history.accessibility.summary" = "Sample from %@. Live cells %@, dead cells %@. Concentration %@ per milliliter.";

@@ -22,6 +22,7 @@ struct ImageSelectionView: View {
                         .scaledToFit()
                         .frame(width: fit.size.width, height: fit.size.height)
                         .position(x: geo.size.width/2, y: geo.size.height/2)
+                        .accessibilityHidden(true)
                         .onAppear {
                             viewRect = CGRect(origin: CGPoint(x: (geo.size.width - fit.size.width)/2, y: (geo.size.height - fit.size.height)/2), size: fit.size)
                             // default selection in center
@@ -32,7 +33,7 @@ struct ImageSelectionView: View {
                     SelectionOverlay(rect: $selection, bounds: viewRect, minSize: CGSize(width: 40, height: 40), fixedAspect: fixedAspect)
                 }
                 if showHint {
-                    Text("Drag to move, use corners to resize")
+                    Text(L10n.Selection.instructions)
                         .font(DS.Typo.caption)
                         .padding(8)
                         .background(.ultraThinMaterial)
@@ -43,18 +44,19 @@ struct ImageSelectionView: View {
             .frame(maxHeight: 360)
 
             HStack(spacing: DS.Spacing.md) {
-                LabeledSize(label: "Width", value: selection.width)
-                LabeledSize(label: "Height", value: selection.height)
-                LabeledSize(label: "Area", value: selection.width * selection.height)
+                LabeledSize(label: L10n.Selection.widthLabel, valueText: L10n.Selection.sizeValue(selection.width))
+                LabeledSize(label: L10n.Selection.heightLabel, valueText: L10n.Selection.sizeValue(selection.height))
+                LabeledSize(label: L10n.Selection.areaLabel, valueText: L10n.Selection.areaValue(width: selection.width, height: selection.height))
             }
 
             HStack {
                 Spacer()
-                Button("Confirm Selection") {
+                Button(L10n.Selection.confirmButton) {
                     let imageRect = GeometryUtils.scale(rect: selection.offsetBy(dx: -viewRect.minX, dy: -viewRect.minY), from: viewRect.size, to: image.size)
                     onConfirm(imageRect)
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityHint(L10n.Selection.overlayHint)
             }
         }
         .padding()
@@ -74,12 +76,15 @@ struct ImageSelectionView: View {
 }
 
 private struct LabeledSize: View {
-    let label: String; let value: CGFloat
+    let label: String
+    let valueText: String
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label).font(DS.Typo.caption).foregroundColor(Theme.textSecondary)
-            Text(String(format: "%.0f", value)).font(DS.Typo.headline).foregroundColor(Theme.textPrimary)
+            Text(valueText).font(DS.Typo.headline).foregroundColor(Theme.textPrimary)
         }
         .cardStyle(padding: 10)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(valueText)")
     }
 }

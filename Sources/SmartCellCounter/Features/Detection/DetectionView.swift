@@ -3,7 +3,7 @@ import SwiftUI
 struct DetectionView: View {
     @EnvironmentObject private var appState: AppState
     @State private var showOverlays = true
-    @State private var overlayKind = "Candidates"
+    @State private var overlayKind: DetectionOverlayKind = .candidates
 
     var body: some View {
         VStack {
@@ -17,22 +17,48 @@ struct DetectionView: View {
                                          segmentation: appState.segmentation)
                         .opacity(showOverlays ? 1 : 0)
                     )
+                    .accessibilityHidden(true)
                 HStack {
-                    Toggle("Overlays", isOn: $showOverlays).toggleStyle(.switch)
-                    Picker("Kind", selection: $overlayKind) {
-                        Text("Candidates").tag("Candidates")
-                        Text("Blue Mask").tag("Blue Mask")
-                        Text("Grid Mask").tag("Grid Mask")
-                        Text("Illumination").tag("Illumination")
-                        Text("Segmentation Mask").tag("Segmentation Mask")
-                        Text("Segmentation Info").tag("Segmentation Info")
-                    }.pickerStyle(.segmented)
-                }.padding()
+                    Toggle(L10n.Detection.toggleLabel, isOn: $showOverlays)
+                        .toggleStyle(.switch)
+                        .accessibilityHint(L10n.Detection.toggleHint)
+                        .accessibilityValue(L10n.Detection.toggleValue(isVisible: showOverlays))
+
+                    Picker(L10n.Detection.pickerLabel, selection: $overlayKind) {
+                        ForEach(DetectionOverlayKind.allCases) { kind in
+                            Text(kind.displayName).tag(kind)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityHint(L10n.Detection.toggleHint)
+                }
+                .padding()
             } else {
-                Text("No image").foregroundColor(.secondary)
+                Text(L10n.Detection.emptyState).foregroundColor(.secondary)
             }
         }
-        .navigationTitle("Detection")
+        .navigationTitle(L10n.Detection.navigationTitle)
     }
 }
 
+enum DetectionOverlayKind: String, CaseIterable, Identifiable {
+    case candidates
+    case blueMask
+    case gridMask
+    case illumination
+    case segmentationMask
+    case segmentationInfo
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .candidates: return L10n.Detection.Overlay.candidates
+        case .blueMask: return L10n.Detection.Overlay.blueMask
+        case .gridMask: return L10n.Detection.Overlay.gridMask
+        case .illumination: return L10n.Detection.Overlay.illumination
+        case .segmentationMask: return L10n.Detection.Overlay.segmentationMask
+        case .segmentationInfo: return L10n.Detection.Overlay.segmentationInfo
+        }
+    }
+}

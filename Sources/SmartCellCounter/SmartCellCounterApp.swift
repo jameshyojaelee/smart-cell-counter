@@ -48,13 +48,13 @@ struct RootView: View {
     var body: some View {
         TabView {
             NavigationStack { CaptureView() }
-                .tabItem { Label("Capture", systemImage: "camera") }
+                .tabItem { Label(L10n.App.captureTab, systemImage: "camera") }
             NavigationStack { HistoryView() }
-                .tabItem { Label("History", systemImage: "clock") }
+                .tabItem { Label(L10n.App.historyTab, systemImage: "clock") }
             NavigationStack { ResultsView() }
-                .tabItem { Label("Results", systemImage: "chart.bar.xaxis") }
+                .tabItem { Label(L10n.App.resultsTab, systemImage: "chart.bar.xaxis") }
             NavigationStack { SettingsView() }
-                .tabItem { Label("Settings", systemImage: "gearshape") }
+                .tabItem { Label(L10n.App.settingsTab, systemImage: "gearshape") }
         }
         .tint(Theme.accent)
         .background(Theme.background.ignoresSafeArea())

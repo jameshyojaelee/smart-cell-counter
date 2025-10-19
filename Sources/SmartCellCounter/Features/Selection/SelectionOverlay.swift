@@ -19,7 +19,9 @@ struct SelectionOverlay: View {
                 .background(Color.clear)
                 .contentShape(Rectangle())
                 .gesture(dragGesture())
-                .accessibilityLabel("Selection")
+                .accessibilityLabel(L10n.Selection.overlayLabel)
+                .accessibilityHint(L10n.Selection.overlayHint)
+                .accessibilityValue(L10n.Selection.areaValue(width: rect.width, height: rect.height))
             // Handles
             ForEach(0..<4) { i in
                 Circle()
@@ -28,7 +30,7 @@ struct SelectionOverlay: View {
                     .position(handlePosition(i))
                     .contentShape(Rectangle().inset(by: -10)) // hit-test expansion
                     .gesture(resizeGesture(i))
-                    .accessibilityLabel("Resize Handle")
+                    .accessibilityLabel(L10n.Selection.handleLabel)
             }
 
             // Undo button near top-left of the selection
@@ -41,7 +43,8 @@ struct SelectionOverlay: View {
                         .clipShape(Capsule())
                 }
                 .position(undoButtonPosition())
-                .accessibilityLabel("Undo selection change")
+                .accessibilityLabel(L10n.Selection.undoLabel)
+                .accessibilityHint(L10n.Selection.undoHint)
             }
         }
     }

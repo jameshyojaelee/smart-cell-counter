@@ -19,7 +19,7 @@ struct CropView: View {
                 }
                 HStack(spacing: DS.Spacing.lg) {
                     Spacer()
-                    Button("Confirm Selection") {
+                    Button(L10n.Selection.confirmButton) {
                         guard let img = viewModel.image else { return }
                         if let cropped = GeometryUtils.crop(image: img, to: viewModel.selectionInImage) {
                             appState.correctedImage = cropped
@@ -29,13 +29,14 @@ struct CropView: View {
                         goToReview = true
                     }
                     .buttonStyle(.borderedProminent)
+                    .accessibilityHint(L10n.Selection.overlayHint)
                 }
             } else {
-                Text("No image. Go back to Capture.").foregroundColor(.secondary)
+                Text(L10n.Crop.noImage).foregroundColor(.secondary)
             }
         }
         .onAppear { if let img = appState.capturedImage { viewModel.image = img } }
-        .navigationTitle("Select Area")
+        .navigationTitle(L10n.Crop.navigationTitle)
         .modifier(CropNavigation(goToReview: $goToReview))
     }
 }

@@ -43,25 +43,46 @@ struct CaptureHUDView: View {
 
             ViewThatFits {
                 HStack(spacing: 8) {
-                    metricChip(title: "Focus", value: formattedFocus, icon: "viewfinder")
-                    metricChip(title: "Glare", value: formattedGlare, icon: "sun.max")
+                    metricChip(
+                        title: L10n.Capture.focusMetricTitle,
+                        value: formattedFocus,
+                        icon: "viewfinder",
+                        accessibilityLabel: L10n.Capture.focusMetricAccessibility(formattedFocus)
+                    )
+                    metricChip(
+                        title: L10n.Capture.glareMetricTitle,
+                        value: formattedGlare,
+                        icon: "sun.max",
+                        accessibilityLabel: L10n.Capture.glareMetricAccessibility(formattedGlare)
+                    )
                 }
                 VStack(alignment: .leading, spacing: 6) {
-                    metricChip(title: "Focus", value: formattedFocus, icon: "viewfinder")
-                    metricChip(title: "Glare", value: formattedGlare, icon: "sun.max")
+                    metricChip(
+                        title: L10n.Capture.focusMetricTitle,
+                        value: formattedFocus,
+                        icon: "viewfinder",
+                        accessibilityLabel: L10n.Capture.focusMetricAccessibility(formattedFocus)
+                    )
+                    metricChip(
+                        title: L10n.Capture.glareMetricTitle,
+                        value: formattedGlare,
+                        icon: "sun.max",
+                        accessibilityLabel: L10n.Capture.glareMetricAccessibility(formattedGlare)
+                    )
                 }
             }
 
             if permissionDenied {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Camera access is disabled. Enable the permission in Settings to capture images.")
+                    Text(L10n.Capture.permissionExplanation)
                         .font(.footnote)
                         .foregroundColor(Theme.textSecondary)
                     Button(action: onSettingsTap) {
-                        Label("Open Settings", systemImage: "arrow.up.right.square")
+                        Label(L10n.Capture.openSettings, systemImage: "arrow.up.right.square")
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
+                    .accessibilityHint(L10n.Capture.openSettingsHint)
                 }
                 .padding(10)
                 .background(Theme.surface.opacity(0.7), in: RoundedRectangle(cornerRadius: 12))
@@ -85,22 +106,26 @@ struct CaptureHUDView: View {
                 .foregroundColor(Theme.textPrimary)
         }
         .padding(.vertical, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(statusText)
     }
 
     private var torchToggle: some View {
         Toggle(isOn: $torchOn) {
-            Label("Torch", systemImage: torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+            Label(L10n.Capture.torchTitle, systemImage: torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
                 .font(.footnote.weight(.semibold))
         }
         .toggleStyle(SwitchToggleStyle(tint: Theme.accent))
-        .accessibilityLabel(torchOn ? "Turn torch off" : "Turn torch on")
+        .accessibilityLabel(L10n.Capture.torchToggleLabel(isOn: torchOn))
+        .accessibilityHint(L10n.Capture.torchHint)
     }
 
-    private func metricChip(title: String, value: String, icon: String) -> some View {
+    private func metricChip(title: String, value: String, icon: String, accessibilityLabel: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 Image(systemName: icon)
-                Text(title.uppercased())
+                Text(title)
+                    .textCase(.uppercase)
                     .font(.caption2.weight(.medium))
             }
             .foregroundColor(Theme.textSecondary)
@@ -111,5 +136,7 @@ struct CaptureHUDView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Theme.surface.opacity(0.7), in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
     }
 }
