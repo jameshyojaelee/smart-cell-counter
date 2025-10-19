@@ -115,6 +115,7 @@ final class ReviewViewModel: ObservableObject {
             let geom = GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron)
             let tally = CountingService.tallyByLargeSquare(objects: det.objects, geometry: geom)
             let ms = Date().timeIntervalSince(start) * 1000
+            PerformanceLogger.shared.record(stage: .total, duration: ms)
             PerformanceLogger.shared.record("pipelineTotal", ms)
 
             var debugImages = det.debugImages

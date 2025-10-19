@@ -75,12 +75,16 @@ public enum CountingService {
 
     // Tally counts per large square (0..8) using centroid mapping
     public static func tallyByLargeSquare(objects: [CellObject], geometry: GridGeometry) -> [Int: Int] {
+        let start = Date()
         var tally: [Int: Int] = [:]
         for obj in objects {
             if let idx = mapCentroidToGrid(ptPx: obj.centroid, geometry: geometry)?.largeIndex {
                 tally[idx, default: 0] += 1
             }
         }
+        let ms = Date().timeIntervalSince(start) * 1000
+        PerformanceLogger.shared.record(stage: .counting, duration: ms, metadata: ["objects": "\(objects.count)"])
+        PerformanceLogger.shared.record("counting", ms)
         return tally
     }
 

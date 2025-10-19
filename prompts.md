@@ -2,22 +2,6 @@
 
 ```
 
-## Prompt 10 – Export and Sharing Enhancements
-
-```
-You are GPT-5 Codex. Goal: make exporting results more flexible and user-friendly.
-
-Tasks:
-1. Refactor `CSVExporter` and `PDFExporter` to accept custom metadata (lab name, stain, dilution) so exports reflect user settings.
-2. Add background export support with progress indicators in `ResultsViewModel`, using `Task` or `Observation`.
-3. Introduce an export history panel that tracks recent exports and provides quick share actions.
-4. Guard exports behind file permission checks and handle errors with user-facing alerts.
-
-Validation:
-- Add unit tests covering new exporter inputs.
-- Manually exercise CSV/PDF exports and verify metadata inclusion.
-```
-
 ## Prompt 11 – Monetization and Paywall Improvements
 
 ```

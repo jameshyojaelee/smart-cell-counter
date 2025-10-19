@@ -60,7 +60,9 @@ public enum ImagingPipeline {
               let outCG = context.createCGImage(output, from: output.extent) else {
             return image
         }
-        PerformanceLogger.shared.record("perspective", Date().timeIntervalSince(start) * 1000)
+        let ms = Date().timeIntervalSince(start) * 1000
+        PerformanceLogger.shared.record(stage: .correction, duration: ms, metadata: ["phase": "perspective"])
+        PerformanceLogger.shared.record("perspective", ms)
         return UIImage(cgImage: outCG)
     }
 
@@ -138,7 +140,9 @@ public enum ImagingPipeline {
             let t = otsuThreshold(grayD)
             mask = grayD.map { $0 > t }
         }
-        PerformanceLogger.shared.record("segmentation", Date().timeIntervalSince(start) * 1000)
+        let duration = Date().timeIntervalSince(start) * 1000
+        PerformanceLogger.shared.record(stage: .segmentation, duration: duration, metadata: ["requested": requested.rawValue, "used": "classical"])
+        PerformanceLogger.shared.record("segmentation", duration)
         return SegmentationResult(width: dw,
                                   height: dh,
                                   mask: mask,
@@ -174,7 +178,9 @@ public enum ImagingPipeline {
             throw NSError(domain: "Segmentation", code: -6, userInfo: [NSLocalizedDescriptionKey: "Unsupported model output"])
         }
 
-        PerformanceLogger.shared.record("segmentation", Date().timeIntervalSince(start) * 1000)
+        let duration = Date().timeIntervalSince(start) * 1000
+        PerformanceLogger.shared.record(stage: .segmentation, duration: duration, metadata: ["requested": "coreML", "used": "coreML"])
+        PerformanceLogger.shared.record("segmentation", duration)
         let downscale = max(Double(originalWidth) / Double(max(1, mw)),
                             Double(originalHeight) / Double(max(1, mh)))
 

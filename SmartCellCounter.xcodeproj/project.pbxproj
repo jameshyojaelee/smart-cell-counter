@@ -75,6 +75,7 @@
 		AD789D084EDFC192DCD81F0F /* CountingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA8FF975FD73C6F7BEACB32 /* CountingTests.swift */; };
 		AE7516BC9CA991B8FA17125A /* NumericField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E679B74CF32BA9A19CA94EC /* NumericField.swift */; };
 		AFA3A2E664EEF1A7CD680EC1 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856725416984127B4F179D61 /* CaptureView.swift */; };
+		B13F4B3168CC282A7FCDF882 /* PerformanceLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E98FFA0F361B5162A3775 /* PerformanceLoggerTests.swift */; };
 		B3A7D0CA9AB71DCA26EA48ED /* Classifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10CDCBF0DBF053E8D027144 /* Classifier.swift */; };
 		B4F23759FBD1FAA6F8FFE35F /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC72C80203D8F49E64C3E2A /* SettingsStore.swift */; };
 		B501E0F1768A4C4BCED09701 /* DebugOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA3BC306520D60EAB0F9A3C /* DebugOverlayView.swift */; };
@@ -85,6 +86,7 @@
 		BB4DFDC276396B87542A3151 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05ED17EAE9CCC41ECAC168FF /* ConsentManager.swift */; };
 		BC9F0DC5469D992229C529AD /* SmartCellCounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDF238ED9A381B41ACAED19F /* SmartCellCounterTests.swift */; };
 		BF199A66C318B601868EAC8C /* DetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 882B11538C61A8D5EAB15225 /* DetectionView.swift */; };
+		BF54EFCAF7F7F7CF28083F96 /* DebugViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AF45420AD56BC9D751D410 /* DebugViewTests.swift */; };
 		BFF212DFAAF712714613472A /* ConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A4293154004ECCD9F3642A /* ConsentView.swift */; };
 		C0069FAB403A08299ED49349 /* AppDatabaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AF736E4EE5411543692DFE /* AppDatabaseTests.swift */; };
 		C3A4E8E65BED0190D496A115 /* CoreModules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2024D695F4BFC3DBF870C9 /* CoreModules.swift */; };
@@ -95,6 +97,7 @@
 		D0086022B7DCE60199AFFAAB /* SelectionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCDF93CBB80671412D1CD808 /* SelectionOverlay.swift */; };
 		D321E0781A1A57D6D7AE0721 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7FA9A0B2854858845B9476 /* PDFExporter.swift */; };
 		D92A646B6BE93F88B8CF6760 /* SmartCellCounterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C548713783D0458C704C59 /* SmartCellCounterUITests.swift */; };
+		DB9B3B607F0A44B97B672DFA /* PerformanceDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF3B1B26F3774DF1DD2EBAAF /* PerformanceDashboardView.swift */; };
 		DBAA2465D861C60278FA9A88 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E8BE77F136615805D6363C /* Utilities.swift */; };
 		DD14587F9F90FADE48876D30 /* Hemocytometer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14153B1DE20E0613F26247E7 /* Hemocytometer.swift */; };
 		E46AE625C80ECE2F1954A54F /* BlobDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3179A1018F088A320065B4FA /* BlobDetector.swift */; };
@@ -173,7 +176,9 @@
 		75FE414E42D591A5C7BAF492 /* CropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropView.swift; sourceTree = "<group>"; };
 		8058315C7A9913DB7C4EEF70 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/History.strings; sourceTree = "<group>"; };
 		809A0AC5E9FE3F482FA49548 /* CameraTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraTypes.swift; sourceTree = "<group>"; };
+		820E98FFA0F361B5162A3775 /* PerformanceLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceLoggerTests.swift; sourceTree = "<group>"; };
 		832F5347A1DBA22B062054A7 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Common.strings; sourceTree = "<group>"; };
+		84AF45420AD56BC9D751D410 /* DebugViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewTests.swift; sourceTree = "<group>"; };
 		856725416984127B4F179D61 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 		882B11538C61A8D5EAB15225 /* DetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionView.swift; sourceTree = "<group>"; };
 		8916494CDE1D2E5243678676 /* ImagingPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagingPipelineTests.swift; sourceTree = "<group>"; };
@@ -228,6 +233,7 @@
 		FA2BB81FB221AD680F61E95F /* SmartCellCounterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SmartCellCounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FB8D757CDCB6BDF4A0E1A67A /* QATestsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QATestsView.swift; sourceTree = "<group>"; };
 		FCDF93CBB80671412D1CD808 /* SelectionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlay.swift; sourceTree = "<group>"; };
+		FF3B1B26F3774DF1DD2EBAAF /* PerformanceDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceDashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -541,10 +547,12 @@
 				6C0D0A5F2DD5B58E2E6C48A9 /* CellDetectionTests.swift */,
 				D99828546F2E7C807461D0D1 /* CountingServiceTests.swift */,
 				3AA8FF975FD73C6F7BEACB32 /* CountingTests.swift */,
+				84AF45420AD56BC9D751D410 /* DebugViewTests.swift */,
 				403085ADF98B144CB7C93206 /* FakeCameraService.swift */,
 				B66EB53654C312790A74858C /* GeometryUtilsTests.swift */,
 				8916494CDE1D2E5243678676 /* ImagingPipelineTests.swift */,
 				D7AD1E6D070DDEB8B8CF9864 /* ImagingTests.swift */,
+				820E98FFA0F361B5162A3775 /* PerformanceLoggerTests.swift */,
 				D4B806875617ACB2E5307D3D /* PurchaseManagerTests.swift */,
 				3BF1CD1EE65B19CBD33B365C /* ReviewViewModelTests.swift */,
 				CA1549B05847B2641A0705AC /* SettingsStoreTests.swift */,
@@ -625,6 +633,7 @@
 			isa = PBXGroup;
 			children = (
 				62B2692C0974CD9461CC7F02 /* DebugView.swift */,
+				FF3B1B26F3774DF1DD2EBAAF /* PerformanceDashboardView.swift */,
 				FB8D757CDCB6BDF4A0E1A67A /* QATestsView.swift */,
 			);
 			path = Debug;
@@ -824,6 +833,7 @@
 				0BD7DBD26F776E6EE63251FF /* OnboardingView.swift in Sources */,
 				D321E0781A1A57D6D7AE0721 /* PDFExporter.swift in Sources */,
 				69403E39CCD251D106CAA3FE /* PaywallView.swift in Sources */,
+				DB9B3B607F0A44B97B672DFA /* PerformanceDashboardView.swift in Sources */,
 				6465B66918D2355EEEA1FCED /* PerformanceLogger.swift in Sources */,
 				B96F242084332F0413B22462 /* ProPurchase.swift in Sources */,
 				591CCCB2AB77D5CCF5868BD7 /* QATestsView.swift in Sources */,
@@ -863,10 +873,12 @@
 				BA191EA6FECF45DAB6CA0E98 /* CellDetectionTests.swift in Sources */,
 				0AAC627CFD2E8660D1B7CBC5 /* CountingServiceTests.swift in Sources */,
 				AD789D084EDFC192DCD81F0F /* CountingTests.swift in Sources */,
+				BF54EFCAF7F7F7CF28083F96 /* DebugViewTests.swift in Sources */,
 				30E0C3BA46C9347B876F7744 /* FakeCameraService.swift in Sources */,
 				6B8F138D2EDCCCB57B8D4C8D /* GeometryUtilsTests.swift in Sources */,
 				38AB1DAA1B45829CF3787777 /* ImagingPipelineTests.swift in Sources */,
 				32532B45CAC884745282E30A /* ImagingTests.swift in Sources */,
+				B13F4B3168CC282A7FCDF882 /* PerformanceLoggerTests.swift in Sources */,
 				153CBD1D7FDBE7E3BE783150 /* PurchaseManagerTests.swift in Sources */,
 				8BFC32A85E690F7212EE0100 /* ReviewViewModelTests.swift in Sources */,
 				0D1D16AFFB6AC6A08391CF35 /* SettingsStoreTests.swift in Sources */,

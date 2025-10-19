@@ -182,7 +182,11 @@ extension CameraService: AVCapturePhotoCaptureDelegate {
     public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error { Logger.log("Photo capture error: \(error)"); return }
         guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else { return }
-        if let start = captureStart { PerformanceLogger.shared.record("capture", Date().timeIntervalSince(start) * 1000) }
+        if let start = captureStart {
+            let ms = Date().timeIntervalSince(start) * 1000
+            PerformanceLogger.shared.record(stage: .capture, duration: ms, metadata: ["mode": "photo"])
+            PerformanceLogger.shared.record("capture", ms)
+        }
         DispatchQueue.main.async {
             self.delegate?.cameraService(self, didCapture: image)
         }
