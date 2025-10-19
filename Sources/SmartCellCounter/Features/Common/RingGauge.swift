@@ -16,6 +16,6 @@ struct RingGauge: View {
                 .animation(.easeOut(duration: 0.8), value: anim)
         }
         .onAppear { anim = progress }
+        .accessibilityHidden(true)
     }
 }
-

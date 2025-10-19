@@ -39,17 +39,20 @@ public struct Chip: View {
     let label: String
     let systemImage: String?
     let color: Color
+
     public init(_ label: String, systemImage: String? = nil, color: Color = Theme.surface.opacity(0.7)) {
         self.label = label
         self.systemImage = systemImage
         self.color = color
     }
+
     public var body: some View {
         HStack(spacing: 6) {
             if let systemImage { Image(systemName: systemImage).font(.caption2) }
             Text(label).font(.caption).foregroundColor(Theme.textPrimary)
         }
-        .padding(.horizontal, 10).padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(.ultraThinMaterial)
         .background(color)
         .clipShape(Capsule())
@@ -62,6 +65,7 @@ public struct StatCard: View {
     let subtitle: String?
     let icon: String
     let gradient: LinearGradient
+
     public init(title: String, value: String, subtitle: String? = nil, icon: String = "chart.bar.fill", gradient: LinearGradient = Theme.gradient1) {
         self.title = title
         self.value = value
@@ -69,6 +73,7 @@ public struct StatCard: View {
         self.icon = icon
         self.gradient = gradient
     }
+
     public var body: some View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 16).fill(gradient)
@@ -83,6 +88,9 @@ public struct StatCard: View {
             .padding(16)
         }
         .shadow(color: Theme.accent.opacity(0.2), radius: 10, x: 0, y: 4)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title): \(value)")
+        .accessibilityHint(subtitle ?? "")
     }
 }
 
@@ -95,4 +103,3 @@ public extension Color {
                   opacity: alpha)
     }
 }
-

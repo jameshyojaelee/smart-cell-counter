@@ -22,6 +22,7 @@ struct ImageSelectionView: View {
                         .scaledToFit()
                         .frame(width: fit.size.width, height: fit.size.height)
                         .position(x: geo.size.width/2, y: geo.size.height/2)
+                        .flipsForRightToLeftLayoutDirection(false)
                         .accessibilityHidden(true)
                         .onAppear {
                             viewRect = CGRect(origin: CGPoint(x: (geo.size.width - fit.size.width)/2, y: (geo.size.height - fit.size.height)/2), size: fit.size)

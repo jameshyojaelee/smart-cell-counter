@@ -1,0 +1,15 @@
+"onboarding.skip" = "Skip";
+"onboarding.continue" = "Continue";
+"onboarding.get_started" = "Get Started";
+"onboarding.continue.hint" = "Continues to the next onboarding step.";
+"onboarding.finish.hint" = "Completes onboarding and opens the app.";
+"onboarding.step.title.0" = "Capture Tips";
+"onboarding.step.message.0" = "Use even lighting, focus on the grid, and avoid glare for the most accurate counts.";
+"onboarding.symbol.accessibility.0" = "Capture tip illustration";
+"onboarding.step.title.1" = "Privacy First";
+"onboarding.step.message.1" = "All analysis happens on-device. You control if ads, analytics, or crash reports are shared.";
+"onboarding.symbol.accessibility.1" = "Privacy shield icon";
+"onboarding.step.title.2" = "Data Storage";
+"onboarding.step.message.2" = "Samples are saved locally. Export CSV/PDF files to back them up or share with teammates.";
+"onboarding.symbol.accessibility.2" = "Data storage illustration";
+"onboarding.page_indicator" = "Step %@ of %@";

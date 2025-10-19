@@ -1,10 +1,12 @@
 import SwiftUI
 
 struct OnboardingStep: Identifiable, Equatable {
-    let id = UUID()
-    let title: LocalizedStringKey
-    let message: LocalizedStringKey
+    let id: Int
     let symbolName: String
+
+    var title: String { L10n.Onboarding.stepTitle(id) }
+    var message: String { L10n.Onboarding.stepMessage(id) }
+    var symbolAccessibility: String { L10n.Onboarding.symbolAccessibility(id) }
 }
 
 struct OnboardingView: View {
@@ -12,15 +14,9 @@ struct OnboardingView: View {
     @State private var currentIndex: Int = 0
 
     private let steps: [OnboardingStep] = [
-        OnboardingStep(title: "Capture Tips",
-                       message: "Use even lighting, focus on the grid, and avoid glare for the most accurate counts.",
-                       symbolName: "camera"),
-        OnboardingStep(title: "Privacy First",
-                       message: "All analysis happens on-device. You control if ads, analytics, or crash reports are shared.",
-                       symbolName: "lock.shield"),
-        OnboardingStep(title: "Data Storage",
-                       message: "Samples are saved locally. Export CSV/PDF files to back them up or share with teammates.",
-                       symbolName: "externaldrive")
+        OnboardingStep(id: 0, symbolName: "camera"),
+        OnboardingStep(id: 1, symbolName: "lock.shield"),
+        OnboardingStep(id: 2, symbolName: "externaldrive")
     ]
 
     let onFinish: () -> Void
@@ -29,11 +25,13 @@ struct OnboardingView: View {
         VStack {
             HStack {
                 Spacer()
-                Button("Skip") {
+                Button(L10n.Onboarding.skip) {
                     completeOnboarding()
                 }
                 .foregroundColor(.secondary)
                 .padding()
+                .accessibilityLabel(L10n.Onboarding.skip)
+                .accessibilityHint(L10n.Onboarding.finishHint)
             }
             TabView(selection: $currentIndex) {
                 ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
@@ -45,6 +43,8 @@ struct OnboardingView: View {
                             .frame(width: 120, height: 120)
                             .foregroundColor(Theme.accent)
                             .padding()
+                            .accessibilityLabel(step.symbolAccessibility)
+                            .accessibilityAddTraits(.isImage)
                         Text(step.title)
                             .font(.title2.weight(.semibold))
                             .foregroundColor(Theme.textPrimary)
@@ -67,10 +67,12 @@ struct OnboardingView: View {
                         .frame(width: 8, height: 8)
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(L10n.Onboarding.pageIndicator(current: currentIndex + 1, total: steps.count))
             .padding(.bottom, 12)
 
             Button(action: nextStep) {
-                Text(currentIndex == steps.count - 1 ? "Get Started" : "Continue")
+                Text(currentIndex == steps.count - 1 ? L10n.Onboarding.getStarted : L10n.Onboarding.continueButton)
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -80,6 +82,7 @@ struct OnboardingView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 24)
             }
+            .accessibilityHint(currentIndex == steps.count - 1 ? L10n.Onboarding.finishHint : L10n.Onboarding.continueHint)
         }
         .background(Theme.background.ignoresSafeArea())
     }

@@ -1,0 +1,13 @@
+"paywall.navigation.title" = "Pro Upgrade";
+"paywall.title" = "Smart Cell Counter Pro";
+"paywall.subtitle" = "One-time purchase";
+"paywall.buy_price" = "Buy for %@";
+"paywall.buy.hint" = "Completes the purchase using your App Store account.";
+"paywall.restore" = "Restore Purchases";
+"paywall.restore.hint" = "Restores previous purchases for this Apple ID.";
+"paywall.continue_free" = "Continue Free";
+"paywall.continue.hint" = "Closes the paywall and returns to the app.";
+"paywall.feature.no_watermark" = "No watermark on PDFs";
+"paywall.feature.advanced" = "Advanced options and batch export";
+"paywall.feature.ml_refine" = "ML refine always on";
+"paywall.feature.ad_free" = "Ad-free experience";

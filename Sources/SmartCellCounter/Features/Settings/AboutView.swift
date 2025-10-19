@@ -10,41 +10,41 @@ struct AboutView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Smart Cell Counter").font(.title).bold()
-                Text("Version: \(appVersion)").font(.subheadline).foregroundColor(.secondary)
+                Text(L10n.Settings.About.appName).font(.title).bold()
+                Text(L10n.Settings.About.version(appVersion)).font(.subheadline).foregroundColor(.secondary)
 
-                GroupBox("Important Notice") {
+                GroupBox(L10n.Settings.About.noticeTitle) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("This app is under active development and is not ready for production deployment. Expect frequent changes and incomplete functionality.")
+                        Text(L10n.Settings.About.noticeDevelopment)
                             .font(.subheadline)
-                        Text("Research use only. Not a medical device. This app is not intended for diagnosis or treatment and has not been evaluated or approved by regulatory authorities.")
+                        Text(L10n.Settings.About.noticeResearch)
                             .font(.subheadline)
                     }
                 }
 
-                GroupBox("Privacy") {
-                    Text("All image processing occurs on-device. The app does not collect or transmit Personal Health Information (PHI). Camera and Photos access are used only for capturing and importing images at your direction.")
+                GroupBox(L10n.Settings.About.privacyTitle) {
+                    Text(L10n.Settings.About.privacyBody)
                         .font(.subheadline)
                 }
 
-                GroupBox("Third‑Party Software and Licenses") {
+                GroupBox(L10n.Settings.About.licensesTitle) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("GRDB.swift — MIT License").frame(maxWidth: .infinity, alignment: .leading)
-                        Text("GoogleMobileAds (optional) — See Google’s Terms").frame(maxWidth: .infinity, alignment: .leading)
-                        Text("PDFKit, Vision, Core Image, AVFoundation — Apple Frameworks")
+                        Text(L10n.Settings.About.licenseGRDB).frame(maxWidth: .infinity, alignment: .leading)
+                        Text(L10n.Settings.About.licenseGMA).frame(maxWidth: .infinity, alignment: .leading)
+                        Text(L10n.Settings.About.licenseApple)
                     }.font(.footnote)
                 }
 
-                GroupBox("Contact") {
+                GroupBox(L10n.Settings.About.contactTitle) {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Support: https://www.smartcellcounter.com/support")
-                        Text("Privacy Policy: https://www.smartcellcounter.com/privacy")
-                        Text("Email: jameshyojaelee@gmail.com")
+                        Text(L10n.Settings.About.contactSupport)
+                        Text(L10n.Settings.About.contactPrivacy)
+                        Text(L10n.Settings.About.contactEmail)
                     }.font(.footnote)
                 }
             }
             .padding()
         }
-        .navigationTitle("About")
+        .navigationTitle(L10n.Settings.About.screenTitle)
     }
 }

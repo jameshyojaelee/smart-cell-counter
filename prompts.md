@@ -1,18 +1,5 @@
-
-## Prompt 9 – Performance Instrumentation and Diagnostics
-
 ```
-You are GPT-5 Codex. Objective: provide deeper insight into performance and reliability.
 
-Tasks:
-1. Extend `PerformanceLogger` to aggregate rolling averages and expose data via a SwiftUI dashboard (e.g. in DebugView).
-2. Instrument key pipeline stages (capture, correction, segmentation, counting) with unified timing identifiers and include device info.
-3. Integrate MetricKit crash diagnostics into `CrashReporter` with persisted summaries in Application Support for later upload.
-4. Add background upload stubs (disabled by default) that demonstrate how anonymized metrics would be sent.
-
-Validation:
-- Add unit tests ensuring `PerformanceLogger` aggregation works.
-- Verify DebugView renders the new performance dashboard.
 ```
 
 ## Prompt 10 – Export and Sharing Enhancements

@@ -43,23 +43,24 @@ struct QATestsView: View {
     @StateObject private var vm = QATestsViewModel()
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("QA Fixtures").font(.title2).bold()
-            Button(vm.isRunning ? "Running..." : "Run All") { vm.runAll() }
+            Text(L10n.Debug.qaFixtures).font(.title2).bold()
+            Button(vm.isRunning ? L10n.Debug.running : L10n.Debug.runAll) { vm.runAll() }
                 .buttonStyle(.borderedProminent)
                 .disabled(vm.isRunning)
             List(vm.results, id: \.0) { r in
                 HStack {
                     Text(r.0).frame(width: 100, alignment: .leading)
                     Spacer()
-                    Text("Count: \(r.1 >= 0 ? String(r.1) : "missing")")
-                    Text(String(format: "%.0f ms", r.3)).foregroundColor(.secondary)
+                    Text(r.1 >= 0 ? L10n.Debug.count(r.1) : L10n.Debug.countMissing)
+                    Text(L10n.Debug.elapsed(r.3)).foregroundColor(.secondary)
                     Image(systemName: r.2 ? "checkmark.seal.fill" : "xmark.seal.fill")
                         .foregroundColor(r.2 ? .green : .red)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(r.0), \(r.1 >= 0 ? L10n.Debug.count(r.1) : L10n.Debug.countMissing)")
             }
         }
         .padding()
-        .navigationTitle("QA")
+        .navigationTitle(L10n.Debug.qaTitle)
     }
 }
-

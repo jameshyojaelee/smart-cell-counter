@@ -1,2 +1,6 @@
 "common.yes" = "Yes";
 "common.no" = "No";
+"common.undo" = "Undo";
+"common.cancel" = "Cancel";
+"common.remove" = "Remove";
+"common.next" = "Next";

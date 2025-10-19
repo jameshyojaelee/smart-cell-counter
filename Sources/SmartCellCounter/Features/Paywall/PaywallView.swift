@@ -21,22 +21,36 @@ struct PaywallView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Text("Smart Cell Counter Pro").font(.title).bold()
-                Text("One-time purchase").foregroundColor(.secondary)
+                Text(L10n.Paywall.title).font(.title).bold()
+                Text(L10n.Paywall.subtitle).foregroundColor(.secondary)
                 FeatureList()
                 if !vm.price.isEmpty {
-                    Button("Buy for \(vm.price)") { Task { await vm.buy(); if vm.purchases.isPro { dismiss() } } }
+                    Button(L10n.Paywall.buyTitle(vm.price)) {
+                        Task {
+                            await vm.buy()
+                            if vm.purchases.isPro { dismiss() }
+                        }
+                    }
                         .buttonStyle(.borderedProminent)
                         .disabled(vm.isPurchasing)
+                        .accessibilityHint(L10n.Paywall.buyHint)
                 } else {
                     ProgressView().onAppear { vm.refreshPrice() }
                 }
-                Button("Restore Purchases") { Task { await vm.restore(); if vm.purchases.isPro { dismiss() } } }
-                Button("Continue Free") { dismiss() }.foregroundColor(.secondary)
+                Button(L10n.Paywall.restore) {
+                    Task {
+                        await vm.restore()
+                        if vm.purchases.isPro { dismiss() }
+                    }
+                }
+                .accessibilityHint(L10n.Paywall.restoreHint)
+                Button(L10n.Paywall.continueFree) { dismiss() }
+                    .foregroundColor(.secondary)
+                    .accessibilityHint(L10n.Paywall.continueHint)
             }
             .padding()
         }
-        .navigationTitle("Pro Upgrade")
+        .navigationTitle(L10n.Paywall.navigationTitle)
         .onAppear { vm.refreshPrice() }
     }
 }
@@ -44,14 +58,15 @@ struct PaywallView: View {
 private struct FeatureList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("No watermark on PDFs", systemImage: "checkmark.seal")
-            Label("Advanced options + batch export", systemImage: "checkmark.seal")
-            Label("ML refine always on", systemImage: "checkmark.seal")
-            Label("Ad-free experience", systemImage: "checkmark.seal")
+            Label(L10n.Paywall.Feature.noWatermark, systemImage: "checkmark.seal")
+            Label(L10n.Paywall.Feature.advanced, systemImage: "checkmark.seal")
+            Label(L10n.Paywall.Feature.mlRefine, systemImage: "checkmark.seal")
+            Label(L10n.Paywall.Feature.adFree, systemImage: "checkmark.seal")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .accessibilityElement(children: .contain)
     }
 }

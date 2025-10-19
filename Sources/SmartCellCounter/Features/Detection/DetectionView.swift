@@ -11,6 +11,7 @@ struct DetectionView: View {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFit()
+                    .flipsForRightToLeftLayoutDirection(false)
                     .overlay(
                         DebugOverlayView(debugImages: appState.debugImages,
                                          kind: overlayKind,

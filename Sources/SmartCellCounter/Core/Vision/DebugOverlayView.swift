@@ -20,6 +20,7 @@ struct DebugOverlayView: View {
                     .scaledToFit()
                     .opacity(0.65)
                     .accessibilityHidden(true)
+                    .flipsForRightToLeftLayoutDirection(false)
             }
         }
     }

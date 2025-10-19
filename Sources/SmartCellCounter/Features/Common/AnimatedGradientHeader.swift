@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct AnimatedGradientHeader: View {
-    let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey?
+    let title: String
+    let subtitle: String?
     @State private var animate = false
 
     var body: some View {

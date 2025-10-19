@@ -13,7 +13,8 @@ final class ReviewViewModel: ObservableObject {
 
         var totalCount: Int { liveCount + deadCount }
         var formattedAverage: String {
-            averagePerSquare.isFinite ? String(format: "%.1f", averagePerSquare) : "--"
+            guard averagePerSquare.isFinite else { return "--" }
+            return ReviewViewModel.averageFormatter.string(from: NSNumber(value: averagePerSquare)) ?? "--"
         }
     }
 
@@ -36,14 +37,14 @@ final class ReviewViewModel: ObservableObject {
             .tallies: true
         ]
 
-        var titleKey: LocalizedStringKey {
+        var title: String {
             switch self {
-            case .detections: return LocalizedStringKey("Detections")
-            case .segmentationMask: return LocalizedStringKey("Segmentation Mask")
-            case .blueMask: return LocalizedStringKey("Blue Mask")
-            case .gridMask: return LocalizedStringKey("Grid Mask")
-            case .candidates: return LocalizedStringKey("Candidates")
-            case .tallies: return LocalizedStringKey("Tallies")
+            case .detections: return L10n.Review.Overlay.detections
+            case .segmentationMask: return L10n.Review.Overlay.segmentationMask
+            case .blueMask: return L10n.Review.Overlay.blueMask
+            case .gridMask: return L10n.Review.Overlay.gridMask
+            case .candidates: return L10n.Review.Overlay.candidates
+            case .tallies: return L10n.Review.Overlay.tallies
             }
         }
 
@@ -82,6 +83,13 @@ final class ReviewViewModel: ObservableObject {
     @Published var undoAvailable = false
 
     private var undoStack: [[CellObjectLabeled]] = []
+    private static let averageFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
+        formatter.minimumFractionDigits = 0
+        return formatter
+    }()
 
     func isOverlayEnabled(_ option: OverlayOption) -> Bool {
         overlayStates[option, default: false]
@@ -270,16 +278,17 @@ struct ReviewView: View {
             actionBar
                 .padding(.horizontal)
 
-            Picker("", selection: $filter) {
+            Picker(L10n.Review.filterLabel, selection: $filter) {
                 ForEach(ReviewFilter.allCases) { option in
-                    Text(option.titleKey)
+                    Text(option.title)
                         .tag(option)
                 }
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
             .padding(.horizontal)
         }
-        .navigationTitle(LocalizedStringKey("Review"))
+        .navigationTitle(L10n.Review.navigationTitle)
         .onAppear {
             if appState.labeled.isEmpty,
                let img = appState.correctedImage ?? appState.capturedImage {
@@ -299,6 +308,8 @@ struct ReviewView: View {
                     Image(uiImage: img)
                         .resizable()
                         .scaledToFit()
+                        .accessibilityLabel(L10n.Review.imageAccessibility)
+                        .flipsForRightToLeftLayoutDirection(false)
                         .overlay {
                             if viewModel.isOverlayEnabled(.detections) {
                                 DetectionOverlay(labeled: filteredLabeled()) { id in
@@ -313,7 +324,7 @@ struct ReviewView: View {
                         .gesture(lassoGesture(in: geo.size))
 
                     if viewModel.isComputing {
-                        ProgressView(LocalizedStringKey("Computing…"))
+                        ProgressView(L10n.Review.computing)
                             .padding(8)
                             .background(.ultraThinMaterial, in: Capsule())
                             .padding()
@@ -329,7 +340,7 @@ struct ReviewView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     }
                 } else {
-                    Text(LocalizedStringKey("No image to review."))
+                    Text(L10n.Review.emptyState)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                 }
@@ -339,14 +350,16 @@ struct ReviewView: View {
 
     private var actionBar: some View {
         HStack {
-            Button(LocalizedStringKey("Recompute")) {
+            Button(L10n.Review.recompute) {
                 if let img = appState.correctedImage ?? appState.capturedImage {
                     viewModel.recompute(on: img, appState: appState)
                 }
             }
+            .accessibilityHint(L10n.Review.recomputeHint)
             Spacer()
-            Button(LocalizedStringKey("Next")) { goToResults = true }
+            Button(L10n.Common.next) { goToResults = true }
                 .buttonStyle(.borderedProminent)
+                .accessibilityHint(L10n.Review.nextHint)
         }
     }
 
@@ -358,6 +371,7 @@ struct ReviewView: View {
                     .resizable()
                     .scaledToFit()
                     .opacity(0.55)
+                    .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.blueMask),
                let blue = appState.debugImages["08_blue_mask"] {
@@ -365,6 +379,7 @@ struct ReviewView: View {
                     .resizable()
                     .scaledToFit()
                     .opacity(0.45)
+                    .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.gridMask),
                let grid = appState.debugImages["05_grid_mask"] {
@@ -372,6 +387,7 @@ struct ReviewView: View {
                     .resizable()
                     .scaledToFit()
                     .opacity(0.45)
+                    .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.candidates),
                let candidates = appState.debugImages["07_candidates"] {
@@ -379,6 +395,7 @@ struct ReviewView: View {
                     .resizable()
                     .scaledToFit()
                     .opacity(0.55)
+                    .accessibilityHidden(true)
             }
         }
     }
@@ -429,11 +446,11 @@ private enum ReviewFilter: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var titleKey: LocalizedStringKey {
+    var title: String {
         switch self {
-        case .all: return LocalizedStringKey("All")
-        case .live: return LocalizedStringKey("Live")
-        case .dead: return LocalizedStringKey("Dead")
+        case .all: return L10n.Review.Filter.all
+        case .live: return L10n.Review.Filter.live
+        case .dead: return L10n.Review.Filter.dead
         }
     }
 }
@@ -470,12 +487,16 @@ private struct DetectionOverlay: View {
             }
         }
         .contentShape(Rectangle())
+        .accessibilityHidden(true)
+        .flipsForRightToLeftLayoutDirection(false)
         .overlay(
             ZStack {
                 ForEach(labeled, id: \.id) { item in
                     Button(action: { onTap(item.id) }) { Color.clear }
                         .frame(width: 30, height: 30)
                         .position(item.base.centroid)
+                        .accessibilityLabel(L10n.Review.detectionAccessibility(label: item.label))
+                        .accessibilityHint(L10n.Review.detectionToggleHint)
                 }
             }
         )
@@ -487,37 +508,37 @@ private struct ReviewStatsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(LocalizedStringKey("Review Stats"))
+            Text(L10n.Review.statsTitle)
                 .font(.headline)
                 .foregroundColor(Theme.textPrimary)
             HStack(spacing: 12) {
                 ReviewStatChip(
-                    titleKey: LocalizedStringKey("Live"),
+                    title: L10n.Review.liveTitle,
                     value: "\(stats.liveCount)",
                     systemImage: "heart.fill",
                     tint: Theme.success
                 )
                 ReviewStatChip(
-                    titleKey: LocalizedStringKey("Dead"),
+                    title: L10n.Review.deadTitle,
                     value: "\(stats.deadCount)",
                     systemImage: "bandage.fill",
                     tint: Theme.danger
                 )
                 ReviewStatChip(
-                    titleKey: LocalizedStringKey("Avg / Large Square"),
+                    title: L10n.Review.averageTitle,
                     value: stats.formattedAverage,
                     systemImage: "function",
                     tint: Theme.accent
                 )
                 ReviewStatChip(
-                    titleKey: LocalizedStringKey("Outliers"),
+                    title: L10n.Review.outliersTitle,
                     value: "\(stats.outlierCount)",
                     systemImage: "exclamationmark.triangle",
                     tint: Theme.warning
                 )
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Text(LocalizedStringKey("Selected Squares: \(stats.selectedSquareCount)"))
+            Text(L10n.Review.selectedSquares(stats.selectedSquareCount))
                 .font(.footnote)
                 .foregroundColor(Theme.textSecondary)
         }
@@ -525,7 +546,7 @@ private struct ReviewStatsView: View {
 }
 
 private struct ReviewStatChip: View {
-    let titleKey: LocalizedStringKey
+    let title: String
     let value: String
     let systemImage: String
     let tint: Color
@@ -533,7 +554,7 @@ private struct ReviewStatChip: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Label {
-                Text(titleKey)
+                Text(title)
                     .font(.caption)
             } icon: {
                 Image(systemName: systemImage)
@@ -546,6 +567,8 @@ private struct ReviewStatChip: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Theme.surface.opacity(0.7), in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(L10n.Review.statAccessibility(title: title, value: value))
     }
 }
 
@@ -560,14 +583,14 @@ private struct ReviewOverlayToggleBar: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                ForEach(options) { option in
+                ForEach(options, id: \.self) { option in
                     let isEnabled = states[option, default: false]
                     let isAvailable = availability(option)
                     Button {
                         if isAvailable { toggle(option) }
                     } label: {
                         Label {
-                            Text(option.titleKey)
+                            Text(option.title)
                         } icon: {
                             Image(systemName: option.iconName)
                         }
@@ -581,17 +604,20 @@ private struct ReviewOverlayToggleBar: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(!isAvailable)
+                    .accessibilityHint(L10n.Review.overlayToggleHint)
+                    .accessibilityValue(L10n.Review.overlayValue(isEnabled: isEnabled))
                 }
 
                 if undoAvailable {
                     Button(action: undoAction) {
-                        Label(LocalizedStringKey("Undo"), systemImage: "arrow.uturn.backward.circle")
+                        Label(L10n.Common.undo, systemImage: "arrow.uturn.backward.circle")
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
                             .background(RoundedRectangle(cornerRadius: 12).fill(Theme.surface.opacity(0.5)))
                             .foregroundColor(Theme.accent)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityHint(L10n.Review.undoHint)
                 }
             }
         }
@@ -607,7 +633,7 @@ private struct PerSquareTable: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(LocalizedStringKey("Per-Square Counts"))
+            Text(L10n.Review.perSquareTitle)
                 .font(.headline)
                 .foregroundColor(Theme.textPrimary)
             LazyVGrid(columns: columns, spacing: 8) {
@@ -630,6 +656,7 @@ private struct PerSquareTable: View {
                         .frame(height: 44)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(L10n.Review.perSquareAccessibility(index: index, count: count, isSelected: isSelected))
                 }
             }
         }
@@ -644,7 +671,7 @@ private struct LassoConfirmationBanner: View {
     var body: some View {
         HStack(spacing: 12) {
             Label {
-                Text(LocalizedStringKey("Remove \(count) detections?"))
+                Text(L10n.Review.lassoConfirmation(count))
                     .font(.subheadline)
             } icon: {
                 Image(systemName: "scissors")
@@ -653,15 +680,17 @@ private struct LassoConfirmationBanner: View {
 
             Spacer()
 
-            Button(LocalizedStringKey("Cancel"), action: cancel)
+            Button(L10n.Common.cancel, action: cancel)
                 .buttonStyle(.bordered)
 
-            Button(LocalizedStringKey("Remove"), action: confirm)
+            Button(L10n.Common.remove, action: confirm)
                 .buttonStyle(.borderedProminent)
         }
         .padding(14)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .shadow(radius: 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(L10n.Review.lassoConfirmation(count))
     }
 }
 
@@ -671,7 +700,7 @@ private struct SegmentationMetadataView: View {
     var body: some View {
         HStack(spacing: 12) {
             Label {
-                Text(strategyKey)
+                Text(strategyText)
             } icon: {
                 Image(systemName: "sparkles")
             }
@@ -679,7 +708,7 @@ private struct SegmentationMetadataView: View {
             .foregroundColor(Theme.textSecondary)
 
             Label {
-                Text(LocalizedStringKey("Downscale: \(String(format: "%.2f", segmentation.downscaleFactor))"))
+                Text(L10n.Detection.Segmentation.downscale(segmentation.downscaleFactor))
             } icon: {
                 Image(systemName: "arrow.down.forward.and.arrow.up.backward")
             }
@@ -687,7 +716,7 @@ private struct SegmentationMetadataView: View {
             .foregroundColor(Theme.textSecondary)
 
             Label {
-                Text(polarityKey)
+                Text(polarityText)
             } icon: {
                 Image(systemName: "circle.lefthalf.filled")
             }
@@ -696,17 +725,17 @@ private struct SegmentationMetadataView: View {
         }
     }
 
-    private var strategyKey: LocalizedStringKey {
+    private var strategyText: String {
         switch segmentation.usedStrategy {
-        case .automatic: return LocalizedStringKey("Strategy: Automatic")
-        case .classical: return LocalizedStringKey("Strategy: Classical")
-        case .coreML: return LocalizedStringKey("Strategy: Core ML")
+        case .automatic: return L10n.Review.Segmentation.strategyAutomatic
+        case .classical: return L10n.Review.Segmentation.strategyClassical
+        case .coreML: return L10n.Review.Segmentation.strategyCoreML
         }
     }
 
-    private var polarityKey: LocalizedStringKey {
+    private var polarityText: String {
         segmentation.polarityInverted
-            ? LocalizedStringKey("Polarity: Inverted")
-            : LocalizedStringKey("Polarity: Normal")
+            ? L10n.Review.Segmentation.polarityInverted
+            : L10n.Review.Segmentation.polarityNormal
     }
 }

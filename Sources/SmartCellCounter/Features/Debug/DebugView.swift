@@ -10,27 +10,33 @@ struct DebugView: View {
                 ForEach(appState.debugImages.keys.sorted(), id: \.self) { key in
                     VStack(alignment: .leading, spacing: 6) {
                         if let img = appState.debugImages[key] {
-                            Image(uiImage: img).resizable().scaledToFit().frame(height: 120).cornerRadius(6)
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 120)
+                                .cornerRadius(6)
+                                .accessibilityHidden(true)
                         }
                         Text(key).font(.caption)
                     }
                     .padding(8)
                     .background(Color(.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(key)
                 }
             }
             .padding()
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Performance").font(.headline)
-                // Placeholder; real timings can be stored into appState.debugImages or a separate store
-                Text("Segmentation/Counting timings are displayed here when available.")
+                Text(L10n.Debug.performanceTitle).font(.headline)
+                Text(L10n.Debug.timingsDescription)
                     .font(.caption).foregroundColor(.secondary)
-                NavigationLink("Run QA Fixtures", destination: QATestsView())
+                NavigationLink(L10n.Debug.qaFixtures, destination: QATestsView())
             }
             .padding([.horizontal, .bottom])
         }
-        .navigationTitle("Debug")
+        .navigationTitle(L10n.Debug.navigationTitle)
         .appBackground()
     }
 }

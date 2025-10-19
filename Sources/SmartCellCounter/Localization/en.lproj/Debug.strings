@@ -1,0 +1,11 @@
+"debug.navigation.title" = "Debug";
+"debug.performance.title" = "Performance";
+"debug.timings.description" = "Segmentation/Counting timings are displayed here when available.";
+"debug.qa_fixtures" = "Run QA Fixtures";
+"debug.qa.title" = "QA";
+"debug.qa.run_all" = "Run All";
+"debug.qa.running" = "Running...";
+"debug.qa.missing" = "missing";
+"debug.qa.count" = "Count: %@";
+"debug.qa.count_missing" = "Count: missing";
+"debug.qa.elapsed" = "%@ ms";

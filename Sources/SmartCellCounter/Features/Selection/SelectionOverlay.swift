@@ -47,6 +47,7 @@ struct SelectionOverlay: View {
                 .accessibilityHint(L10n.Selection.undoHint)
             }
         }
+        .flipsForRightToLeftLayoutDirection(false)
     }
 
     private func handlePosition(_ i: Int) -> CGPoint {
