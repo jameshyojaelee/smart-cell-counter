@@ -16,6 +16,7 @@ xcuserdata/
 *.moved-aside
 *.xcuserstate
 *.xcworkspace
+prompts.md
 
 # CocoaPods (legacy RN/ios folder)
 Pods/
