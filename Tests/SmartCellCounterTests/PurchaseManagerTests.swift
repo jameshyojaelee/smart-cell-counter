@@ -46,4 +46,50 @@ final class PurchaseManagerTests: XCTestCase {
         try await mock2.restore()
         XCTAssertTrue(mock2.isPro)
     }
+
+    func testDebugOverrideEntitlementUpdatesState() async {
+        let manager = PurchaseManager.shared
+        let original = await MainActor.run { manager.isPro }
+        await MainActor.run { manager.debugOverrideEntitlement(false) }
+        let disabled = await MainActor.run { manager.isPro }
+        XCTAssertFalse(disabled)
+        await MainActor.run { manager.debugOverrideEntitlement(true) }
+        let enabled = await MainActor.run { manager.isPro }
+        XCTAssertTrue(enabled)
+        await MainActor.run { manager.debugOverrideEntitlement(original) }
+    }
+
+    func testResultsViewModelShowsAlertWhenFeatureLocked() async {
+        await MainActor.run {
+            let manager = PurchaseManager.shared
+            let original = manager.isPro
+            manager.debugOverrideEntitlement(false)
+
+            let viewModel = ResultsViewModel(defaultDilution: 1.0)
+            viewModel.debugResetAlert()
+            let canAccess = viewModel.debugCanAccess(.pdf)
+
+            XCTAssertFalse(canAccess)
+            XCTAssertEqual(viewModel.alert?.showsUpgrade, true)
+
+            manager.debugOverrideEntitlement(original)
+        }
+    }
+
+    func testResultsViewModelAllowsFeatureWhenEntitled() async {
+        await MainActor.run {
+            let manager = PurchaseManager.shared
+            let original = manager.isPro
+            manager.debugOverrideEntitlement(true)
+
+            let viewModel = ResultsViewModel(defaultDilution: 1.0)
+            viewModel.debugResetAlert()
+            let canAccess = viewModel.debugCanAccess(.pdf)
+
+            XCTAssertTrue(canAccess)
+            XCTAssertNil(viewModel.alert)
+
+            manager.debugOverrideEntitlement(original)
+        }
+    }
 }

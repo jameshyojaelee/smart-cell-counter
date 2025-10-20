@@ -40,6 +40,15 @@ final class ResultsViewModel: ObservableObject {
             case .pdf: return "report"
             }
         }
+
+        var requiresPro: Bool {
+            switch self {
+            case .summaryCSV:
+                return false
+            case .detectionsCSV, .pdf:
+                return true
+            }
+        }
     }
 
     struct ExportRecord: Identifiable, Equatable {
@@ -78,6 +87,7 @@ final class ResultsViewModel: ObservableObject {
         let id = UUID()
         let title: String
         let message: String
+        let showsUpgrade: Bool
     }
 
     enum ExportStatus: Equatable {
@@ -131,8 +141,10 @@ final class ResultsViewModel: ObservableObject {
         return (conc, live, dead, squares, viability, overcrowded, selectedSquares, mean)
     }
 
-    func export(_ kind: ExportKind, appState: AppState) {
-        guard checkWritePermission() else { return }
+    @discardableResult
+    func performExport(_ kind: ExportKind, appState: AppState) -> Bool {
+        guard canAccess(kind) else { return false }
+        guard checkWritePermission() else { return false }
         exportTask?.cancel()
         exportTask = Task(priority: .userInitiated) { [weak self] in
             guard let self else { return }
@@ -151,6 +163,7 @@ final class ResultsViewModel: ObservableObject {
                 await self.recordFailure(kind: kind, error: error)
             }
         }
+        return true
     }
 
     func cancelExport() {
@@ -372,7 +385,7 @@ final class ResultsViewModel: ObservableObject {
         let description = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
         let message = description.isEmpty ? L10n.Results.Export.errorGeneric : description
         exportStatus = .failed(kind: kind, message: message)
-        alert = ExportAlert(title: L10n.Results.Export.errorTitle, message: message)
+        alert = ExportAlert(title: L10n.Results.Export.errorTitle, message: message, showsUpgrade: false)
         Haptics.error()
     }
 
@@ -381,6 +394,26 @@ final class ResultsViewModel: ObservableObject {
                        stain: Settings.shared.stainType,
                        dilution: dilution)
     }
+
+    private func canAccess(_ kind: ExportKind) -> Bool {
+        if kind.requiresPro && !PurchaseManager.shared.isPro {
+            alert = ExportAlert(title: L10n.Results.Export.lockedTitle,
+                                message: L10n.Results.Export.proRequired(kind.displayName),
+                                showsUpgrade: true)
+            return false
+        }
+        return true
+    }
+
+    #if DEBUG
+    func debugResetAlert() {
+        alert = nil
+    }
+
+    func debugCanAccess(_ kind: ExportKind) -> Bool {
+        canAccess(kind)
+    }
+    #endif
 
     private func makeFilename(prefix: String, fileExtension: String, timestamp: Date) -> String {
         let formatter = ISO8601DateFormatter()
@@ -400,7 +433,9 @@ final class ResultsViewModel: ObservableObject {
             try FileManager.default.removeItem(at: probeURL)
             return true
         } catch {
-            alert = ExportAlert(title: L10n.Results.Export.errorTitle, message: L10n.Results.Export.permissionDenied)
+            alert = ExportAlert(title: L10n.Results.Export.errorTitle,
+                                message: L10n.Results.Export.permissionDenied,
+                                showsUpgrade: false)
             Haptics.error()
             return false
         }
@@ -590,26 +625,51 @@ struct ResultsView: View {
                 VStack(spacing: DS.Spacing.sm) {
                     HStack(spacing: DS.Spacing.sm) {
                         Button {
-                            viewModel.export(.summaryCSV, appState: appState)
+                            _ = viewModel.performExport(.summaryCSV, appState: appState)
                         } label: {
-                            Label(L10n.Results.exportCSV, systemImage: ResultsViewModel.ExportKind.summaryCSV.iconName)
+                            Label {
+                                Text(L10n.Results.exportCSV)
+                            } icon: {
+                                Image(systemName: ResultsViewModel.ExportKind.summaryCSV.iconName)
+                            }
                         }
                         .disabled(viewModel.isExporting)
                         .accessibilityHint(L10n.Results.exportCSVHint)
 
                         Button {
-                            guard PurchaseManager.shared.isPro else { showPaywall = true; return }
-                            viewModel.export(.detectionsCSV, appState: appState)
+                            if !viewModel.performExport(.detectionsCSV, appState: appState) {
+                                showPaywall = true
+                            }
                         } label: {
-                            Label(L10n.Results.exportDetectionsCSV, systemImage: ResultsViewModel.ExportKind.detectionsCSV.iconName)
+                            Label {
+                                HStack(spacing: 4) {
+                                    Text(L10n.Results.exportDetectionsCSV)
+                                    if ResultsViewModel.ExportKind.detectionsCSV.requiresPro && !PurchaseManager.shared.isPro {
+                                        ProBadge()
+                                    }
+                                }
+                            } icon: {
+                                Image(systemName: ResultsViewModel.ExportKind.detectionsCSV.iconName)
+                            }
                         }
                         .disabled(viewModel.isExporting)
                         .accessibilityHint(L10n.Results.exportDetectionsHint)
 
                         Button {
-                            viewModel.export(.pdf, appState: appState)
+                            if !viewModel.performExport(.pdf, appState: appState) {
+                                showPaywall = true
+                            }
                         } label: {
-                            Label(L10n.Results.exportPDF, systemImage: ResultsViewModel.ExportKind.pdf.iconName)
+                            Label {
+                                HStack(spacing: 4) {
+                                    Text(L10n.Results.exportPDF)
+                                    if ResultsViewModel.ExportKind.pdf.requiresPro && !PurchaseManager.shared.isPro {
+                                        ProBadge()
+                                    }
+                                }
+                            } icon: {
+                                Image(systemName: ResultsViewModel.ExportKind.pdf.iconName)
+                            }
                         }
                         .disabled(viewModel.isExporting)
                         .accessibilityHint(L10n.Results.exportPDFHint)
@@ -663,9 +723,18 @@ struct ResultsView: View {
         .modifier(ResultsNavigation(showPaywall: $showPaywall))
         .appBackground()
         .alert(item: $viewModel.alert) { alert in
-            Alert(title: Text(alert.title),
-                  message: Text(alert.message),
-                  dismissButton: .default(Text(L10n.Results.Export.dismiss)))
+            if alert.showsUpgrade {
+                return Alert(title: Text(alert.title),
+                             message: Text(alert.message),
+                             primaryButton: .default(Text(L10n.Results.Export.upgrade)) {
+                                 showPaywall = true
+                             },
+                             secondaryButton: .cancel(Text(L10n.Results.Export.dismiss)))
+            } else {
+                return Alert(title: Text(alert.title),
+                             message: Text(alert.message),
+                             dismissButton: .default(Text(L10n.Results.Export.dismiss)))
+            }
         }
     }
 }
@@ -730,6 +799,20 @@ private struct ExportHistoryRow: View {
         .padding(8)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct ProBadge: View {
+    var body: some View {
+        Text("PRO")
+            .font(.caption2)
+            .fontWeight(.bold)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .foregroundColor(Theme.accent)
+            .background(Theme.accent.opacity(0.15))
+            .clipShape(Capsule())
+            .accessibilityLabel(Text("Pro feature"))
     }
 }
 

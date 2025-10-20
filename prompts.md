@@ -2,38 +2,6 @@
 
 ```
 
-## Prompt 11 – Monetization and Paywall Improvements
-
-```
-You are GPT-5 Codex. Objective: polish the purchasing experience and ensure entitlements are robust.
-
-Tasks:
-1. Redesign `PaywallView` with benefit highlights, FAQs, and a clear comparison table (Pro vs Free).
-2. Add receipt validation and entitlement refresh logic to `PurchaseManager` so the app recovers from interrupted purchases.
-3. Provide a sandbox-friendly purchase simulator in Debug mode for QA.
-4. Gate advanced exports/detections behind `isPro` with graceful fallbacks explaining why the feature is locked.
-
-Validation:
-- Add unit tests that simulate entitlement changes and verify UI updates.
-- Test purchase, restore, and failure flows in the StoreKit sandbox.
-```
-
-## Prompt 12 – Continuous Integration and QA Automation
-
-```
-You are GPT-5 Codex. Goal: establish automated validation for SmartCellCounter.
-
-Tasks:
-1. Add a GitHub Actions (or preferred CI) workflow that runs `xcodebuild test` on PRs, including SwiftLint (if available) and swift-format checks.
-2. Create at least one XCTUI test in `Tests/SmartCellCounterUITests` that walks through capture → crop → review with mocked data.
-3. Generate code coverage reports and publish them as CI artifacts.
-4. Document how to run CI locally via a `Makefile` target.
-
-Validation:
-- Ensure the workflow passes locally (using `act` or manual dry runs).
-- Commit updated `README.md` instructions for contributors.
-```
-
 ## Prompt 13 – iOS Distribution Readiness
 
 ```

@@ -61,6 +61,9 @@
 "results.export.error.title" = "Export Failed";
 "results.export.error.generic" = "Something went wrong while exporting. Please try again.";
 "results.export.dismiss" = "OK";
+"results.export.lockedTitle" = "Upgrade Required";
+"results.export.pro_required" = "%@ is a Pro feature. Upgrade to unlock advanced exports and richer sharing.";
+"results.export.upgrade" = "Upgrade Now";
 "results.csv.filename" = "results.csv";
 "results.csv.summary.filename" = "summary.csv";
 "results.csv.detections.filename" = "detections.csv";

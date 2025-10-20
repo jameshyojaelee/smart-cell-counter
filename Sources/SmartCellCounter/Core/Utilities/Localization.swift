@@ -228,6 +228,10 @@ enum L10n {
             tr("Paywall", "paywall.buy_price", price)
         }
         static let buyHint = tr("Paywall", "paywall.buy.hint")
+        static let benefitsTitle = tr("Paywall", "paywall.section.benefits")
+        static let comparisonTitle = tr("Paywall", "paywall.section.comparison")
+        static let faqTitle = tr("Paywall", "paywall.faq.title")
+        static let upgradeAction = tr("Paywall", "paywall.action.upgrade")
 
         enum Feature {
             static let noWatermark = tr("Paywall", "paywall.feature.no_watermark")
@@ -235,6 +239,42 @@ enum L10n {
             static let mlRefine = tr("Paywall", "paywall.feature.ml_refine")
             static let adFree = tr("Paywall", "paywall.feature.ad_free")
         }
+
+        enum Benefit {
+            static let exports = tr("Paywall", "paywall.benefit.exports")
+            static let recovery = tr("Paywall", "paywall.benefit.recovery")
+            static let support = tr("Paywall", "paywall.benefit.support")
+        }
+
+        enum Comparison {
+            static let free = tr("Paywall", "paywall.plan.free")
+            static let pro = tr("Paywall", "paywall.plan.pro")
+            static let advancedExports = tr("Paywall", "paywall.comparison.advanced_exports")
+            static let detections = tr("Paywall", "paywall.comparison.detections")
+            static let watermark = tr("Paywall", "paywall.comparison.watermark")
+            static let ads = tr("Paywall", "paywall.comparison.ads")
+            static let support = tr("Paywall", "paywall.comparison.support")
+            static let valueIncluded = tr("Paywall", "paywall.comparison.value.included")
+            static let valueLimited = tr("Paywall", "paywall.comparison.value.limited")
+            static let valueNotAvailable = tr("Paywall", "paywall.comparison.value.not_available")
+            static let valueRemoved = tr("Paywall", "paywall.comparison.value.removed")
+        }
+
+        enum FAQ {
+            static let syncQuestion = tr("Paywall", "paywall.faq.sync.q")
+            static let syncAnswer = tr("Paywall", "paywall.faq.sync.a")
+            static let restoreQuestion = tr("Paywall", "paywall.faq.restore.q")
+            static let restoreAnswer = tr("Paywall", "paywall.faq.restore.a")
+            static let trialQuestion = tr("Paywall", "paywall.faq.trial.q")
+            static let trialAnswer = tr("Paywall", "paywall.faq.trial.a")
+        }
+
+        #if DEBUG
+        enum Debug {
+            static let simulatePurchase = tr("Paywall", "paywall.debug.simulate_purchase")
+            static let revokePurchase = tr("Paywall", "paywall.debug.revoke_purchase")
+        }
+        #endif
     }
 
     enum Consent {
@@ -509,6 +549,11 @@ enum L10n {
             static let errorTitle = tr("Results", "results.export.error.title")
             static let errorGeneric = tr("Results", "results.export.error.generic")
             static let dismiss = tr("Results", "results.export.dismiss")
+            static let lockedTitle = tr("Results", "results.export.lockedTitle")
+            static func proRequired(_ feature: String) -> String {
+                tr("Results", "results.export.pro_required", feature)
+            }
+            static let upgrade = tr("Results", "results.export.upgrade")
         }
 
         private static let percentFormatter: NumberFormatter = {

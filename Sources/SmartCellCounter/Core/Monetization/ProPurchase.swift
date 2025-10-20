@@ -18,17 +18,21 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
     @Published public private(set) var isPro: Bool = UserDefaults.standard.bool(forKey: "pro.entitled")
     @Published public private(set) var price: String?
     private var product: Product?
+    private var updatesTask: Task<Void, Never>?
 
     private init() {}
+
+    deinit {
+        updatesTask?.cancel()
+    }
 
     public func loadProducts() async {
         do {
             let products = try await Product.products(for: [productId])
             self.product = products.first
             if let p = products.first { self.price = p.displayPrice }
-            for await update in Transaction.updates {
-                await self.handle(transactionUpdate: update)
-            }
+            startListeningForTransactions()
+            await refreshEntitlements()
         } catch {
             Logger.log("StoreKit load error: \(error)")
         }
@@ -38,11 +42,25 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
         guard let product else { throw NSError(domain: "IAP", code: -1, userInfo: [NSLocalizedDescriptionKey: "Product not loaded"]) }
         let result = try await product.purchase()
         await handlePurchaseResult(result)
+        await refreshEntitlements()
     }
 
     public func restore() async throws {
         try await AppStore.sync()
-        // Entitlement will be updated via Transaction.updates
+        await refreshEntitlements()
+    }
+
+    public func refreshEntitlements() async {
+        do {
+            if let latest = await Transaction.latest(for: productId) {
+                let transaction = try checkVerified(latest)
+                apply(transaction: transaction)
+            } else {
+                setEntitled(false)
+            }
+        } catch {
+            Logger.log("Entitlement refresh failed: \(error)")
+        }
     }
 
     private func setEntitled(_ value: Bool) {
@@ -55,9 +73,7 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
         case .success(let verification):
             do {
                 let transaction = try self.checkVerified(verification)
-                if transaction.productID == productId {
-                    setEntitled(true)
-                }
+                apply(transaction: transaction)
                 await transaction.finish()
             } catch { Logger.log("Verification failed: \(error)") }
         case .userCancelled:
@@ -72,9 +88,7 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
     private func handle(transactionUpdate: VerificationResult<Transaction>) async {
         do {
             let transaction: Transaction = try self.checkVerified(transactionUpdate)
-            if transaction.productID == productId {
-                setEntitled(true)
-            }
+            apply(transaction: transaction)
             await transaction.finish()
         } catch { Logger.log("Update verification failed: \(error)") }
     }
@@ -87,4 +101,26 @@ public final class PurchaseManager: ObservableObject, PurchaseManaging {
             return safe
         }
     }
+
+    private func apply(transaction: Transaction) {
+        guard transaction.productID == productId else { return }
+        let entitled = transaction.revocationDate == nil
+        setEntitled(entitled)
+    }
+
+    private func startListeningForTransactions() {
+        updatesTask?.cancel()
+        updatesTask = Task.detached { [weak self] in
+            guard let self else { return }
+            for await update in Transaction.updates {
+                await self.handle(transactionUpdate: update)
+            }
+        }
+    }
+
+    #if DEBUG
+    public func debugOverrideEntitlement(_ value: Bool) {
+        setEntitled(value)
+    }
+    #endif
 }
