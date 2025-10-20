@@ -148,19 +148,31 @@ final class ResultsViewModel: ObservableObject {
         exportTask?.cancel()
         exportTask = Task(priority: .userInitiated) { [weak self] in
             guard let self else { return }
-            await self.updateProgress(kind: kind, progress: 0.05, message: L10n.Results.Export.preparing)
+            await MainActor.run {
+                self.updateProgress(kind: kind, progress: 0.05, message: L10n.Results.Export.preparing)
+            }
             do {
-                let payload = await self.buildPayload(for: kind, appState: appState)
+                let payload = self.buildPayload(for: kind, appState: appState)
                 try Task.checkCancellation()
-                await self.updateProgress(kind: kind, progress: 0.35, message: L10n.Results.Export.writing)
+                await MainActor.run {
+                    self.updateProgress(kind: kind, progress: 0.35, message: L10n.Results.Export.writing)
+                }
                 let url = try await self.performExport(kind: kind, payload: payload)
                 try Task.checkCancellation()
-                await self.updateProgress(kind: kind, progress: 0.85, message: L10n.Results.Export.finishing)
-                await self.recordSuccess(kind: kind, url: url, payload: payload)
+                await MainActor.run {
+                    self.updateProgress(kind: kind, progress: 0.85, message: L10n.Results.Export.finishing)
+                }
+                await MainActor.run {
+                    self.recordSuccess(kind: kind, url: url, payload: payload)
+                }
             } catch is CancellationError {
-                await self.updateProgress(kind: kind, progress: 0, message: nil)
+                await MainActor.run {
+                    self.updateProgress(kind: kind, progress: 0, message: nil)
+                }
             } catch {
-                await self.recordFailure(kind: kind, error: error)
+                await MainActor.run {
+                    self.recordFailure(kind: kind, error: error)
+                }
             }
         }
         return true
@@ -637,9 +649,7 @@ struct ResultsView: View {
                         .accessibilityHint(L10n.Results.exportCSVHint)
 
                         Button {
-                            if !viewModel.performExport(.detectionsCSV, appState: appState) {
-                                showPaywall = true
-                            }
+                            _ = viewModel.performExport(.detectionsCSV, appState: appState)
                         } label: {
                             Label {
                                 HStack(spacing: 4) {
@@ -656,9 +666,7 @@ struct ResultsView: View {
                         .accessibilityHint(L10n.Results.exportDetectionsHint)
 
                         Button {
-                            if !viewModel.performExport(.pdf, appState: appState) {
-                                showPaywall = true
-                            }
+                            _ = viewModel.performExport(.pdf, appState: appState)
                         } label: {
                             Label {
                                 HStack(spacing: 4) {

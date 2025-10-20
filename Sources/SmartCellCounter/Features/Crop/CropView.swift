@@ -10,6 +10,7 @@ struct CropView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel = CropViewModel()
     @State private var goToReview = false
+    private let isUITestMock = ProcessInfo.processInfo.arguments.contains("-UITest.MockCapture")
 
     var body: some View {
         VStack(spacing: DS.Spacing.md) {
@@ -35,9 +36,23 @@ struct CropView: View {
                 Text(L10n.Crop.noImage).foregroundColor(.secondary)
             }
         }
-        .onAppear { if let img = appState.capturedImage { viewModel.image = img } }
+        .onAppear {
+            if let img = appState.capturedImage { viewModel.image = img }
+            if isUITestMock {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    autoConfirmMock()
+                }
+            }
+        }
         .navigationTitle(L10n.Crop.navigationTitle)
         .modifier(CropNavigation(goToReview: $goToReview))
+    }
+
+    private func autoConfirmMock() {
+        guard isUITestMock else { return }
+        guard let img = viewModel.image else { return }
+        appState.correctedImage = img
+        goToReview = true
     }
 }
 

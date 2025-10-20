@@ -251,11 +251,29 @@ Testing:
 
 ## CI
 
-GitHub Actions workflow `.github/workflows/ci.yml`:
+Continuous Integration runs via GitHub Actions (`.github/workflows/ci.yml`):
 
-- Generates project (XcodeGen)
-- Resolves SPM (GRDB)
-- Dynamically picks an available iOS Simulator (prefers iPhone 16 family) and runs tests
+- Installs XcodeGen, SwiftLint, and swift-format (best effort)
+- Generates the Xcode project (`xcodegen generate`)
+- Lints the Swift sources (SwiftLint/SwiftFormat)
+- Dynamically selects an available iOS simulator, runs `xcodebuild test` with code coverage enabled, and uploads the coverage report as an artifact (`coverage.json`)
+
+### Running the CI flow locally
+
+Use the provided make targets:
+
+```bash
+# Regenerate the Xcode project
+make generate
+
+# Run linting (SwiftLint/SwiftFormat if installed)
+make lint
+
+# Full CI dry-run: generate + lint + xcodebuild test + coverage report
+make ci
+```
+
+The `make ci` target mirrors the workflow steps and writes coverage output to `coverage.json`. Tools are optional—if SwiftLint / swift-format are not installed, the commands are skipped with a console message. Combine this with [`act`](https://github.com/nektos/act) if you want to execute the GitHub Actions workflow locally.
 
 ## TestFlight & Submission
 

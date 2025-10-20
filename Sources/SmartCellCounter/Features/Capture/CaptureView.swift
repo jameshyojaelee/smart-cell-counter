@@ -10,6 +10,9 @@ struct CaptureView: View {
     @State private var goToCrop = false
     @State private var showGrid = true
     @State private var focusIndicator: FocusIndicator?
+    @State private var mockConfigured = false
+
+    private let isUITestMock = ProcessInfo.processInfo.arguments.contains("-UITest.MockCapture")
 
     var body: some View {
         VStack(spacing: 0) {
@@ -72,9 +75,23 @@ struct CaptureView: View {
         }
         .navigationTitle(L10n.Capture.navigationTitle)
         .modifier(CaptureNavigation(goToCrop: $goToCrop))
-        .onAppear { viewModel.onAppear() }
-        .onDisappear { viewModel.onDisappear() }
-        .onChange(of: scenePhase) { viewModel.handleScenePhase($0) }
+        .onAppear {
+            if isUITestMock {
+                configureMockCapture()
+            } else {
+                viewModel.onAppear()
+            }
+        }
+        .onDisappear {
+            if !isUITestMock {
+                viewModel.onDisappear()
+            }
+        }
+        .onChange(of: scenePhase) { phase in
+            if !isUITestMock {
+                viewModel.handleScenePhase(phase)
+            }
+        }
         .onReceive(viewModel.$focusScore) { appState.focusScore = $0 }
         .onReceive(viewModel.$glareRatio) { appState.glareRatio = $0 }
         .onReceive(viewModel.captured) { image in
@@ -86,7 +103,10 @@ struct CaptureView: View {
 
     @ViewBuilder
     private func previewLayer(size: CGSize) -> some View {
-        if viewModel.previewEnabled {
+        if isUITestMock {
+            MockCapturePreview()
+                .accessibilityIdentifier("mockCapturePreview")
+        } else if viewModel.previewEnabled {
             CameraPreviewView(session: viewModel.captureSession) { layerPoint, devicePoint in
                 handleFocusTap(layerPoint: layerPoint, devicePoint: devicePoint, size: size)
             }
@@ -159,9 +179,16 @@ struct CaptureView: View {
     }
 
     private func shutterTapped() {
-        guard viewModel.ready else { return }
-        Haptics.impact(.medium)
-        viewModel.capture()
+        if isUITestMock {
+            if appState.capturedImage == nil {
+                appState.capturedImage = MockCaptureData.placeholderImage
+            }
+            goToCrop = true
+        } else {
+            guard viewModel.ready else { return }
+            Haptics.impact(.medium)
+            viewModel.capture()
+        }
     }
 
     private func handleFocusTap(layerPoint: CGPoint, devicePoint: CGPoint, size: CGSize) {
@@ -187,6 +214,34 @@ struct CaptureView: View {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
     }
+
+    private func configureMockCapture() {
+        guard !mockConfigured else { return }
+        mockConfigured = true
+
+        viewModel.permissionDenied = false
+        viewModel.previewEnabled = false
+        viewModel.status = L10n.Capture.Status.ready
+        viewModel.ready = true
+
+        if appState.capturedImage == nil {
+            let placeholder = MockCaptureData.placeholderImage
+            appState.capturedImage = placeholder
+            appState.correctedImage = placeholder
+            appState.segmentation = SegmentationResult(width: 32,
+                                                       height: 32,
+                                                       mask: MockCaptureData.segmentationMask,
+                                                       downscaleFactor: 1,
+                                                       polarityInverted: false,
+                                                       usedStrategy: .classical,
+                                                       originalSize: placeholder.size)
+
+            appState.objects = MockCaptureData.objects
+            appState.labeled = MockCaptureData.labeled
+            appState.debugImages["mock_preview"] = placeholder
+            appState.pxPerMicron = 1.0
+        }
+    }
 }
 
 // MARK: - Navigation modernization
@@ -198,11 +253,98 @@ private struct CaptureNavigation: ViewModifier {
                 .navigationDestination(isPresented: $goToCrop) { CropView() }
         } else {
             content
-                .background(
-                    NavigationLink(destination: CropView(), isActive: $goToCrop) { EmptyView() }
-                )
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: CropView(), isActive: $goToCrop) { EmptyView() }
+                    }
+                }
         }
     }
+}
+
+private struct MockCapturePreview: View {
+    var body: some View {
+        ZStack {
+            Image(uiImage: MockCaptureData.placeholderImage)
+                .resizable()
+                .scaledToFit()
+            VStack(spacing: 8) {
+                Text("UITest Mock Preview")
+                    .font(.headline)
+                    .padding(6)
+                    .background(.ultraThinMaterial, in: Capsule())
+                Text("No camera required")
+                    .font(.caption)
+                    .padding(4)
+                    .background(.ultraThinMaterial, in: Capsule())
+            }
+            .foregroundColor(.white)
+        }
+    }
+}
+
+private enum MockCaptureData {
+    static let placeholderSize = CGSize(width: 512, height: 512)
+
+    static let placeholderImage: UIImage = {
+        let renderer = UIGraphicsImageRenderer(size: placeholderSize)
+        return renderer.image { ctx in
+            let bounds = CGRect(origin: .zero, size: placeholderSize)
+            if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                         colors: [UIColor.systemTeal.cgColor, UIColor.systemIndigo.cgColor] as CFArray,
+                                         locations: [0, 1]) {
+                ctx.cgContext.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: bounds.maxX, y: bounds.maxY), options: [])
+            } else {
+                ctx.cgContext.setFillColor(UIColor.systemTeal.cgColor)
+                ctx.cgContext.fill(bounds)
+            }
+
+            ctx.cgContext.setFillColor(UIColor.white.withAlphaComponent(0.35).cgColor)
+            ctx.cgContext.fillEllipse(in: CGRect(x: 120, y: 140, width: 120, height: 120))
+            ctx.cgContext.fillEllipse(in: CGRect(x: 280, y: 220, width: 90, height: 90))
+
+            ctx.cgContext.setStrokeColor(UIColor.white.withAlphaComponent(0.45).cgColor)
+            ctx.cgContext.setLineWidth(2)
+            ctx.cgContext.stroke(CGRect(x: 90, y: 90, width: 332, height: 332))
+            ctx.cgContext.stroke(CGRect(x: 160, y: 160, width: 200, height: 200))
+        }
+    }()
+
+    static let segmentationMask: [Bool] = (0..<1024).map { index in index % 21 == 0 }
+
+    static let objects: [CellObject] = {
+        let cell1 = CellObject(id: 0,
+                               pixelCount: 150,
+                               areaPx: 150,
+                               perimeterPx: 44,
+                               circularity: 0.85,
+                               solidity: 0.92,
+                               centroid: CGPoint(x: 220, y: 240),
+                               bbox: CGRect(x: 190, y: 210, width: 60, height: 60))
+        let cell2 = CellObject(id: 1,
+                               pixelCount: 120,
+                               areaPx: 120,
+                               perimeterPx: 40,
+                               circularity: 0.80,
+                               solidity: 0.90,
+                               centroid: CGPoint(x: 310, y: 180),
+                               bbox: CGRect(x: 285, y: 155, width: 50, height: 50))
+        return [cell1, cell2]
+    }()
+
+    static let labeled: [CellObjectLabeled] = {
+        let live = CellObjectLabeled(id: 0,
+                                     base: objects[0],
+                                     color: ColorSampleStats(hue: 120, saturation: 0.7, value: 0.8, L: 65, a: -5, b: 15),
+                                     label: "live",
+                                     confidence: 0.94)
+        let dead = CellObjectLabeled(id: 1,
+                                     base: objects[1],
+                                     color: ColorSampleStats(hue: 220, saturation: 0.5, value: 0.6, L: 55, a: 10, b: -5),
+                                     label: "dead",
+                                     confidence: 0.82)
+        return [live, dead]
+    }()
 }
 
 private struct GridGuides: Shape {

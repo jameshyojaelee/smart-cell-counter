@@ -47,6 +47,7 @@ final class PurchaseManagerTests: XCTestCase {
         XCTAssertTrue(mock2.isPro)
     }
 
+    #if DEBUG
     func testDebugOverrideEntitlementUpdatesState() async {
         let manager = PurchaseManager.shared
         let original = await MainActor.run { manager.isPro }
@@ -92,4 +93,5 @@ final class PurchaseManagerTests: XCTestCase {
             manager.debugOverrideEntitlement(original)
         }
     }
+    #endif
 }

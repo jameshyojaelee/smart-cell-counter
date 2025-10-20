@@ -12,7 +12,7 @@ public protocol PurchaseManaging: AnyObject {
 }
 
 @MainActor
-public final class PurchaseManager: ObservableObject, PurchaseManaging {
+public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseManaging {
     public static let shared = PurchaseManager()
     private let productId = "com.smartcellcounter.pro"
     @Published public private(set) var isPro: Bool = UserDefaults.standard.bool(forKey: "pro.entitled")

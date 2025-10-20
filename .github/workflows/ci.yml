@@ -19,9 +19,9 @@ jobs:
         run: |
           git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
-      - name: Install XcodeGen
+      - name: Install tooling
         run: |
-          brew install xcodegen
+          brew install xcodegen swiftlint swiftformat || true
 
       - name: Generate Xcode project
         run: xcodegen generate
@@ -32,13 +32,28 @@ jobs:
       - name: List available simulators (debug)
         run: xcrun simctl list devicetypes
 
-      - name: Build and Test (iOS Simulator)
+      - name: SwiftLint
+        run: |
+          if command -v swiftlint >/dev/null 2>&1; then
+            swiftlint --strict
+          else
+            echo "SwiftLint not installed; skipping"
+          fi
+
+      - name: SwiftFormat
+        run: |
+          if command -v swiftformat >/dev/null 2>&1; then
+            swiftformat --lint Sources Tests
+          else
+            echo "swiftformat not installed; skipping"
+          fi
+
+      - name: Build, Test, and Collect Coverage
         run: |
           set -euo pipefail
-          # Resolve SPM first (helps isolate dependency issues)
+
           xcodebuild -project SmartCellCounter.xcodeproj -scheme SmartCellCounter -resolvePackageDependencies
 
-          # Pick an available simulator dynamically (prefer iPhone 16 Pro)
           echo "Selecting available iOS Simulator..."
           DEV_NAMES=("iPhone 16 Pro" "iPhone 16" "iPhone 16 Pro Max" "iPhone SE (3rd generation)")
           DEST=""
@@ -50,12 +65,30 @@ jobs:
             fi
           done
           if [ -z "$DEST" ]; then
-            echo "Falling back to Any iOS Simulator Device"
             DEST="platform=iOS Simulator"
           fi
 
           xcodebuild -project SmartCellCounter.xcodeproj \
             -scheme SmartCellCounter \
             -destination "$DEST" \
+            -derivedDataPath DerivedData \
             -destination-timeout 300 \
+            -enableCodeCoverage YES \
             test
+
+      - name: Prepare coverage report
+        run: |
+          set -euo pipefail
+          RESULT_PATH=$(find DerivedData/Logs/Test -maxdepth 1 -name '*.xcresult' -print 2>/dev/null | head -n 1)
+          if [ -z "$RESULT_PATH" ]; then
+            echo "No xcresult bundle found; creating empty coverage report"
+            echo "{}" > coverage.json
+          else
+            xcrun xccov view --report --json "$RESULT_PATH" > coverage.json
+          fi
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage.json

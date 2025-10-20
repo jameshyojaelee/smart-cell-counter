@@ -1,6 +1,53 @@
 import XCTest
 
 final class SmartCellCounterUITests: XCTestCase {
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
+    func testEndToEndMockedCaptureFlow() {
+        let app = XCUIApplication()
+        app.launchArguments += [
+            "-onboarding.completed", "1",
+            "-consent.shown", "1",
+            "-UITest.MockCapture", "1"
+        ]
+        app.launch()
+
+        // Capture screen should show mocked image
+        let captureTitle = app.staticTexts["Capture"]
+        let captureNav = app.navigationBars["Capture"]
+        XCTAssertTrue(captureTitle.waitForExistence(timeout: 5) || captureNav.waitForExistence(timeout: 5))
+
+        let mockedPreview = app.images["mockCapturePreview"]
+        XCTAssertTrue(mockedPreview.waitForExistence(timeout: 5))
+
+        // Move forward to crop or review using mocked flow
+        let shutterButton = app.buttons["Shutter"]
+        if shutterButton.waitForExistence(timeout: 5) {
+            shutterButton.tap()
+        }
+
+        // Crop view should auto-progress in mock mode, wait for Review
+        let reviewTitle = app.navigationBars["Review"]
+        let reviewLabel = app.staticTexts["Review"]
+        XCTAssertTrue(reviewTitle.waitForExistence(timeout: 10) || reviewLabel.waitForExistence(timeout: 10))
+
+        let detectionToggle = app.buttons["Detections"]
+        if detectionToggle.waitForExistence(timeout: 5) {
+            detectionToggle.tap()
+        }
+
+        // Swiping should not crash and mock counts are visible
+        app.swipeUp()
+        let countsLabel = app.staticTexts["Live / Dead"]
+        XCTAssertTrue(countsLabel.waitForExistence(timeout: 5))
+
+        // Navigate to Results tab for consistency
+        app.tabBars.buttons["Results"].tap()
+        XCTAssertTrue(app.staticTexts["Live / Dead"].waitForExistence(timeout: 5))
+    }
+
     func testScreenshots() throws {
         throw XCTSkip("Screenshot flow is manual-only; skipping in automated test run.")
         let app = XCUIApplication()

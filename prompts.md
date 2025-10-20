@@ -2,22 +2,6 @@
 
 ```
 
-## Prompt 13 – iOS Distribution Readiness
-
-```
-You are GPT-5 Codex. Objective: prepare the project for seamless App Store delivery.
-
-Tasks:
-1. Configure app capabilities (camera, photo library, file sharing) in the Xcode project or `project.yml`, ensuring Info.plist includes human-readable usage descriptions for each permission.
-2. Add a release configuration checklist (versioning, build numbers, signing) to the repository.
-3. Verify the app builds and archives under Release configuration with bitcode disabled (modern requirement) and Swift concurrency flags set.
-4. Create a lightweight smoke test plan for TestFlight that documents critical manual scenarios.
-
-Validation:
-- Produce an `.ipa` via `xcodebuild archive` and confirm it launches on a device/simulator.
-- Update `README.md` with distribution steps.
-```
-
 ## Prompt 14 – Developer Documentation and Architecture Guide
 
 ```
