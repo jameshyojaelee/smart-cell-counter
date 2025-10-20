@@ -23,6 +23,9 @@ public final class Settings: ObservableObject {
     @Published public var stainType: String = "Trypan Blue"
     @Published public var operatorName: String = ""
     @Published public var project: String = ""
+    @Published public var labName: String = "" {
+        didSet { defaults.set(labName, forKey: Keys.labName) }
+    }
     @Published public var defaultDilution: Double = 1.0
     @Published public var thresholdMethod: ThresholdMethod = .adaptive
     @Published public var blockSize: Int = 51
@@ -50,6 +53,7 @@ public final class Settings: ObservableObject {
         static let personalizedAds = "settings.personalizedAds"
         static let crashReporting = "settings.crashReporting"
         static let analytics = "settings.analytics"
+        static let labName = "settings.labName"
     }
 
     private init(defaults: UserDefaults = .standard) {
@@ -57,6 +61,7 @@ public final class Settings: ObservableObject {
         self.personalizedAds = defaults.bool(forKey: Keys.personalizedAds)
         self.crashReportingEnabled = defaults.bool(forKey: Keys.crashReporting)
         self.analyticsEnabled = defaults.bool(forKey: Keys.analytics)
+        self.labName = defaults.string(forKey: Keys.labName) ?? ""
         AnalyticsLogger.shared.isEnabled = analyticsEnabled
         if crashReportingEnabled {
             CrashReporter.shared.start()

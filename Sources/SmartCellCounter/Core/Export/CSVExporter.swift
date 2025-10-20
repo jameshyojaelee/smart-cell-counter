@@ -21,11 +21,11 @@ public extension CSVExporter {
                        timestamp: Date,
                        operatorName: String,
                        project: String,
+                       metadata: ExportMetadata,
                        concentrationPerML: Double,
                        viabilityPercent: Double,
                        live: Int,
                        dead: Int,
-                       dilution: Double,
                        filename: String? = nil) throws -> URL {
         let headers = L10n.Results.CSV.detailedHeaders
         let values = [
@@ -33,17 +33,26 @@ public extension CSVExporter {
             ISO8601DateFormatter().string(from: timestamp),
             operatorName,
             project,
+            metadata.labName,
+            metadata.stain,
             L10n.Results.concentrationNumeric(concentrationPerML),
             L10n.Results.viabilityNumeric(viabilityPercent),
             L10n.Results.countValue(live),
             L10n.Results.countValue(dead),
-            L10n.Results.dilutionValue(dilution)
+            metadata.formattedDilution
         ]
         return try export(rows: [headers, values], filename: filename ?? L10n.Results.CSV.summaryFilename)
     }
 
-    func exportDetections(sampleId: String, labeled: [CellObjectLabeled], filename: String? = nil) throws -> URL {
-        var rows: [[String]] = [L10n.Results.CSV.detectionsHeaders]
+    func exportDetections(sampleId: String, labeled: [CellObjectLabeled], metadata: ExportMetadata? = nil, filename: String? = nil) throws -> URL {
+        var rows: [[String]] = []
+        if let metadata {
+            rows.append([L10n.Results.CSV.Metadata.lab, metadata.labName])
+            rows.append([L10n.Results.CSV.Metadata.stain, metadata.stain])
+            rows.append([L10n.Results.CSV.Metadata.dilution, metadata.formattedDilution])
+            rows.append([])
+        }
+        rows.append(L10n.Results.CSV.detectionsHeaders)
         for item in labeled {
             let b = item.base
             rows.append([

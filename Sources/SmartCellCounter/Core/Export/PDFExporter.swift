@@ -4,7 +4,13 @@ import PDFKit
 
 public protocol PDFExporting {
     func export(text: String, filename: String) throws -> URL
-    func exportReport(header: ReportHeader, images: ReportImages, tally: [Int:Int], params: ImagingParams, watermark: Bool, filename: String) throws -> URL
+    func exportReport(header: ReportHeader,
+                      metadata: ExportMetadata,
+                      images: ReportImages,
+                      tally: [Int:Int],
+                      params: ImagingParams,
+                      watermark: Bool,
+                      filename: String) throws -> URL
 }
 
 public struct ReportHeader {
@@ -33,13 +39,19 @@ public final class PDFExporter: PDFExporting {
         return url
     }
 
-    public func exportReport(header: ReportHeader, images: ReportImages, tally: [Int:Int], params: ImagingParams, watermark: Bool, filename: String = "report.pdf") throws -> URL {
+    public func exportReport(header: ReportHeader,
+                             metadata: ExportMetadata,
+                             images: ReportImages,
+                             tally: [Int:Int],
+                             params: ImagingParams,
+                             watermark: Bool,
+                             filename: String = "report.pdf") throws -> URL {
         let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
         try renderer.writePDF(to: url) { ctx in
             ctx.beginPage()
-            drawHeader(header)
+            drawHeader(header, metadata: metadata)
             var y: CGFloat = 90
             y = drawImages(images, atY: y)
             y = drawTallyTable(tally, startY: y + 12)
@@ -49,13 +61,20 @@ public final class PDFExporter: PDFExporting {
         return url
     }
 
-    private func drawHeader(_ header: ReportHeader) {
+    private func drawHeader(_ header: ReportHeader, metadata: ExportMetadata) {
         let titleAttrs: [NSAttributedString.Key: Any] = [.font: UIFont.boldSystemFont(ofSize: 18)]
         let bodyAttrs: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 12)]
         "Smart Cell Counter Report".draw(at: CGPoint(x: 36, y: 24), withAttributes: titleAttrs)
         "Project: \(header.project)".draw(at: CGPoint(x: 36, y: 48), withAttributes: bodyAttrs)
         "Operator: \(header.operatorName)".draw(at: CGPoint(x: 246, y: 48), withAttributes: bodyAttrs)
-        "Timestamp: \(ISO8601DateFormatter().string(from: header.timestamp))".draw(at: CGPoint(x: 36, y: 66), withAttributes: bodyAttrs)
+        if !metadata.labName.isEmpty {
+            "Lab: \(metadata.labName)".draw(at: CGPoint(x: 36, y: 66), withAttributes: bodyAttrs)
+        }
+        if !metadata.stain.isEmpty {
+            "Stain: \(metadata.stain)".draw(at: CGPoint(x: 246, y: 66), withAttributes: bodyAttrs)
+        }
+        "Timestamp: \(ISO8601DateFormatter().string(from: header.timestamp))".draw(at: CGPoint(x: 36, y: metadata.stain.isEmpty && metadata.labName.isEmpty ? 66 : 84), withAttributes: bodyAttrs)
+        "Dilution: \(metadata.formattedDilution)".draw(at: CGPoint(x: 246, y: metadata.stain.isEmpty && metadata.labName.isEmpty ? 66 : 84), withAttributes: bodyAttrs)
     }
 
     private func drawImages(_ images: ReportImages, atY y: CGFloat) -> CGFloat {
@@ -104,7 +123,6 @@ public final class PDFExporter: PDFExporting {
             .foregroundColor: UIColor(white: 0.9, alpha: 0.6)
         ]
         let size = text.size(withAttributes: attrs)
-        let origin = CGPoint(x: rect.midX - size.width/2, y: rect.midY - size.height/2)
         let context = UIGraphicsGetCurrentContext()
         context?.saveGState()
         context?.translateBy(x: rect.midX, y: rect.midY)

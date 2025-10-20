@@ -464,12 +464,20 @@ enum L10n {
                     tr("Results", "results.csv.header.timestamp"),
                     tr("Results", "results.csv.detailed.operator"),
                     tr("Results", "results.csv.detailed.project"),
+                    tr("Results", "results.csv.detailed.lab"),
+                    tr("Results", "results.csv.detailed.stain"),
                     tr("Results", "results.csv.header.concentration"),
                     tr("Results", "results.csv.header.viability"),
                     tr("Results", "results.csv.header.live"),
                     tr("Results", "results.csv.header.dead"),
                     tr("Results", "results.csv.detailed.dilution")
                 ]
+            }
+
+            enum Metadata {
+                static let lab = tr("Results", "results.csv.metadata.lab")
+                static let stain = tr("Results", "results.csv.metadata.stain")
+                static let dilution = tr("Results", "results.csv.metadata.dilution")
             }
 
             static var detectionsHeaders: [String] {
@@ -489,6 +497,18 @@ enum L10n {
             static let filename = tr("Results", "results.csv.filename")
             static let summaryFilename = tr("Results", "results.csv.summary.filename")
             static let detectionsFilename = tr("Results", "results.csv.detections.filename")
+        }
+
+        enum Export {
+            static let preparing = tr("Results", "results.export.progress.preparing")
+            static let writing = tr("Results", "results.export.progress.writing")
+            static let finishing = tr("Results", "results.export.progress.finishing")
+            static let historyTitle = tr("Results", "results.export.history.title")
+            static let historyEmpty = tr("Results", "results.export.history.empty")
+            static let permissionDenied = tr("Results", "results.export.permissionDenied")
+            static let errorTitle = tr("Results", "results.export.error.title")
+            static let errorGeneric = tr("Results", "results.export.error.generic")
+            static let dismiss = tr("Results", "results.export.dismiss")
         }
 
         private static let percentFormatter: NumberFormatter = {

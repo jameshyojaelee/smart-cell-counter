@@ -3,8 +3,118 @@ import UIKit
 
 @MainActor
 final class ResultsViewModel: ObservableObject {
-    @Published var dilution: Double = 1.0
-    @Published var exportURL: URL?
+    enum ExportKind: String, CaseIterable, Identifiable {
+        case summaryCSV
+        case detectionsCSV
+        case pdf
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .summaryCSV: return L10n.Results.exportCSV
+            case .detectionsCSV: return L10n.Results.exportDetectionsCSV
+            case .pdf: return L10n.Results.exportPDF
+            }
+        }
+
+        var iconName: String {
+            switch self {
+            case .summaryCSV: return "doc.text"
+            case .detectionsCSV: return "tablecells"
+            case .pdf: return "doc.richtext"
+            }
+        }
+
+        var fileExtension: String {
+            switch self {
+            case .summaryCSV, .detectionsCSV: return "csv"
+            case .pdf: return "pdf"
+            }
+        }
+
+        var filenamePrefix: String {
+            switch self {
+            case .summaryCSV: return "summary"
+            case .detectionsCSV: return "detections"
+            case .pdf: return "report"
+            }
+        }
+    }
+
+    struct ExportRecord: Identifiable, Equatable {
+        let id: UUID
+        let kind: ExportKind
+        let url: URL
+        let createdAt: Date
+        let metadata: ExportMetadata
+        let sampleId: String
+
+        var filename: String { url.lastPathComponent }
+
+        var formattedDate: String {
+            ExportRecord.dateFormatter.string(from: createdAt)
+        }
+
+        var metadataSummary: String {
+            var parts: [String] = []
+            let trimmedLab = metadata.labName.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedStain = metadata.stain.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedLab.isEmpty { parts.append(trimmedLab) }
+            if !trimmedStain.isEmpty { parts.append(trimmedStain) }
+            parts.append(metadata.formattedDilution)
+            return parts.joined(separator: " • ")
+        }
+
+        private static let dateFormatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter
+        }()
+    }
+
+    struct ExportAlert: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
+
+    enum ExportStatus: Equatable {
+        case idle
+        case inProgress(kind: ExportKind, progress: Double, message: String?)
+        case completed(kind: ExportKind, url: URL)
+        case failed(kind: ExportKind, message: String)
+    }
+
+    @Published var dilution: Double
+    @Published private(set) var exportStatus: ExportStatus = .idle
+    @Published private(set) var exportHistory: [ExportRecord] = []
+    @Published var alert: ExportAlert?
+
+    private var exportTask: Task<Void, Never>?
+    private let historyLimit = 6
+
+    init(defaultDilution: Double? = nil) {
+        if let defaultDilution {
+            self.dilution = defaultDilution
+        } else {
+            self.dilution = SettingsStore.shared.dilutionFactor
+        }
+    }
+
+    deinit {
+        exportTask?.cancel()
+    }
+
+    var isExporting: Bool {
+        if case .inProgress = exportStatus { return true }
+        return false
+    }
+
+    var latestExportURL: URL? {
+        exportHistory.first?.url
+    }
 
     func compute(appState: AppState) -> (conc: Double, live: Int, dead: Int, squares: Int, viability: Double, overcrowded: Bool, selected: [Int], mean: Double) {
         let live = appState.labeled.filter { $0.label == "live" }.count
@@ -21,27 +131,39 @@ final class ResultsViewModel: ObservableObject {
         return (conc, live, dead, squares, viability, overcrowded, selectedSquares, mean)
     }
 
-    func exportCSV(appState: AppState) {
-        let metrics = compute(appState: appState)
-        let headers = L10n.Results.CSV.summaryHeaders
-        let values = [
-            UUID().uuidString,
-            ISO8601DateFormatter().string(from: Date()),
-            L10n.Results.concentrationNumeric(metrics.conc),
-            L10n.Results.viabilityNumeric(metrics.viability),
-            L10n.Results.countValue(metrics.live),
-            L10n.Results.countValue(metrics.dead)
-        ]
-        let exporter = CSVExporter()
-        if let url = try? exporter.export(rows: [headers, values], filename: L10n.Results.CSV.filename) {
-            exportURL = url
+    func export(_ kind: ExportKind, appState: AppState) {
+        guard checkWritePermission() else { return }
+        exportTask?.cancel()
+        exportTask = Task(priority: .userInitiated) { [weak self] in
+            guard let self else { return }
+            await self.updateProgress(kind: kind, progress: 0.05, message: L10n.Results.Export.preparing)
+            do {
+                let payload = await self.buildPayload(for: kind, appState: appState)
+                try Task.checkCancellation()
+                await self.updateProgress(kind: kind, progress: 0.35, message: L10n.Results.Export.writing)
+                let url = try await self.performExport(kind: kind, payload: payload)
+                try Task.checkCancellation()
+                await self.updateProgress(kind: kind, progress: 0.85, message: L10n.Results.Export.finishing)
+                await self.recordSuccess(kind: kind, url: url, payload: payload)
+            } catch is CancellationError {
+                await self.updateProgress(kind: kind, progress: 0, message: nil)
+            } catch {
+                await self.recordFailure(kind: kind, error: error)
+            }
         }
+    }
+
+    func cancelExport() {
+        exportTask?.cancel()
+        exportTask = nil
+        exportStatus = .idle
     }
 
     func saveSample(appState: AppState) async {
         let id = UUID().uuidString
         let now = Date()
         let header = ReportHeader(project: Settings.shared.project, operatorName: Settings.shared.operatorName, timestamp: now)
+        let metadata = makeMetadata()
         let original = appState.capturedImage
         let corrected = appState.correctedImage
         let overlay = corrected.map { PDFExporter.makeOverlayImage(base: $0, labeled: appState.labeled) }
@@ -59,11 +181,22 @@ final class ResultsViewModel: ObservableObject {
         var pdfPath: String? = nil
         var csvPath: String? = nil
         var thumbnailInfo: (path: String, size: CGSize)? = nil
-        if let corrected = corrected { imagePath = (try? await AppDatabase.shared.save(image: corrected, name: "corrected.png", in: folder))?.path }
+
+        if let corrected = corrected {
+            imagePath = (try? await AppDatabase.shared.save(image: corrected, name: "corrected.png", in: folder))?.path
+        }
         if let seg = appState.segmentation, let maskImage = makeMaskImage(seg) {
             maskPath = (try? await AppDatabase.shared.save(image: maskImage, name: "mask.png", in: folder))?.path
         }
-        if let pdfURL = try? exporter.exportReport(header: header, images: ReportImages(original: original, corrected: corrected, overlay: overlay), tally: tally, params: params, watermark: true, filename: "report.pdf") { pdfPath = pdfURL.path }
+        if let pdfURL = try? exporter.exportReport(header: header,
+                                                   metadata: metadata,
+                                                   images: ReportImages(original: original, corrected: corrected, overlay: overlay),
+                                                   tally: tally,
+                                                   params: params,
+                                                   watermark: true,
+                                                   filename: "report.pdf") {
+            pdfPath = pdfURL.path
+        }
 
         if let baseImage = corrected ?? original,
            let (thumbnail, size) = makeThumbnail(from: baseImage) {
@@ -74,67 +207,212 @@ final class ResultsViewModel: ObservableObject {
             }
         }
 
-        let m = compute(appState: appState)
-        if let summaryURL = try? csvExporter.exportSummary(
-            sampleId: id,
-            timestamp: now,
-            operatorName: header.operatorName,
-            project: header.project,
-            concentrationPerML: m.conc,
-            viabilityPercent: m.viability,
-            live: m.live,
-            dead: m.dead,
-            dilution: dilution,
-            filename: L10n.Results.CSV.summaryFilename
-        ) {
+        let metrics = compute(appState: appState)
+        if let summaryURL = try? csvExporter.exportSummary(sampleId: id,
+                                                           timestamp: now,
+                                                           operatorName: header.operatorName,
+                                                           project: header.project,
+                                                           metadata: metadata,
+                                                           concentrationPerML: metrics.conc,
+                                                           viabilityPercent: metrics.viability,
+                                                           live: metrics.live,
+                                                           dead: metrics.dead,
+                                                           filename: L10n.Results.CSV.summaryFilename) {
             csvPath = summaryURL.path
         }
 
-        let srec = SampleRecord(id: id,
-                                createdAt: Date(),
-                                operatorName: Settings.shared.operatorName,
-                                project: Settings.shared.project,
-                                chamberType: Settings.shared.chamberType,
-                                dilutionFactor: dilution,
-                                stainType: Settings.shared.stainType,
-                                liveTotal: m.live,
-                                deadTotal: m.dead,
-                                concentrationPerMl: m.conc,
-                                viabilityPercent: m.viability,
-                                squaresUsed: m.squares,
-                                rejectedSquares: "",
-                                focusScore: appState.focusScore,
-                                glareRatio: appState.glareRatio,
-                                pxPerMicron: pxPerMicron,
-                                imagePath: imagePath,
-                                maskPath: maskPath,
-                                pdfPath: pdfPath,
-                                thumbnailPath: thumbnailInfo?.path,
-                                thumbnailWidth: Double(thumbnailInfo?.size.width ?? 0),
-                                thumbnailHeight: Double(thumbnailInfo?.size.height ?? 0),
-                                csvPath: csvPath,
-                                notes: nil)
+        let record = SampleRecord(id: id,
+                                  createdAt: now,
+                                  operatorName: Settings.shared.operatorName,
+                                  project: Settings.shared.project,
+                                  chamberType: Settings.shared.chamberType,
+                                  dilutionFactor: dilution,
+                                  stainType: Settings.shared.stainType,
+                                  liveTotal: metrics.live,
+                                  deadTotal: metrics.dead,
+                                  concentrationPerMl: metrics.conc,
+                                  viabilityPercent: metrics.viability,
+                                  squaresUsed: metrics.squares,
+                                  rejectedSquares: "",
+                                  focusScore: appState.focusScore,
+                                  glareRatio: appState.glareRatio,
+                                  pxPerMicron: pxPerMicron,
+                                  imagePath: imagePath,
+                                  maskPath: maskPath,
+                                  pdfPath: pdfPath,
+                                  thumbnailPath: thumbnailInfo?.path,
+                                  thumbnailWidth: Double(thumbnailInfo?.size.width ?? 0),
+                                  thumbnailHeight: Double(thumbnailInfo?.size.height ?? 0),
+                                  csvPath: csvPath,
+                                  notes: nil)
 
-        var dets: [DetectionRecord] = []
+        var detectionRecords: [DetectionRecord] = []
         for item in appState.labeled {
-            dets.append(DetectionRecord(sampleId: id,
-                                        objectId: UUID().uuidString,
-                                        x: Double(item.base.centroid.x),
-                                        y: Double(item.base.centroid.y),
-                                        areaPx: item.base.areaPx,
-                                        circularity: item.base.circularity,
-                                        solidity: item.base.solidity,
-                                        isLive: item.label == "live"))
+            detectionRecords.append(
+                DetectionRecord(sampleId: id,
+                                objectId: UUID().uuidString,
+                                x: Double(item.base.centroid.x),
+                                y: Double(item.base.centroid.y),
+                                areaPx: item.base.areaPx,
+                                circularity: item.base.circularity,
+                                solidity: item.base.solidity,
+                                isLive: item.label == "live")
+            )
         }
-        try? await AppDatabase.shared.insertSample(srec, detections: dets)
+        try? await AppDatabase.shared.insertSample(record, detections: detectionRecords)
+    }
+
+    private func buildPayload(for kind: ExportKind, appState: AppState) -> ExportPayload {
+        let timestamp = Date()
+        let metadata = makeMetadata()
+        switch kind {
+        case .summaryCSV:
+            let metrics = compute(appState: appState)
+            let payload = SummaryPayload(sampleId: UUID().uuidString,
+                                         timestamp: timestamp,
+                                         operatorName: Settings.shared.operatorName,
+                                         project: Settings.shared.project,
+                                         metadata: metadata,
+                                         concentrationPerML: metrics.conc,
+                                         viabilityPercent: metrics.viability,
+                                         live: metrics.live,
+                                         dead: metrics.dead,
+                                         filename: makeFilename(prefix: kind.filenamePrefix, fileExtension: kind.fileExtension, timestamp: timestamp))
+            return .summary(payload)
+        case .detectionsCSV:
+            let payload = DetectionsPayload(sampleId: UUID().uuidString,
+                                            timestamp: timestamp,
+                                            metadata: metadata,
+                                            labeled: appState.labeled,
+                                            filename: makeFilename(prefix: kind.filenamePrefix, fileExtension: kind.fileExtension, timestamp: timestamp))
+            return .detections(payload)
+        case .pdf:
+            let header = ReportHeader(project: Settings.shared.project, operatorName: Settings.shared.operatorName, timestamp: timestamp)
+            let corrected = appState.correctedImage
+            let overlay = corrected.map { PDFExporter.makeOverlayImage(base: $0, labeled: appState.labeled) }
+            let images = ReportImages(original: appState.capturedImage, corrected: corrected, overlay: overlay)
+            let pxPerMicron = appState.pxPerMicron ?? 1.0
+            let tally = CountingService.tallyByLargeSquare(objects: appState.objects,
+                                                           geometry: GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron))
+            let payload = PDFPayload(reportId: UUID().uuidString,
+                                     timestamp: timestamp,
+                                     metadata: metadata,
+                                     header: header,
+                                     images: images,
+                                     tally: tally,
+                                     params: ImagingParams.from(SettingsStore.shared),
+                                     watermark: !PurchaseManager.shared.isPro,
+                                     filename: makeFilename(prefix: kind.filenamePrefix, fileExtension: kind.fileExtension, timestamp: timestamp))
+            return .pdf(payload)
+        }
+    }
+
+    private func performExport(kind: ExportKind, payload: ExportPayload) async throws -> URL {
+        switch payload {
+        case .summary(let summary):
+            return try await Task.detached(priority: .userInitiated) {
+                let exporter = CSVExporter()
+                return try exporter.exportSummary(sampleId: summary.sampleId,
+                                                  timestamp: summary.timestamp,
+                                                  operatorName: summary.operatorName,
+                                                  project: summary.project,
+                                                  metadata: summary.metadata,
+                                                  concentrationPerML: summary.concentrationPerML,
+                                                  viabilityPercent: summary.viabilityPercent,
+                                                  live: summary.live,
+                                                  dead: summary.dead,
+                                                  filename: summary.filename)
+            }.value
+        case .detections(let detections):
+            return try await Task.detached(priority: .userInitiated) {
+                let exporter = CSVExporter()
+                return try exporter.exportDetections(sampleId: detections.sampleId,
+                                                     labeled: detections.labeled,
+                                                     metadata: detections.metadata,
+                                                     filename: detections.filename)
+            }.value
+        case .pdf(let report):
+            return try await MainActor.run {
+                let exporter = PDFExporter()
+                return try exporter.exportReport(header: report.header,
+                                                 metadata: report.metadata,
+                                                 images: report.images,
+                                                 tally: report.tally,
+                                                 params: report.params,
+                                                 watermark: report.watermark,
+                                                 filename: report.filename)
+            }
+        }
+    }
+
+    @MainActor
+    private func updateProgress(kind: ExportKind, progress: Double, message: String?) {
+        let clamped = min(max(progress, 0), 1)
+        exportStatus = .inProgress(kind: kind, progress: clamped, message: message)
+    }
+
+    @MainActor
+    private func recordSuccess(kind: ExportKind, url: URL, payload: ExportPayload) {
+        exportStatus = .completed(kind: kind, url: url)
+        let record = ExportRecord(id: UUID(),
+                                  kind: kind,
+                                  url: url,
+                                  createdAt: payload.timestamp,
+                                  metadata: payload.metadata,
+                                  sampleId: payload.sampleId)
+        exportHistory.insert(record, at: 0)
+        if exportHistory.count > historyLimit {
+            exportHistory = Array(exportHistory.prefix(historyLimit))
+        }
+        Haptics.success()
+    }
+
+    @MainActor
+    private func recordFailure(kind: ExportKind, error: Error) {
+        let description = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        let message = description.isEmpty ? L10n.Results.Export.errorGeneric : description
+        exportStatus = .failed(kind: kind, message: message)
+        alert = ExportAlert(title: L10n.Results.Export.errorTitle, message: message)
+        Haptics.error()
+    }
+
+    private func makeMetadata() -> ExportMetadata {
+        ExportMetadata(labName: Settings.shared.labName,
+                       stain: Settings.shared.stainType,
+                       dilution: dilution)
+    }
+
+    private func makeFilename(prefix: String, fileExtension: String, timestamp: Date) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withFullTime]
+        let raw = formatter.string(from: timestamp).replacingOccurrences(of: ":", with: "-")
+        return "\(prefix)-\(raw).\(fileExtension)"
+    }
+
+    private func checkWritePermission() -> Bool {
+        let directory = FileManager.default.temporaryDirectory
+        if FileManager.default.isWritableFile(atPath: directory.path) {
+            return true
+        }
+        let probeURL = directory.appendingPathComponent("write-test-\(UUID().uuidString)")
+        do {
+            try "test".write(to: probeURL, atomically: true, encoding: .utf8)
+            try FileManager.default.removeItem(at: probeURL)
+            return true
+        } catch {
+            alert = ExportAlert(title: L10n.Results.Export.errorTitle, message: L10n.Results.Export.permissionDenied)
+            Haptics.error()
+            return false
+        }
     }
 
     private func makeMaskImage(_ seg: SegmentationResult) -> UIImage? {
         guard seg.width > 0, seg.height > 0 else { return nil }
         let size = CGSize(width: seg.width, height: seg.height)
-        let r = UIGraphicsImageRenderer(size: size)
-        let base = r.image { ctx in
-            UIColor.clear.setFill(); ctx.fill(CGRect(origin: .zero, size: size))
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let base = renderer.image { ctx in
+            UIColor.clear.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
             ctx.cgContext.setFillColor(UIColor.red.withAlphaComponent(0.5).cgColor)
             for y in 0..<seg.height {
                 for x in 0..<seg.width {
@@ -165,6 +443,69 @@ final class ResultsViewModel: ObservableObject {
         }
         return (reduced, targetSize)
     }
+
+    private struct SummaryPayload {
+        let sampleId: String
+        let timestamp: Date
+        let operatorName: String
+        let project: String
+        let metadata: ExportMetadata
+        let concentrationPerML: Double
+        let viabilityPercent: Double
+        let live: Int
+        let dead: Int
+        let filename: String
+    }
+
+    private struct DetectionsPayload {
+        let sampleId: String
+        let timestamp: Date
+        let metadata: ExportMetadata
+        let labeled: [CellObjectLabeled]
+        let filename: String
+    }
+
+    private struct PDFPayload {
+        let reportId: String
+        let timestamp: Date
+        let metadata: ExportMetadata
+        let header: ReportHeader
+        let images: ReportImages
+        let tally: [Int: Int]
+        let params: ImagingParams
+        let watermark: Bool
+        let filename: String
+    }
+
+    private enum ExportPayload {
+        case summary(SummaryPayload)
+        case detections(DetectionsPayload)
+        case pdf(PDFPayload)
+
+        var metadata: ExportMetadata {
+            switch self {
+            case .summary(let payload): return payload.metadata
+            case .detections(let payload): return payload.metadata
+            case .pdf(let payload): return payload.metadata
+            }
+        }
+
+        var timestamp: Date {
+            switch self {
+            case .summary(let payload): return payload.timestamp
+            case .detections(let payload): return payload.timestamp
+            case .pdf(let payload): return payload.timestamp
+            }
+        }
+
+        var sampleId: String {
+            switch self {
+            case .summary(let payload): return payload.sampleId
+            case .detections(let payload): return payload.sampleId
+            case .pdf(let payload): return payload.reportId
+            }
+        }
+    }
 }
 
 struct ResultsView: View {
@@ -177,13 +518,17 @@ struct ResultsView: View {
         let viabilityValue = L10n.Results.viabilityValue(metrics.viability)
         let concentrationValue = L10n.Results.concentrationValue(metrics.conc)
         let liveDeadValue = L10n.Results.liveDeadValue(live: metrics.live, dead: metrics.dead)
+
         ScrollView {
             VStack(spacing: DS.Spacing.lg) {
                 AnimatedGradientHeader(title: L10n.Results.headerTitle, subtitle: L10n.Results.headerSubtitle)
+
                 HStack(spacing: DS.Spacing.lg) {
                     ZStack {
                         StatCard(title: L10n.Results.viabilityTitle, value: viabilityValue, subtitle: nil, icon: "cross.case.fill", gradient: Theme.gradientSuccess)
-                        RingGauge(progress: min(max(metrics.viability/100.0, 0), 1), lineWidth: 10, gradient: Theme.gradientSuccess)
+                        RingGauge(progress: min(max(metrics.viability / 100.0, 0), 1),
+                                  lineWidth: 10,
+                                  gradient: Theme.gradientSuccess)
                             .frame(width: 110, height: 110)
                             .padding(.trailing, 12)
                             .opacity(0.25)
@@ -191,8 +536,10 @@ struct ResultsView: View {
                     StatCard(title: L10n.Results.concentrationTitle, value: concentrationValue, subtitle: nil, icon: "chart.bar.fill", gradient: Theme.gradient1)
                 }
                 .frame(height: 140)
+
                 StatCard(title: L10n.Results.liveDeadTitle, value: liveDeadValue, subtitle: nil, icon: "heart.text.square.fill", gradient: Theme.gradient2)
                     .frame(height: 120)
+
                 VStack(spacing: DS.Spacing.sm) {
                     HStack {
                         Text(L10n.Results.squaresUsed).foregroundColor(Theme.textSecondary)
@@ -240,53 +587,71 @@ struct ResultsView: View {
                 if appState.glareRatio > 0.1 { QCRow(text: L10n.Results.qcHighGlare, color: .orange) }
                 if metrics.overcrowded { QCRow(text: L10n.Results.qcOvercrowded, color: .red) }
 
-                HStack {
-                    Button(L10n.Results.exportCSV) {
-                        viewModel.exportCSV(appState: appState)
-                    }
-                    .accessibilityHint(L10n.Results.exportCSVHint)
-                    Button(L10n.Results.exportDetectionsCSV) {
-                        guard PurchaseManager.shared.isPro else { showPaywall = true; return }
-                        let exporter = CSVExporter()
-                        if let url = try? exporter.exportDetections(sampleId: UUID().uuidString, labeled: appState.labeled, filename: L10n.Results.CSV.detectionsFilename) {
-                            viewModel.exportURL = url
+                VStack(spacing: DS.Spacing.sm) {
+                    HStack(spacing: DS.Spacing.sm) {
+                        Button {
+                            viewModel.export(.summaryCSV, appState: appState)
+                        } label: {
+                            Label(L10n.Results.exportCSV, systemImage: ResultsViewModel.ExportKind.summaryCSV.iconName)
                         }
-                    }
-                    .accessibilityHint(L10n.Results.exportDetectionsHint)
-                    if let url = viewModel.exportURL {
-                        ShareLink(item: url) { Text(L10n.Results.share) }
-                            .accessibilityHint(L10n.Results.shareHint)
-                    }
-                    Spacer()
-                    Button(L10n.Results.saveSample) {
-                        Task {
-                            await viewModel.saveSample(appState: appState)
-                            Haptics.success()
+                        .disabled(viewModel.isExporting)
+                        .accessibilityHint(L10n.Results.exportCSVHint)
+
+                        Button {
+                            guard PurchaseManager.shared.isPro else { showPaywall = true; return }
+                            viewModel.export(.detectionsCSV, appState: appState)
+                        } label: {
+                            Label(L10n.Results.exportDetectionsCSV, systemImage: ResultsViewModel.ExportKind.detectionsCSV.iconName)
                         }
-                    }
-                    .accessibilityHint(L10n.Results.saveSampleHint)
-                    Button(L10n.Results.exportPDF) {
-                        let header = ReportHeader(project: Settings.shared.project, operatorName: Settings.shared.operatorName, timestamp: Date())
-                        let tally = CountingService.tallyByLargeSquare(objects: appState.objects, geometry: GridGeometry(originPx: .zero, pxPerMicron: appState.pxPerMicron ?? 1.0))
-                        let images = ReportImages(original: appState.capturedImage, corrected: appState.correctedImage, overlay: appState.correctedImage.map { PDFExporter.makeOverlayImage(base: $0, labeled: appState.labeled) })
-                        let exporter = PDFExporter()
-                        let watermark = !PurchaseManager.shared.isPro
-                        if let url = try? exporter.exportReport(header: header,
-                                                                images: images,
-                                                                tally: tally,
-                                                                params: ImagingParams.from(SettingsStore.shared),
-                                                                watermark: watermark,
-                                                                filename: "report.pdf") {
-                            viewModel.exportURL = url
-                            Haptics.success()
+                        .disabled(viewModel.isExporting)
+                        .accessibilityHint(L10n.Results.exportDetectionsHint)
+
+                        Button {
+                            viewModel.export(.pdf, appState: appState)
+                        } label: {
+                            Label(L10n.Results.exportPDF, systemImage: ResultsViewModel.ExportKind.pdf.iconName)
                         }
-                    }
-                    .accessibilityHint(L10n.Results.exportPDFHint)
-                    if let corrected = appState.correctedImage {
-                        Button(L10n.Results.saveImage) { UIImageWriteToSavedPhotosAlbum(corrected, nil, nil, nil) }
+                        .disabled(viewModel.isExporting)
+                        .accessibilityHint(L10n.Results.exportPDFHint)
+
+                        Spacer()
+
+                        Button(L10n.Results.saveSample) {
+                            Task {
+                                await viewModel.saveSample(appState: appState)
+                                Haptics.success()
+                            }
+                        }
+                        .accessibilityHint(L10n.Results.saveSampleHint)
+
+                        if let corrected = appState.correctedImage {
+                            Button(L10n.Results.saveImage) {
+                                UIImageWriteToSavedPhotosAlbum(corrected, nil, nil, nil)
+                            }
                             .accessibilityHint(L10n.Results.saveImageHint)
+                        }
+                    }
+
+                    if case let .inProgress(kind, progress, message) = viewModel.exportStatus {
+                        ExportProgressView(kind: kind, progress: progress, message: message)
+                    }
+
+                    if viewModel.exportHistory.isEmpty {
+                        Text(L10n.Results.Export.historyEmpty)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        VStack(alignment: .leading, spacing: DS.Spacing.xs) {
+                            Text(L10n.Results.Export.historyTitle)
+                                .font(.headline)
+                            ForEach(viewModel.exportHistory) { record in
+                                ExportHistoryRow(record: record)
+                            }
+                        }
                     }
                 }
+                .cardStyle()
 
                 #if ADS
                 if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
@@ -297,6 +662,74 @@ struct ResultsView: View {
         .navigationTitle(L10n.Results.navigationTitle)
         .modifier(ResultsNavigation(showPaywall: $showPaywall))
         .appBackground()
+        .alert(item: $viewModel.alert) { alert in
+            Alert(title: Text(alert.title),
+                  message: Text(alert.message),
+                  dismissButton: .default(Text(L10n.Results.Export.dismiss)))
+        }
+    }
+}
+
+private struct ExportProgressView: View {
+    let kind: ResultsViewModel.ExportKind
+    let progress: Double
+    let message: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label(kind.displayName, systemImage: kind.iconName)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(Int(progress * 100))%")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            ProgressView(value: progress, total: 1)
+            if let message {
+                Text(message)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(8)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct ExportHistoryRow: View {
+    let record: ResultsViewModel.ExportRecord
+
+    var body: some View {
+        HStack(alignment: .top, spacing: DS.Spacing.sm) {
+            VStack(alignment: .leading, spacing: 4) {
+                Label(record.kind.displayName, systemImage: record.kind.iconName)
+                    .font(.subheadline)
+                Text(record.filename)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(record.metadataSummary)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text(record.formattedDate)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            ShareLink(item: record.url) {
+                Image(systemName: "square.and.arrow.up")
+                    .padding(6)
+                    .background(Color(.tertiarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .accessibilityHint(L10n.Results.shareHint)
+        }
+        .padding(8)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -315,7 +748,13 @@ private struct QCRow: View {
     }
 }
 
-private extension View { func card() -> some View { self.padding(12).background(Color(.secondarySystemBackground)).clipShape(RoundedRectangle(cornerRadius: 8)) } }
+private extension View {
+    func cardStyle() -> some View {
+        self.padding(12)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
 
 // MARK: - Navigation modernization
 private struct ResultsNavigation: ViewModifier {
