@@ -277,8 +277,35 @@ The `make ci` target mirrors the workflow steps and writes coverage output to `c
 
 ## TestFlight & Submission
 
+- Start with the [Release Checklist](docs/ReleaseChecklist.md) to bump build numbers, verify signing, and archive a Release build (`ENABLE_BITCODE=NO`, `SWIFT_STRICT_CONCURRENCY=complete`).
+- Generate a clean archive:
+  ```bash
+  xcodebuild -scheme SmartCellCounter \
+    -configuration Release \
+    -archivePath build/SmartCellCounter.xcarchive \
+    clean archive
+  ```
+- Export the `.ipa` for TestFlight/device install:
+  ```bash
+  cat <<'EOF' > ExportOptions.plist
+  <plist version="1.0">
+  <dict>
+    <key>method</key><string>ad-hoc</string>
+    <key>signingStyle</key><string>automatic</string>
+    <key>compileBitcode</key><false/>
+  </dict>
+  </plist>
+  EOF
+
+  xcodebuild -exportArchive \
+    -archivePath build/SmartCellCounter.xcarchive \
+    -exportOptionsPlist ExportOptions.plist \
+    -exportPath build
+  ```
+  The resulting `build/SmartCellCounter.ipa` should install on a physical device before uploading to App Store Connect.
+- Run the [TestFlight Smoke Test](docs/TestFlightSmokeTest.md) on the TestFlight build to cover critical flows.
 - Privacy: `PrivacyInfo.xcprivacy` indicates no tracking and on‑device processing.
-- Screenshots: UITest `SmartCellCounterUITests.testScreenshots` attaches Capture, Results (proxy for Review overlay), Settings. Run on 6.7" and 6.1" simulators.
+- Screenshots: UITest `SmartCellCounterUITests.testScreenshots` attaches Capture, Results (proxy for Review overlay), Settings. Run on 6.7" and 6.1" simulators when updating marketing assets.
 - Release scheme (project.yml): whole‑module, `-O`, dead code stripping.
 - StoreKit 2 sandbox works in TestFlight; verify purchase/restore.
 - App Store Connect metadata (examples):

@@ -27,6 +27,8 @@ settings:
       STRIP_INSTALLED_PRODUCT: YES
       OTHER_LDFLAGS: "$(inherited) -dead_strip"
       ENABLE_TESTABILITY: NO
+      ENABLE_BITCODE: NO
+      SWIFT_STRICT_CONCURRENCY: complete
 
 targets:
   SmartCellCounter:
@@ -46,6 +48,9 @@ targets:
         NSPhotoLibraryUsageDescription: "Photo library access is used to import images."
         NSPhotoLibraryAddUsageDescription: "Saving analysis results to Photos requires permission."
         NSUserTrackingUsageDescription: "Tracking is used only to personalize ads, if enabled."
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        UIRequiredDeviceCapabilities: [camera]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.SmartCellCounter
