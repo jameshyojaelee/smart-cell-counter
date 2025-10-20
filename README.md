@@ -321,6 +321,16 @@ The `make ci` target mirrors the workflow steps and writes coverage output to `c
 - Third‑party: GRDB.swift (MIT), GoogleMobileAds (optional; Google terms), Apple frameworks (PDFKit/Vision/Core Image/AVFoundation).
 - See LICENSE if present for app‑level license.
 
+## Quick Start Checklist
+
+1. Clone the repo and install tooling: `brew install xcodegen swiftlint swiftformat`
+2. `make generate` to sync the Xcode project (after editing `project.yml`).
+3. `make lint` and `make test` to ensure a clean baseline.
+4. Launch the app:
+   - Simulator: `CODE_SIGNING_ALLOWED=NO xcodebuild -scheme SmartCellCounter -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build && open SmartCellCounter.xcodeproj`
+   - Mocked capture: run with launch argument `-UITest.MockCapture 1` to bypass camera hardware.
+5. Review `docs/ARCHITECTURE.md` and `docs/CONTRIBUTING.md` before submitting changes.
+
 ## Contact
 
 - Support: https://www.smartcellcounter.com/support
