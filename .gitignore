@@ -16,7 +16,6 @@ xcuserdata/
 *.moved-aside
 *.xcuserstate
 *.xcworkspace
-prompts.md
 coverage.json
 
 # CocoaPods (legacy RN/ios folder)
@@ -26,3 +25,4 @@ Podfile.lock
 # Swift Package Manager
 .swiftpm/
 Package.resolved
+prompts.md
