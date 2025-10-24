@@ -39,7 +39,11 @@ public final class Settings: ObservableObject {
     @Published public var crashReportingEnabled: Bool {
         didSet {
             defaults.set(crashReportingEnabled, forKey: Keys.crashReporting)
-            crashReportingEnabled ? CrashReporter.shared.start() : CrashReporter.shared.stop()
+            if crashReportingEnabled {
+                CrashReporter.shared.start()
+            } else {
+                CrashReporter.shared.stop()
+            }
         }
     }
     @Published public var analyticsEnabled: Bool {

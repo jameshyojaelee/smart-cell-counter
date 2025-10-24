@@ -37,7 +37,10 @@ public struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, 
     enum CodingKeys: String, CodingKey {
         case id, createdAt
         case operatorName = "operator"
-        case project, chamberType, dilutionFactor, stainType, liveTotal, deadTotal, concentrationPerMl, viabilityPercent, squaresUsed, rejectedSquares, focusScore, glareRatio, pxPerMicron, imagePath, maskPath, pdfPath, thumbnailPath, thumbnailWidth, thumbnailHeight, csvPath, notes
+        case project, chamberType, dilutionFactor, stainType, liveTotal, deadTotal, concentrationPerMl
+        case viabilityPercent, squaresUsed, rejectedSquares, focusScore, glareRatio, pxPerMicron
+        case imagePath, maskPath, pdfPath, thumbnailPath, thumbnailWidth, thumbnailHeight
+        case csvPath, notes
     }
 }
 

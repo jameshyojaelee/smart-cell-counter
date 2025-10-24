@@ -462,10 +462,8 @@ final class ResultsViewModel: ObservableObject {
             ctx.fill(CGRect(origin: .zero, size: size))
             ctx.cgContext.setFillColor(UIColor.red.withAlphaComponent(0.5).cgColor)
             for y in 0..<seg.height {
-                for x in 0..<seg.width {
-                    if seg.mask[y*seg.width + x] {
-                        ctx.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 1))
-                    }
+                for x in 0..<seg.width where seg.mask[y * seg.width + x] {
+                    ctx.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 1))
                 }
             }
         }

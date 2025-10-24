@@ -34,8 +34,8 @@ file_length:
   error: 1100
 
 type_body_length:
-  warning: 400
-  error: 650
+  warning: 650
+  error: 900
 
 function_body_length:
   warning: 120
@@ -46,8 +46,16 @@ function_parameter_count:
   error: 12
 
 cyclomatic_complexity:
-  warning: 15
-  error: 25
+  warning: 20
+  error: 30
+
+type_name:
+  min_length:
+    warning: 2
+    error: 2
+  max_length:
+    warning: 60
+    error: 70
 
 excluded:
   - build

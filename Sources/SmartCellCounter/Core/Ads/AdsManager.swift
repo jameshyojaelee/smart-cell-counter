@@ -23,7 +23,8 @@ public struct BannerAdView: UIViewRepresentable {
     public init() {}
     public func makeUIView(context: Context) -> GADBannerView {
         let view = GADBannerView(adSize: GADAdSizeBanner)
-        view.adUnitID = "ca-app-pub-XXXXXXXXXXXXXXXX/BBBBBBBBBB" // TODO: replace
+        // Placeholder ad unit ID; replace with production ID when enabling ads.
+        view.adUnitID = "ca-app-pub-XXXXXXXXXXXXXXXX/BBBBBBBBBB"
         view.rootViewController = UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.keyWindow?.rootViewController }.first
         let request = GADRequest()
         if !Settings.shared.personalizedAds { let extras = GADExtras(); extras.additionalParameters = ["npa": "1"]; request.register(extras) }

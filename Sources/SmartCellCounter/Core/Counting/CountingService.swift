@@ -121,7 +121,11 @@ public enum CountingService {
     public static func viabilityPercent(live: Int, dead: Int) -> Double { Hemocytometer.viability(live: live, dead: dead) }
 
     // Seeding calculator
-    public static func seedingVolume(targetCells: Int, finalVolumeML: Double, concentrationPerML: Double, meanCountPerLargeSquare: Double, densityLimits: (min: Double, max: Double) = (10, 300)) -> (volumeToAddML: Double, guidance: String) {
+    public static func seedingVolume(targetCells: Int,
+                                     finalVolumeML: Double,
+                                     concentrationPerML: Double,
+                                     meanCountPerLargeSquare: Double,
+                                     densityLimits: (min: Double, max: Double) = (10, 300)) -> (volumeToAddML: Double, guidance: String) {
         guard concentrationPerML > 0 else { return (0, "Concentration is zero; cannot compute volume.") }
         let vol = Double(targetCells) / concentrationPerML // mL to add
         var notes: [String] = []
