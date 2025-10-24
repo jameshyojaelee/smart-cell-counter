@@ -32,10 +32,10 @@ enum GridSuppressor {
         }
         func peaks(_ arr: [Double], win: Int, k: Int) -> [Int] {
             let n = arr.count
-            var scores: [(Double,Int)] = []
+            var scores: [(Double, Int)] = []
             for i in 0..<n {
                 let a = max(0, i-win)...min(n-1, i+win)
-                let localMean = a.map { arr[$0] }.reduce(0,+)/Double(a.count)
+                let localMean = a.map { arr[$0] }.reduce(0, +)/Double(a.count)
                 let s = arr[i] - localMean
                 scores.append((s, i))
             }
@@ -62,5 +62,3 @@ enum GridSuppressor {
         return CIImage(image: mask) ?? CIImage(color: .black).cropped(to: image.extent)
     }
 }
-
-

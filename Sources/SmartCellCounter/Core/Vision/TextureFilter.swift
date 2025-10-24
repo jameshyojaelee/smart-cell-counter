@@ -3,7 +3,7 @@ import CoreImage
 
 enum TextureFilter {
     static func textureMask(from image: CIImage, context: CIContext) -> CIImage {
-        let kernel: [CGFloat] = [0,1,0, 1,-4,1, 0,1,0]
+        let kernel: [CGFloat] = [0, 1, 0, 1, -4, 1, 0, 1, 0]
         let lap = CIFilter(name: "CIConvolution3X3", parameters: [kCIInputImageKey: image, "inputWeights": CIVector(values: kernel, count: 9), "inputBias": 0])?.outputImage ?? image
         let absLap = lap.applyingFilter("CIColorAbsoluteDifference", parameters: [kCIInputImageKey: lap,
                                                                                  "inputImage2": lap.applyingFilter("CIColorInvert")])
@@ -15,5 +15,3 @@ enum TextureFilter {
         return thresh
     }
 }
-
-

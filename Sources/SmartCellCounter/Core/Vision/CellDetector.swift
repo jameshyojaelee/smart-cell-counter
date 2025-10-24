@@ -122,4 +122,3 @@ public struct Candidate {
     public let radius: CGFloat
     public let score: Double
 }
-

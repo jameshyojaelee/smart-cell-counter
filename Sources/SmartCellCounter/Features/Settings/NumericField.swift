@@ -12,7 +12,7 @@ struct NumericField: View {
     @State private var lastValid: Double = 0
     @FocusState private var focused: Bool
 
-    init(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double = 1.0, onInvalid: @escaping (String)->Void) {
+    init(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double = 1.0, onInvalid: @escaping (String) -> Void) {
         self.title = title
         self._value = value
         self.range = range

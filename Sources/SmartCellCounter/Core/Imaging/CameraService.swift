@@ -32,8 +32,7 @@ public final class CameraService: NSObject, CameraServicing {
         if auth == .notDetermined {
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 DispatchQueue.main.async {
-                    if granted { self.startSessionOnQueue() }
-                    else { self.stateSubject.send(.error(.permissionDenied)) }
+                    if granted { self.startSessionOnQueue() } else { self.stateSubject.send(.error(.permissionDenied)) }
                 }
             }
         } else if auth == .authorized {
@@ -207,7 +206,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
     }
 
     private func laplacianMean(_ image: CIImage) -> Double {
-        let kernel: [CGFloat] = [0,1,0, 1,-4,1, 0,1,0]
+        let kernel: [CGFloat] = [0, 1, 0, 1, -4, 1, 0, 1, 0]
         let filter = CIFilter(name: "CIConvolution3X3", parameters: [kCIInputImageKey: image, "inputWeights": CIVector(values: kernel, count: 9), "inputBias": 0])
         guard let out = filter?.outputImage else { return 0 }
         let extent = out.extent

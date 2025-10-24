@@ -20,4 +20,3 @@ final class GeometryUtilsTests: XCTestCase {
         XCTAssertEqual(scaled, CGRect(x: 20, y: 10, width: 40, height: 20))
     }
 }
-

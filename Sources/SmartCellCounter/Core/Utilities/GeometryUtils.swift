@@ -32,4 +32,3 @@ public enum GeometryUtils {
         return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
     }
 }
-

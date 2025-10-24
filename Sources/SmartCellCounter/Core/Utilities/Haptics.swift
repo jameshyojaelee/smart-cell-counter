@@ -21,4 +21,3 @@ public enum Haptics {
         gen.prepare(); gen.notificationOccurred(.error)
     }
 }
-

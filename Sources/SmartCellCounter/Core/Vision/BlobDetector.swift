@@ -142,5 +142,3 @@ private struct PixelSampler {
         return PixelSampler(width: cg.width, height: cg.height, stride: cg.bytesPerRow, data: raw)
     }
 }
-
-

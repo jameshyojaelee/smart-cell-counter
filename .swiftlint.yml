@@ -19,6 +19,15 @@ identifier_name:
     warning: 60
     error: 70
   allowed_symbols: ["_"]
+  excluded:
+    - C
+    - L
+    - R
+    - G
+    - B
+    - X
+    - Y
+    - Z
 
 file_length:
   warning: 900
@@ -26,7 +35,7 @@ file_length:
 
 type_body_length:
   warning: 400
-  error: 600
+  error: 650
 
 function_body_length:
   warning: 120

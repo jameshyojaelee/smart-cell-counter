@@ -101,16 +101,16 @@ public enum CountingService {
         }
     }
 
-    public static func meanCountPerLargeSquare(countsByIndex: [Int: Int], selectedLargeIndices: [Int] = [0,2,6,8], outlierThreshold: Double? = 2.5) -> Double {
+    public static func meanCountPerLargeSquare(countsByIndex: [Int: Int], selectedLargeIndices: [Int] = [0, 2, 6, 8], outlierThreshold: Double? = 2.5) -> Double {
         let counts = selectedLargeIndices.compactMap { countsByIndex[$0] }.map(Double.init)
         guard !counts.isEmpty else { return 0 }
         if let t = outlierThreshold {
             let mask = robustInliers(counts, threshold: t)
             let filtered = zip(counts, mask).compactMap { $1 ? $0 : nil }
             let arr = filtered.isEmpty ? counts : filtered
-            return arr.reduce(0,+) / Double(arr.count)
+            return arr.reduce(0, +) / Double(arr.count)
         } else {
-            return counts.reduce(0,+) / Double(counts.count)
+            return counts.reduce(0, +) / Double(counts.count)
         }
     }
 

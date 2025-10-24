@@ -31,15 +31,15 @@ enum ColorSpaces {
         guard let k = CIColorKernel(source: kernel), let hsv = k.apply(extent: image.extent, arguments: [image]) else {
             return HSVImage(h: image, s: image, value: image)
         }
-        let h = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x:1,y:0,z:0,w:0),
-                                                                 "inputGVector": CIVector(x:0,y:0,z:0,w:0),
-                                                                 "inputBVector": CIVector(x:0,y:0,z:0,w:0)])
-        let s = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x:0,y:1,z:0,w:0),
-                                                                 "inputGVector": CIVector(x:0,y:0,z:0,w:0),
-                                                                 "inputBVector": CIVector(x:0,y:0,z:0,w:0)])
-        let v = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x:0,y:0,z:1,w:0),
-                                                                 "inputGVector": CIVector(x:0,y:0,z:0,w:0),
-                                                                 "inputBVector": CIVector(x:0,y:0,z:0,w:0)])
+        let h = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x: 1, y: 0, z: 0, w: 0),
+                                                                 "inputGVector": CIVector(x: 0, y: 0, z: 0, w: 0),
+                                                                 "inputBVector": CIVector(x: 0, y: 0, z: 0, w: 0)])
+        let s = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x: 0, y: 1, z: 0, w: 0),
+                                                                 "inputGVector": CIVector(x: 0, y: 0, z: 0, w: 0),
+                                                                 "inputBVector": CIVector(x: 0, y: 0, z: 0, w: 0)])
+        let v = hsv.applyingFilter("CIColorMatrix", parameters: ["inputRVector": CIVector(x: 0, y: 0, z: 1, w: 0),
+                                                                 "inputGVector": CIVector(x: 0, y: 0, z: 0, w: 0),
+                                                                 "inputBVector": CIVector(x: 0, y: 0, z: 0, w: 0)])
         return HSVImage(h: h, s: s, value: v)
     }
 
@@ -47,7 +47,7 @@ enum ColorSpaces {
         let r = CGRect(x: p.x-2, y: p.y-2, width: 5, height: 5)
         guard let cg = context.createCGImage(ci, from: r) else { return ColorSampleStats(hue: 0, saturation: 0, value: 0, L: 0, a: 0, b: 0) }
         guard let data = cg.dataProvider?.data as Data? else { return ColorSampleStats(hue: 0, saturation: 0, value: 0, L: 0, a: 0, b: 0) }
-        var sumR=0.0,sumG=0.0,sumB=0.0,count=0.0
+        var sumR=0.0, sumG=0.0, sumB=0.0, count=0.0
         let w = cg.width, h = cg.height, stride = cg.bytesPerRow
         data.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) in
             let p0 = ptr.bindMemory(to: UInt8.self).baseAddress!
@@ -68,5 +68,3 @@ enum ColorSpaces {
         return ColorSampleStats(hue: hsvH, saturation: hsvS, value: hsvV, L: L, a: a, b: b)
     }
 }
-
-

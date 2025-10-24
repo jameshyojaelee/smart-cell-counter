@@ -77,7 +77,7 @@ struct CornerEditorView: View {
                 new[index].y = min(max(0, new[index].y), image.size.height)
                 // Snap: align x or y with adjacent points if within threshold
                 let th: CGFloat = 6
-                let adj = [(3,1),(0,2),(1,3),(2,0)][index]
+                let adj = [(3, 1), (0, 2), (1, 3), (2, 0)][index]
                 if abs(new[index].x - new[adj.0].x) < th { new[index].x = new[adj.0].x }
                 if abs(new[index].x - new[adj.1].x) < th { new[index].x = new[adj.1].x }
                 if abs(new[index].y - new[adj.0].y) < th { new[index].y = new[adj.0].y }
@@ -90,7 +90,7 @@ struct CornerEditorView: View {
     private func enforceOrdering(points: [CGPoint]) -> [CGPoint] {
         guard points.count == 4 else { return points }
         // Sort by y then x to find approximate TL, TR, BR, BL
-        let sorted = points.sorted { (a,b) in a.y == b.y ? a.x < b.x : a.y < b.y }
+        let sorted = points.sorted { (a, b) in a.y == b.y ? a.x < b.x : a.y < b.y }
         let top = Array(sorted.prefix(2)).sorted { $0.x < $1.x }
         let bottom = Array(sorted.suffix(2)).sorted { $0.x < $1.x }
         return [top[0], top[1], bottom[1], bottom[0]]
@@ -121,4 +121,3 @@ private struct Handle: View {
             .shadow(radius: 2)
     }
 }
-

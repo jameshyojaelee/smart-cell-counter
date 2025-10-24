@@ -16,4 +16,3 @@ public protocol Segmenter {
 }
 
 public enum Imaging {}
-

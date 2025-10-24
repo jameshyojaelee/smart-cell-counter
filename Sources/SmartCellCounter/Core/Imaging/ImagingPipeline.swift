@@ -339,14 +339,14 @@ public enum ImagingPipeline {
         let (labels, count) = connectedComponents(seg.mask, w: seg.width, h: seg.height)
         var objects: [CellObject] = []
         objects.reserveCapacity(count)
-        var stats: [Int: (minX:Int, maxX:Int, minY:Int, maxY:Int, sumX:Double, sumY:Double, pix:Int, perimeter:Int)] = [:]
+        var stats: [Int: (minX: Int, maxX: Int, minY: Int, maxY: Int, sumX: Double, sumY: Double, pix: Int, perimeter: Int)] = [:]
         for y in 0..<seg.height {
             for x in 0..<seg.width {
                 let idx = y*seg.width + x
                 let id = labels[idx]
                 if id == 0 { continue }
                 if stats[id] == nil {
-                    stats[id] = (x,x,y,y,0,0,0,0)
+                    stats[id] = (x, x, y, y, 0, 0, 0, 0)
                 }
                 var s = stats[id]!
                 s.minX = min(s.minX, x)
@@ -357,8 +357,8 @@ public enum ImagingPipeline {
                 s.sumY += Double(y)
                 s.pix += 1
                 // Perimeter increments for each background neighbor (4-connectivity)
-                let neighbors = [(x-1,y),(x+1,y),(x,y-1),(x,y+1)]
-                for (nx,ny) in neighbors {
+                let neighbors = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+                for (nx, ny) in neighbors {
                     if nx < 0 || ny < 0 || nx >= seg.width || ny >= seg.height || !seg.mask[ny*seg.width + nx] {
                         s.perimeter += 1
                     }
@@ -407,7 +407,7 @@ public enum ImagingPipeline {
             let r = Double(data[i]) / 255.0
             let g = Double(data[i+1]) / 255.0
             let b = Double(data[i+2]) / 255.0
-            let (_,_,v) = rgbToHsv(r, g, b)
+            let (_, _, v) = rgbToHsv(r, g, b)
             vSamples.append(v)
         }
         vSamples.sort()
@@ -432,7 +432,7 @@ public enum ImagingPipeline {
             let highSat = stats.saturation >= satThreshold
             let lowV = stats.value <= imageMedianV
             let isDead = hueInBlue && highSat && lowV
-            let conf = [hueInBlue ? 0.34 : 0, highSat ? 0.33 : 0, lowV ? 0.33 : 0].reduce(0,+)
+            let conf = [hueInBlue ? 0.34 : 0, highSat ? 0.33 : 0, lowV ? 0.33 : 0].reduce(0, +)
             labeled.append(CellObjectLabeled(id: obj.id, base: obj, color: stats, label: isDead ? "dead" : "live", confidence: conf))
         }
         PerformanceLogger.shared.record("viability", Date().timeIntervalSince(start) * 1000)
@@ -535,7 +535,7 @@ public enum ImagingPipeline {
     private static func connectedComponents(_ mask: [Bool], w: Int, h: Int) -> ([Int], Int) {
         var labels = [Int](repeating: 0, count: w*h)
         var current = 0
-        var queue: [(Int,Int)] = []
+        var queue: [(Int, Int)] = []
         for y in 0..<h {
             for x in 0..<w {
                 let idx = y*w + x
@@ -543,16 +543,16 @@ public enum ImagingPipeline {
                 current += 1
                 labels[idx] = current
                 queue.removeAll(keepingCapacity: true)
-                queue.append((x,y))
+                queue.append((x, y))
                 while !queue.isEmpty {
                     let (cx, cy) = queue.removeLast()
-                    let neighbors = [(cx-1,cy),(cx+1,cy),(cx,cy-1),(cx,cy+1)]
-                    for (nx,ny) in neighbors {
+                    let neighbors = [(cx-1, cy), (cx+1, cy), (cx, cy-1), (cx, cy+1)]
+                    for (nx, ny) in neighbors {
                         if nx < 0 || ny < 0 || nx >= w || ny >= h { continue }
                         let nidx = ny*w + nx
                         if mask[nidx] && labels[nidx] == 0 {
                             labels[nidx] = current
-                            queue.append((nx,ny))
+                            queue.append((nx, ny))
                         }
                     }
                 }
@@ -562,7 +562,7 @@ public enum ImagingPipeline {
     }
 
     private static func sample5x5Stats(x: Int, y: Int, data: [UInt8], width: Int) -> ColorSampleStats {
-        var sumR=0.0,sumG=0.0,sumB=0.0,count=0.0
+        var sumR=0.0, sumG=0.0, sumB=0.0, count=0.0
         let height = max(1, data.count / (4*width))
         for j in (y-2)...(y+2) {
             for i in (x-2)...(x+2) {
@@ -578,21 +578,19 @@ public enum ImagingPipeline {
         let r = (sumR/count)/255.0
         let g = (sumG/count)/255.0
         let b = (sumB/count)/255.0
-        let (h,s,v) = rgbToHsv(r, g, b)
+        let (h, s, v) = rgbToHsv(r, g, b)
         let (L, a, bLab) = rgbToLab(r, g, b)
         return ColorSampleStats(hue: h, saturation: s, value: v, L: L, a: a, b: bLab)
     }
 
     // MARK: - Color conversions
     static func rgbToHsv(_ r: Double, _ g: Double, _ b: Double) -> (Double, Double, Double) {
-        let maxv = max(r,max(g,b))
-        let minv = min(r,min(g,b))
+        let maxv = max(r, max(g, b))
+        let minv = min(r, min(g, b))
         let delta = maxv - minv
         var h: Double = 0
         if delta != 0 {
-            if maxv == r { h = 60 * (((g - b) / delta).truncatingRemainder(dividingBy: 6)) }
-            else if maxv == g { h = 60 * (((b - r) / delta) + 2) }
-            else { h = 60 * (((r - g) / delta) + 4) }
+            if maxv == r { h = 60 * (((g - b) / delta).truncatingRemainder(dividingBy: 6)) } else if maxv == g { h = 60 * (((b - r) / delta) + 2) } else { h = 60 * (((r - g) / delta) + 4) }
             if h < 0 { h += 360 }
         }
         let s = maxv == 0 ? 0 : delta / maxv

@@ -7,7 +7,7 @@ public protocol PDFExporting {
     func exportReport(header: ReportHeader,
                       metadata: ExportMetadata,
                       images: ReportImages,
-                      tally: [Int:Int],
+                      tally: [Int: Int],
                       params: ImagingParams,
                       watermark: Bool,
                       filename: String) throws -> URL
@@ -42,7 +42,7 @@ public final class PDFExporter: PDFExporting {
     public func exportReport(header: ReportHeader,
                              metadata: ExportMetadata,
                              images: ReportImages,
-                             tally: [Int:Int],
+                             tally: [Int: Int],
                              params: ImagingParams,
                              watermark: Bool,
                              filename: String = "report.pdf") throws -> URL {
@@ -93,7 +93,7 @@ public final class PDFExporter: PDFExporting {
         return curY
     }
 
-    private func drawTallyTable(_ tally: [Int:Int], startY: CGFloat) -> CGFloat {
+    private func drawTallyTable(_ tally: [Int: Int], startY: CGFloat) -> CGFloat {
         let attrs: [NSAttributedString.Key: Any] = [.font: UIFont.boldSystemFont(ofSize: 12)]
         "Per-Square Counts".draw(at: CGPoint(x: 36, y: startY), withAttributes: attrs)
         let y0 = startY + 18

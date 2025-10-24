@@ -47,5 +47,3 @@ enum Classifier {
 enum TinyMLClassifier {
     static var isEnabled: Bool { false }
 }
-
-

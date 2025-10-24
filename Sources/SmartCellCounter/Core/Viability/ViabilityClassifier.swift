@@ -17,4 +17,3 @@ public protocol ViabilityClassifier {
 }
 
 public enum Viability {}
-

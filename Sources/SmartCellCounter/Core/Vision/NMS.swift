@@ -32,5 +32,3 @@ enum NMS {
         return Double(inter) / union
     }
 }
-
-

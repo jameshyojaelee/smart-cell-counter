@@ -52,7 +52,7 @@ final class CountingServiceTests: XCTestCase {
         for i in 0..<500 { objects.append(makeObject(id: 315+i, x: 2100, y: 2100)) }
 
         let tally = CountingService.tallyByLargeSquare(objects: objects, geometry: g)
-        let mean = CountingService.meanCountPerLargeSquare(countsByIndex: tally, selectedLargeIndices: [0,2,6,8], outlierThreshold: 2.5)
+        let mean = CountingService.meanCountPerLargeSquare(countsByIndex: tally, selectedLargeIndices: [0, 2, 6, 8], outlierThreshold: 2.5)
         XCTAssertEqual(round(mean), 105, "Robust mean should ignore outlier and be ~105")
     }
 
@@ -70,4 +70,3 @@ final class CountingServiceTests: XCTestCase {
         XCTAssertTrue(note.contains("Proceed"))
     }
 }
-

@@ -11,7 +11,7 @@ public struct LabeledPoint: Codable {
 
 enum Metrics {
     static func varianceOfLaplacian(_ ci: CIImage, context: CIContext) -> Double {
-        let kernel: [CGFloat] = [0,1,0, 1,-4,1, 0,1,0]
+        let kernel: [CGFloat] = [0, 1, 0, 1, -4, 1, 0, 1, 0]
         let lap = CIFilter(name: "CIConvolution3X3", parameters: [kCIInputImageKey: ci, "inputWeights": CIVector(values: kernel, count: 9), "inputBias": 0])?.outputImage ?? ci
         let mean = lap.applyingFilter("CIAreaAverage", parameters: [kCIInputExtentKey: CIVector(cgRect: ci.extent)])
         var rgba = [UInt8](repeating: 0, count: 4)
@@ -52,5 +52,3 @@ enum Metrics {
         return Double(inter) / union
     }
 }
-
-

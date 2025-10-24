@@ -372,7 +372,7 @@ private struct TargetRect: View {
             let centerY = geo.size.height / 2
             ZStack {
                 RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(Theme.accent.opacity(0.35), style: StrokeStyle(lineWidth: 2, dash: [6,6]))
+                    .strokeBorder(Theme.accent.opacity(0.35), style: StrokeStyle(lineWidth: 2, dash: [6, 6]))
                     .frame(width: rectW, height: rectH)
                     .position(x: centerX, y: centerY)
 

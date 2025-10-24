@@ -39,5 +39,3 @@ enum IlluminationCorrector {
         return out
     }
 }
-
-

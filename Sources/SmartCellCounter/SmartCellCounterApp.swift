@@ -32,8 +32,7 @@ final class AppState: ObservableObject {
 
     init() {
         Task {
-            do { try await AppDatabase.shared.setup() }
-            catch { Logger.log("DB setup failed: \(error)") }
+            do { try await AppDatabase.shared.setup() } catch { Logger.log("DB setup failed: \(error)") }
         }
     }
 }
