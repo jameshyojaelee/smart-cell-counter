@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 
 final class SmartCellCounterUITests: XCTestCase {
@@ -40,12 +41,14 @@ final class SmartCellCounterUITests: XCTestCase {
 
         // Swiping should not crash and mock counts are visible
         app.swipeUp()
-        let countsLabel = app.staticTexts["Live / Dead"]
-        XCTAssertTrue(countsLabel.waitForExistence(timeout: 5))
+        let liveDeadPredicate = NSPredicate(format: "label BEGINSWITH %@", "Live / Dead")
+        let countsElement = app.staticTexts.matching(liveDeadPredicate).firstMatch
+        XCTAssertTrue(countsElement.waitForExistence(timeout: 5))
 
         // Navigate to Results tab for consistency
         app.tabBars.buttons["Results"].tap()
-        XCTAssertTrue(app.staticTexts["Live / Dead"].waitForExistence(timeout: 5))
+        let resultsLiveDead = app.staticTexts.matching(liveDeadPredicate).firstMatch
+        XCTAssertTrue(resultsLiveDead.waitForExistence(timeout: 5))
     }
 
     func testScreenshots() throws {
