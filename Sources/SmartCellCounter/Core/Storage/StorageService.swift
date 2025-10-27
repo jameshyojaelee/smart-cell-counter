@@ -1,12 +1,13 @@
 import Foundation
-import UIKit
 import GRDB
+import UIKit
 
 public protocol Storage {
     func setup() async throws
 }
 
 // MARK: - Records
+
 public struct SampleRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRecord {
     public static let databaseTableName = "sample"
     var id: String
@@ -57,6 +58,7 @@ public struct DetectionRecord: Codable, FetchableRecord, MutablePersistableRecor
 }
 
 // MARK: - App Database
+
 public actor AppDatabase: Storage {
     public static let shared = AppDatabase()
 
@@ -135,6 +137,7 @@ public actor AppDatabase: Storage {
     }
 
     // MARK: - DAO
+
     public func insertSample(_ record: SampleRecord, detections: [DetectionRecord]) async throws {
         guard let dbQueue else { throw NSError(domain: "DB", code: -1) }
         try await dbQueue.write { db in
@@ -151,13 +154,13 @@ public actor AppDatabase: Storage {
         guard let dbQueue else { return [] }
         return try await dbQueue.read { db in
             if let q = query, !q.isEmpty {
-                return try SampleRecord
+                try SampleRecord
                     .filter(sql: "project LIKE ? OR \"operator\" LIKE ?", arguments: ["%\(q)%", "%\(q)%"])
                     .order(sql: "createdAt DESC")
                     .limit(limit)
                     .fetchAll(db)
             } else {
-                return try SampleRecord
+                try SampleRecord
                     .order(sql: "createdAt DESC")
                     .limit(limit)
                     .fetchAll(db)
@@ -180,6 +183,7 @@ public actor AppDatabase: Storage {
     }
 
     // MARK: - Filesystem helpers
+
     public func sampleFolder(id: String) throws -> URL {
         let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
         let dir = base.appendingPathComponent("SmartCellCounter/Samples/\(id)")

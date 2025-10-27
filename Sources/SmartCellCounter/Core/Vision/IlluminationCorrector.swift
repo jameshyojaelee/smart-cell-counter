@@ -1,9 +1,9 @@
-import Foundation
-import CoreImage
 import Accelerate
+import CoreImage
+import Foundation
 
 enum IlluminationCorrector {
-    static func flatten(luminance: CIImage, context: CIContext) -> (illumination: CIImage, flattened: CIImage) {
+    static func flatten(luminance: CIImage, context _: CIContext) -> (illumination: CIImage, flattened: CIImage) {
         let bg = luminance.clampedToExtent().applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: 30])
             .cropped(to: luminance.extent)
         let epsilon: CGFloat = 1e-3
@@ -11,7 +11,7 @@ enum IlluminationCorrector {
             "inputRVector": CIVector(x: 1, y: 0, z: 0, w: 0),
             "inputGVector": CIVector(x: 0, y: 1, z: 0, w: 0),
             "inputBVector": CIVector(x: 0, y: 0, z: 1, w: 0),
-            "inputBiasVector": CIVector(x: epsilon, y: epsilon, z: epsilon, w: 0)
+            "inputBiasVector": CIVector(x: epsilon, y: epsilon, z: epsilon, w: 0),
         ])
         let flat = l1.applyingFilter("CIDivideBlendMode", parameters: [kCIInputBackgroundImageKey: bg])
         return (bg, flat)
@@ -35,7 +35,7 @@ enum IlluminationCorrector {
         if error != kvImageNoError { return luminance }
         vImageEqualization_ARGB8888(&src, &src, vImage_Flags(kvImageNoFlags))
         guard let outCG = vImageCreateCGImageFromBuffer(&src, &fmt, nil, nil, vImage_Flags(kvImageNoAllocate), &error)?.takeRetainedValue(), error == kvImageNoError else { return luminance }
-        let out = CIImage(cgImage: outCG).transformed(by: CGAffineTransform(scaleX: 1/scale, y: 1/scale)).cropped(to: luminance.extent)
+        let out = CIImage(cgImage: outCG).transformed(by: CGAffineTransform(scaleX: 1 / scale, y: 1 / scale)).cropped(to: luminance.extent)
         return out
     }
 }

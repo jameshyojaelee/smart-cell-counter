@@ -1,6 +1,6 @@
+import CoreImage
 import Foundation
 import UIKit
-import CoreImage
 
 struct DetectionResult {
     let objects: [CellObject]
@@ -13,7 +13,8 @@ enum CellDetector {
     static func detect(on uiImage: UIImage,
                        roi: CGRect?,
                        pxPerMicron: Double?,
-                       params p: DetectorParams) -> DetectionResult {
+                       params p: DetectorParams) -> DetectionResult
+    {
         let context = ImageContext.ciContext
         // Downscale for speed (process at ~2MP target), then scale detections back
         let originalCI = CIImage(image: uiImage) ?? CIImage(color: CIColor(color: .black)).cropped(to: CGRect(origin: .zero, size: uiImage.size))
@@ -74,15 +75,15 @@ enum CellDetector {
         // Map back to original image coordinates
         let invScale = 1.0 / scaleFactor
         let offset = CGPoint(x: roiRect.minX * invScale, y: roiRect.minY * invScale)
-        let objects: [CellObject] = kept.enumerated().map { (idx, k) in
+        let objects: [CellObject] = kept.enumerated().map { idx, k in
             let cScaled = CGPoint(x: k.center.x * invScale, y: k.center.y * invScale)
             let rScaled = k.radius * invScale
             let c = CGPoint(x: cScaled.x + offset.x, y: cScaled.y + offset.y)
             let areaPx = Double.pi * Double(rScaled * rScaled)
-            let bbox = CGRect(x: c.x - rScaled, y: c.y - rScaled, width: rScaled*2, height: rScaled*2)
+            let bbox = CGRect(x: c.x - rScaled, y: c.y - rScaled, width: rScaled * 2, height: rScaled * 2)
             return CellObject(id: idx, pixelCount: Int(areaPx), areaPx: areaPx, perimeterPx: Double(2 * .pi * rScaled), circularity: 1.0, solidity: 1.0, centroid: c, bbox: bbox)
         }
-        let labels: [CellObjectLabeled] = objects.enumerated().map { (idx, obj) in
+        let labels: [CellObjectLabeled] = objects.enumerated().map { idx, obj in
             let lc = kept[idx]
             let color = ColorSpaces.sampleHSVLab(ci: originalCI, at: obj.centroid, context: context)
             return CellObjectLabeled(id: obj.id, base: obj, color: color, label: lc.label, confidence: lc.confidence)
@@ -92,16 +93,18 @@ enum CellDetector {
     }
 }
 
-struct Debug {
+enum Debug {
     static func makePreview(ci: CIImage, context: CIContext) -> UIImage {
         let extent = ci.extent
         guard let cg = context.createCGImage(ci, from: extent) else { return UIImage() }
         return UIImage(cgImage: cg)
     }
+
     static func makeMaskPreview(ci: CIImage, context: CIContext) -> UIImage {
         let mono = ci.applyingFilter("CIColorControls", parameters: [kCIInputSaturationKey: 0, kCIInputContrastKey: 2])
         return makePreview(ci: mono, context: context)
     }
+
     static func drawCandidates(on base: CIImage, candidates: [Candidate], context: CIContext) -> UIImage {
         let ui = makePreview(ci: base, context: context)
         let r = UIGraphicsImageRenderer(size: ui.size)
@@ -110,7 +113,7 @@ struct Debug {
             ctx.cgContext.setStrokeColor(UIColor.yellow.cgColor)
             ctx.cgContext.setLineWidth(2)
             for c in candidates {
-                let rect = CGRect(x: CGFloat(c.center.x) - c.radius, y: CGFloat(c.center.y) - c.radius, width: c.radius*2, height: c.radius*2)
+                let rect = CGRect(x: CGFloat(c.center.x) - c.radius, y: CGFloat(c.center.y) - c.radius, width: c.radius * 2, height: c.radius * 2)
                 ctx.cgContext.strokeEllipse(in: rect)
             }
         }

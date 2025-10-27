@@ -1,5 +1,5 @@
-import XCTest
 @testable import SmartCellCounter
+import XCTest
 
 final class PerformanceLoggerTests: XCTestCase {
     private let testDeviceInfo = PerformanceLogger.DeviceInfo(

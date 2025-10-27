@@ -1,5 +1,5 @@
-import Foundation
 import CoreImage
+import Foundation
 
 public struct LabeledCandidate {
     public let center: CGPoint
@@ -10,12 +10,13 @@ public struct LabeledCandidate {
 
 enum Classifier {
     static func classify(candidates: [Candidate],
-                         hsv: HSVImage,
+                         hsv _: HSVImage,
                          blueMask: CIImage,
-                         gridMask: CIImage,
-                         eqLuma: CIImage,
+                         gridMask _: CIImage,
+                         eqLuma _: CIImage,
                          context: CIContext,
-                         params: DetectorParams) -> [LabeledCandidate] {
+                         params: DetectorParams) -> [LabeledCandidate]
+    {
         var out: [LabeledCandidate] = []
         for c in candidates {
             let pt = c.center

@@ -50,7 +50,8 @@ public struct SegmentationResult {
                 downscaleFactor: Double = 1.0,
                 polarityInverted: Bool = false,
                 usedStrategy: SegmentationStrategy = .classical,
-                originalSize: CGSize = .zero) {
+                originalSize: CGSize = .zero)
+    {
         self.width = width
         self.height = height
         self.mask = mask

@@ -7,45 +7,57 @@ final class SettingsStore: ObservableObject {
     @AppStorage("dilutionFactor") var dilutionFactor: Double = 1.0 {
         didSet { normalize(\.dilutionFactor) { max(0.1, $0) } }
     }
+
     @AppStorage("areaMinUm2") var areaMinUm2: Double = 50 {
         didSet { normalize(\.areaMinUm2) { min(max($0, 1), min(1_000_000, areaMaxUm2)) } }
     }
+
     @AppStorage("areaMaxUm2") var areaMaxUm2: Double = 50000 {
         didSet { normalize(\.areaMaxUm2) { min(1_000_000, max($0, areaMinUm2)) } }
     }
+
     // Cell size (µm) for detection constraints
     @AppStorage("minCellDiameterUm") var minCellDiameterUm: Double = 8 {
         didSet { normalize(\.minCellDiameterUm) { min(max($0, 1), maxCellDiameterUm) } }
     }
+
     @AppStorage("maxCellDiameterUm") var maxCellDiameterUm: Double = 30 {
         didSet { normalize(\.maxCellDiameterUm) { max(minCellDiameterUm, min($0, 200)) } }
     }
+
     // Color thresholds (HSV)
     @AppStorage("blueHueMin") var blueHueMin: Double = 200 {
         didSet { normalize(\.blueHueMin) { min(max($0, 0), min(360, blueHueMax)) } }
     }
+
     @AppStorage("blueHueMax") var blueHueMax: Double = 260 {
         didSet { normalize(\.blueHueMax) { max(blueHueMin, min($0, 360)) } }
     }
+
     @AppStorage("minBlueSaturation") var minBlueSaturation: Double = 0.30 {
         didSet { normalize(\.minBlueSaturation) { min(max($0, 0), 1) } }
     }
+
     // Detection thresholds
     @AppStorage("blobScoreThreshold") var blobScoreThreshold: Double = 0.5 {
         didSet { normalize(\.blobScoreThreshold) { min(max($0, 0), 1) } }
     }
+
     @AppStorage("nmsIoU") var nmsIoU: Double = 0.3 {
         didSet { normalize(\.nmsIoU) { min(max($0, 0), 1) } }
     }
+
     @AppStorage("focusMinLaplacian") var focusMinLaplacian: Double = 150 {
         didSet { normalize(\.focusMinLaplacian) { max($0, 0) } }
     }
+
     @AppStorage("enableGridSuppression") var enableGridSuppression: Bool = true
     @AppStorage("thresholdMethod") var thresholdMethodRaw: String = ThresholdMethod.adaptive.rawValue
     @AppStorage("segmentationStrategy") var segmentationStrategyRaw: String = SegmentationStrategy.automatic.rawValue
     @AppStorage("blockSize") var blockSize: Int = 51 {
         didSet { normalize(\.blockSize) { max(31, min(101, $0 | 1)) } }
     }
+
     @AppStorage("thresholdC") var thresholdC: Int = 0 {
         didSet { normalize(\.thresholdC) { max(-10, min(10, $0)) } }
     }

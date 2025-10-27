@@ -12,41 +12,41 @@ final class ResultsViewModel: ObservableObject {
 
         var displayName: String {
             switch self {
-            case .summaryCSV: return L10n.Results.exportCSV
-            case .detectionsCSV: return L10n.Results.exportDetectionsCSV
-            case .pdf: return L10n.Results.exportPDF
+            case .summaryCSV: L10n.Results.exportCSV
+            case .detectionsCSV: L10n.Results.exportDetectionsCSV
+            case .pdf: L10n.Results.exportPDF
             }
         }
 
         var iconName: String {
             switch self {
-            case .summaryCSV: return "doc.text"
-            case .detectionsCSV: return "tablecells"
-            case .pdf: return "doc.richtext"
+            case .summaryCSV: "doc.text"
+            case .detectionsCSV: "tablecells"
+            case .pdf: "doc.richtext"
             }
         }
 
         var fileExtension: String {
             switch self {
-            case .summaryCSV, .detectionsCSV: return "csv"
-            case .pdf: return "pdf"
+            case .summaryCSV, .detectionsCSV: "csv"
+            case .pdf: "pdf"
             }
         }
 
         var filenamePrefix: String {
             switch self {
-            case .summaryCSV: return "summary"
-            case .detectionsCSV: return "detections"
-            case .pdf: return "report"
+            case .summaryCSV: "summary"
+            case .detectionsCSV: "detections"
+            case .pdf: "report"
             }
         }
 
         var requiresPro: Bool {
             switch self {
             case .summaryCSV:
-                return false
+                false
             case .detectionsCSV, .pdf:
-                return true
+                true
             }
         }
     }
@@ -107,9 +107,9 @@ final class ResultsViewModel: ObservableObject {
 
     init(defaultDilution: Double? = nil) {
         if let defaultDilution {
-            self.dilution = defaultDilution
+            dilution = defaultDilution
         } else {
-            self.dilution = SettingsStore.shared.dilutionFactor
+            dilution = SettingsStore.shared.dilutionFactor
         }
     }
 
@@ -152,12 +152,12 @@ final class ResultsViewModel: ObservableObject {
                 self.updateProgress(kind: kind, progress: 0.05, message: L10n.Results.Export.preparing)
             }
             do {
-                let payload = self.buildPayload(for: kind, appState: appState)
+                let payload = buildPayload(for: kind, appState: appState)
                 try Task.checkCancellation()
                 await MainActor.run {
                     self.updateProgress(kind: kind, progress: 0.35, message: L10n.Results.Export.writing)
                 }
-                let url = try await self.performExport(kind: kind, payload: payload)
+                let url = try await performExport(kind: kind, payload: payload)
                 try Task.checkCancellation()
                 await MainActor.run {
                     self.updateProgress(kind: kind, progress: 0.85, message: L10n.Results.Export.finishing)
@@ -207,11 +207,11 @@ final class ResultsViewModel: ObservableObject {
         var csvPath: String? = nil
         var thumbnailInfo: (path: String, size: CGSize)? = nil
 
-        if let corrected = corrected {
-            imagePath = (try? await AppDatabase.shared.save(image: corrected, name: "corrected.png", in: folder))?.path
+        if let corrected {
+            imagePath = await (try? AppDatabase.shared.save(image: corrected, name: "corrected.png", in: folder))?.path
         }
         if let seg = appState.segmentation, let maskImage = makeMaskImage(seg) {
-            maskPath = (try? await AppDatabase.shared.save(image: maskImage, name: "mask.png", in: folder))?.path
+            maskPath = await (try? AppDatabase.shared.save(image: maskImage, name: "mask.png", in: folder))?.path
         }
         if let pdfURL = try? exporter.exportReport(header: header,
                                                    metadata: metadata,
@@ -219,12 +219,14 @@ final class ResultsViewModel: ObservableObject {
                                                    tally: tally,
                                                    params: params,
                                                    watermark: true,
-                                                   filename: "report.pdf") {
+                                                   filename: "report.pdf")
+        {
             pdfPath = pdfURL.path
         }
 
         if let baseImage = corrected ?? original,
-           let (thumbnail, size) = makeThumbnail(from: baseImage) {
+           let (thumbnail, size) = makeThumbnail(from: baseImage)
+        {
             let thumbURL = folder.appendingPathComponent("thumbnail.png")
             if let data = thumbnail.pngData() {
                 try? data.write(to: thumbURL)
@@ -242,7 +244,8 @@ final class ResultsViewModel: ObservableObject {
                                                            viabilityPercent: metrics.viability,
                                                            live: metrics.live,
                                                            dead: metrics.dead,
-                                                           filename: L10n.Results.CSV.summaryFilename) {
+                                                           filename: L10n.Results.CSV.summaryFilename)
+        {
             csvPath = summaryURL.path
         }
 
@@ -332,10 +335,10 @@ final class ResultsViewModel: ObservableObject {
         }
     }
 
-    private func performExport(kind: ExportKind, payload: ExportPayload) async throws -> URL {
+    private func performExport(kind _: ExportKind, payload: ExportPayload) async throws -> URL {
         switch payload {
-        case .summary(let summary):
-            return try await Task.detached(priority: .userInitiated) {
+        case let .summary(summary):
+            try await Task.detached(priority: .userInitiated) {
                 let exporter = CSVExporter()
                 return try exporter.exportSummary(sampleId: summary.sampleId,
                                                   timestamp: summary.timestamp,
@@ -348,16 +351,16 @@ final class ResultsViewModel: ObservableObject {
                                                   dead: summary.dead,
                                                   filename: summary.filename)
             }.value
-        case .detections(let detections):
-            return try await Task.detached(priority: .userInitiated) {
+        case let .detections(detections):
+            try await Task.detached(priority: .userInitiated) {
                 let exporter = CSVExporter()
                 return try exporter.exportDetections(sampleId: detections.sampleId,
                                                      labeled: detections.labeled,
                                                      metadata: detections.metadata,
                                                      filename: detections.filename)
             }.value
-        case .pdf(let report):
-            return try await MainActor.run {
+        case let .pdf(report):
+            try await MainActor.run {
                 let exporter = PDFExporter()
                 return try exporter.exportReport(header: report.header,
                                                  metadata: report.metadata,
@@ -408,7 +411,7 @@ final class ResultsViewModel: ObservableObject {
     }
 
     private func canAccess(_ kind: ExportKind) -> Bool {
-        if kind.requiresPro && !PurchaseManager.shared.isPro {
+        if kind.requiresPro, !PurchaseManager.shared.isPro {
             alert = ExportAlert(title: L10n.Results.Export.lockedTitle,
                                 message: L10n.Results.Export.proRequired(kind.displayName),
                                 showsUpgrade: true)
@@ -418,13 +421,13 @@ final class ResultsViewModel: ObservableObject {
     }
 
     #if DEBUG
-    func debugResetAlert() {
-        alert = nil
-    }
+        func debugResetAlert() {
+            alert = nil
+        }
 
-    func debugCanAccess(_ kind: ExportKind) -> Bool {
-        canAccess(kind)
-    }
+        func debugCanAccess(_ kind: ExportKind) -> Bool {
+            canAccess(kind)
+        }
     #endif
 
     private func makeFilename(prefix: String, fileExtension: String, timestamp: Date) -> String {
@@ -461,8 +464,8 @@ final class ResultsViewModel: ObservableObject {
             UIColor.clear.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
             ctx.cgContext.setFillColor(UIColor.red.withAlphaComponent(0.5).cgColor)
-            for y in 0..<seg.height {
-                for x in 0..<seg.width where seg.mask[y * seg.width + x] {
+            for y in 0 ..< seg.height {
+                for x in 0 ..< seg.width where seg.mask[y * seg.width + x] {
                     ctx.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 1))
                 }
             }
@@ -529,25 +532,25 @@ final class ResultsViewModel: ObservableObject {
 
         var metadata: ExportMetadata {
             switch self {
-            case .summary(let payload): return payload.metadata
-            case .detections(let payload): return payload.metadata
-            case .pdf(let payload): return payload.metadata
+            case let .summary(payload): payload.metadata
+            case let .detections(payload): payload.metadata
+            case let .pdf(payload): payload.metadata
             }
         }
 
         var timestamp: Date {
             switch self {
-            case .summary(let payload): return payload.timestamp
-            case .detections(let payload): return payload.timestamp
-            case .pdf(let payload): return payload.timestamp
+            case let .summary(payload): payload.timestamp
+            case let .detections(payload): payload.timestamp
+            case let .pdf(payload): payload.timestamp
             }
         }
 
         var sampleId: String {
             switch self {
-            case .summary(let payload): return payload.sampleId
-            case .detections(let payload): return payload.sampleId
-            case .pdf(let payload): return payload.reportId
+            case let .summary(payload): payload.sampleId
+            case let .detections(payload): payload.sampleId
+            case let .pdf(payload): payload.reportId
             }
         }
     }
@@ -604,7 +607,7 @@ struct ResultsView: View {
                     HStack {
                         Text(L10n.Results.dilution).foregroundColor(Theme.textSecondary)
                         Spacer()
-                        Stepper(value: $viewModel.dilution, in: 0.1...100, step: 0.1) {
+                        Stepper(value: $viewModel.dilution, in: 0.1 ... 100, step: 0.1) {
                             Text(L10n.Results.dilutionValue(viewModel.dilution))
                                 .foregroundColor(Theme.textPrimary)
                         }
@@ -652,7 +655,7 @@ struct ResultsView: View {
                             Label {
                                 HStack(spacing: 4) {
                                     Text(L10n.Results.exportDetectionsCSV)
-                                    if ResultsViewModel.ExportKind.detectionsCSV.requiresPro && !PurchaseManager.shared.isPro {
+                                    if ResultsViewModel.ExportKind.detectionsCSV.requiresPro, !PurchaseManager.shared.isPro {
                                         ProBadge()
                                     }
                                 }
@@ -669,7 +672,7 @@ struct ResultsView: View {
                             Label {
                                 HStack(spacing: 4) {
                                     Text(L10n.Results.exportPDF)
-                                    if ResultsViewModel.ExportKind.pdf.requiresPro && !PurchaseManager.shared.isPro {
+                                    if ResultsViewModel.ExportKind.pdf.requiresPro, !PurchaseManager.shared.isPro {
                                         ProBadge()
                                     }
                                 }
@@ -720,7 +723,7 @@ struct ResultsView: View {
                 .cardStyle()
 
                 #if ADS
-                if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
+                    if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
                 #endif
             }
             .padding()
@@ -730,16 +733,16 @@ struct ResultsView: View {
         .appBackground()
         .alert(item: $viewModel.alert) { alert in
             if alert.showsUpgrade {
-                return Alert(title: Text(alert.title),
-                             message: Text(alert.message),
-                             primaryButton: .default(Text(L10n.Results.Export.upgrade)) {
-                                 showPaywall = true
-                             },
-                             secondaryButton: .cancel(Text(L10n.Results.Export.dismiss)))
+                Alert(title: Text(alert.title),
+                      message: Text(alert.message),
+                      primaryButton: .default(Text(L10n.Results.Export.upgrade)) {
+                          showPaywall = true
+                      },
+                      secondaryButton: .cancel(Text(L10n.Results.Export.dismiss)))
             } else {
-                return Alert(title: Text(alert.title),
-                             message: Text(alert.message),
-                             dismissButton: .default(Text(L10n.Results.Export.dismiss)))
+                Alert(title: Text(alert.title),
+                      message: Text(alert.message),
+                      dismissButton: .default(Text(L10n.Results.Export.dismiss)))
             }
         }
     }
@@ -839,13 +842,14 @@ private struct QCRow: View {
 
 private extension View {
     func cardStyle() -> some View {
-        self.padding(12)
+        padding(12)
             .background(Color(.secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 
 // MARK: - Navigation modernization
+
 private struct ResultsNavigation: ViewModifier {
     @Binding var showPaywall: Bool
     func body(content: Content) -> some View {

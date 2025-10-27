@@ -1,5 +1,5 @@
-import Foundation
 import CoreImage
+import Foundation
 import UIKit
 
 enum ColorSpaces {
@@ -44,25 +44,25 @@ enum ColorSpaces {
     }
 
     static func sampleHSVLab(ci: CIImage, at p: CGPoint, context: CIContext) -> ColorSampleStats {
-        let r = CGRect(x: p.x-2, y: p.y-2, width: 5, height: 5)
+        let r = CGRect(x: p.x - 2, y: p.y - 2, width: 5, height: 5)
         guard let cg = context.createCGImage(ci, from: r) else { return ColorSampleStats(hue: 0, saturation: 0, value: 0, L: 0, a: 0, b: 0) }
         guard let data = cg.dataProvider?.data as Data? else { return ColorSampleStats(hue: 0, saturation: 0, value: 0, L: 0, a: 0, b: 0) }
-        var sumR=0.0, sumG=0.0, sumB=0.0, count=0.0
+        var sumR = 0.0, sumG = 0.0, sumB = 0.0, count = 0.0
         let w = cg.width, h = cg.height, stride = cg.bytesPerRow
         data.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) in
             let p0 = ptr.bindMemory(to: UInt8.self).baseAddress!
-            for y in 0..<h {
-                let line = p0 + y*stride
-                for x in 0..<w {
-                    let idx = x*4
+            for y in 0 ..< h {
+                let line = p0 + y * stride
+                for x in 0 ..< w {
+                    let idx = x * 4
                     sumR += Double(line[idx]) / 255.0
-                    sumG += Double(line[idx+1]) / 255.0
-                    sumB += Double(line[idx+2]) / 255.0
+                    sumG += Double(line[idx + 1]) / 255.0
+                    sumB += Double(line[idx + 2]) / 255.0
                     count += 1
                 }
             }
         }
-        let R = sumR/count, G = sumG/count, B = sumB/count
+        let R = sumR / count, G = sumG / count, B = sumB / count
         let (hsvH, hsvS, hsvV) = ImagingPipeline.rgbToHsv(R, G, B)
         let (L, a, b) = ImagingPipeline.rgbToLab(R, G, B)
         return ColorSampleStats(hue: hsvH, saturation: hsvS, value: hsvV, L: L, a: a, b: b)

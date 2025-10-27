@@ -16,7 +16,7 @@ struct OnboardingView: View {
     private let steps: [OnboardingStep] = [
         OnboardingStep(id: 0, symbolName: "camera"),
         OnboardingStep(id: 1, symbolName: "lock.shield"),
-        OnboardingStep(id: 2, symbolName: "externaldrive")
+        OnboardingStep(id: 2, symbolName: "externaldrive"),
     ]
 
     let onFinish: () -> Void
@@ -61,7 +61,7 @@ struct OnboardingView: View {
             .tabViewStyle(PageTabViewStyle())
 
             HStack(spacing: 6) {
-                ForEach(0..<steps.count, id: \.self) { idx in
+                ForEach(0 ..< steps.count, id: \.self) { idx in
                     Circle()
                         .fill(idx == currentIndex ? Theme.accent : Theme.textSecondary.opacity(0.3))
                         .frame(width: 8, height: 8)
@@ -102,11 +102,11 @@ struct OnboardingView: View {
 }
 
 #if DEBUG
-struct OnboardingView_Previews: PreviewProvider {
-    static var previews: some View {
-        OnboardingView {
-            // preview completion
+    struct OnboardingView_Previews: PreviewProvider {
+        static var previews: some View {
+            OnboardingView {
+                // preview completion
+            }
         }
     }
-}
 #endif

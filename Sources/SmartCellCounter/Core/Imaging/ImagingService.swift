@@ -1,7 +1,7 @@
-import Foundation
-import Vision
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import Foundation
+import Vision
 
 public protocol GridDetector {
     func detectGridCorners(in image: CIImage) async throws -> [CGPoint]

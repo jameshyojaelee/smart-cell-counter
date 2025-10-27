@@ -1,6 +1,6 @@
-import XCTest
-import UIKit
 @testable import SmartCellCounter
+import UIKit
+import XCTest
 
 final class ImagingTests: XCTestCase {
     func testAreaConversionMatchesHemocytometer() {

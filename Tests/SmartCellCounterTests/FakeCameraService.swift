@@ -1,8 +1,8 @@
-import Foundation
 import AVFoundation
 import Combine
-import UIKit
+import Foundation
 @testable import SmartCellCounter
+import UIKit
 
 final class FakeCameraService: CameraServicing {
     weak var delegate: CameraServiceDelegate?
@@ -53,7 +53,7 @@ final class FakeCameraService: CameraServicing {
         Task { @MainActor [weak self] in
             guard let self else { return }
             let stub = CameraService()
-            self.delegate?.cameraService(stub, didCapture: img)
+            delegate?.cameraService(stub, didCapture: img)
         }
     }
 

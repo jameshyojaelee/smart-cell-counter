@@ -57,6 +57,7 @@ struct CropView: View {
 }
 
 // MARK: - Navigation modernization
+
 private struct CropNavigation: ViewModifier {
     @Binding var goToReview: Bool
     func body(content: Content) -> some View {

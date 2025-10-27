@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 #if canImport(UIKit)
-import UIKit
+    import UIKit
 #endif
 
 public final class PerformanceLogger: ObservableObject {
@@ -20,31 +20,30 @@ public final class PerformanceLogger: ObservableObject {
             let hardware: String
 
             #if canImport(UIKit)
-            let device = UIDevice.current
-            model = device.model
-            systemName = device.systemName
-            systemVersion = device.systemVersion
-            hardware = PerformanceLogger.hardwareIdentifier() ?? device.model
+                let device = UIDevice.current
+                model = device.model
+                systemName = device.systemName
+                systemVersion = device.systemVersion
+                hardware = PerformanceLogger.hardwareIdentifier() ?? device.model
             #else
-            let process = ProcessInfo.processInfo
-            model = process.hostName
-            systemName = process.operatingSystemVersionString
-            systemVersion = "\(process.operatingSystemVersion.majorVersion).\(process.operatingSystemVersion.minorVersion).\(process.operatingSystemVersion.patchVersion)"
-            hardware = PerformanceLogger.hardwareIdentifier() ?? process.hostName
+                let process = ProcessInfo.processInfo
+                model = process.hostName
+                systemName = process.operatingSystemVersionString
+                systemVersion = "\(process.operatingSystemVersion.majorVersion).\(process.operatingSystemVersion.minorVersion).\(process.operatingSystemVersion.patchVersion)"
+                hardware = PerformanceLogger.hardwareIdentifier() ?? process.hostName
             #endif
 
             let bundle = Bundle.main
             let shortVersion = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             let buildVersion = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            let version: String
-            if let shortVersion, let buildVersion {
-                version = "\(shortVersion) (\(buildVersion))"
+            let version: String = if let shortVersion, let buildVersion {
+                "\(shortVersion) (\(buildVersion))"
             } else if let shortVersion {
-                version = shortVersion
+                shortVersion
             } else if let buildVersion {
-                version = buildVersion
+                buildVersion
             } else {
-                version = "unknown"
+                "unknown"
             }
 
             return DeviceInfo(
@@ -70,15 +69,15 @@ public final class PerformanceLogger: ObservableObject {
         public var displayName: String {
             switch self {
             case .capture:
-                return "Capture"
+                "Capture"
             case .correction:
-                return "Correction"
+                "Correction"
             case .segmentation:
-                return "Segmentation"
+                "Segmentation"
             case .counting:
-                return "Counting"
+                "Counting"
             case .total:
-                return "Pipeline Total"
+                "Pipeline Total"
             }
         }
     }
@@ -156,12 +155,13 @@ public final class PerformanceLogger: ObservableObject {
     private var sampleHistory: [PerformanceSample] = []
 
     public init(windowSize: Int = PerformanceLogger.defaultWindowSize,
-                deviceInfoProvider: @escaping () -> DeviceInfo = DeviceInfo.current) {
+                deviceInfoProvider: @escaping () -> DeviceInfo = DeviceInfo.current)
+    {
         self.windowSize = max(1, windowSize)
         self.deviceInfoProvider = deviceInfoProvider
         let info = deviceInfoProvider()
-        self.deviceInfo = info
-        self.dashboard = PerformanceDashboard(deviceInfo: info, metrics: [])
+        deviceInfo = info
+        dashboard = PerformanceDashboard(deviceInfo: info, metrics: [])
     }
 
     @discardableResult
@@ -193,9 +193,9 @@ public final class PerformanceLogger: ObservableObject {
     private func record(label: String, duration ms: Double, stage: Stage?, metadata: [String: String]) {
         queue.async(flags: .barrier) { [weak self] in
             guard let self else { return }
-            var stat = self.stats[label] ?? RollingStats()
-            stat.add(ms, windowSize: self.windowSize)
-            self.stats[label] = stat
+            var stat = stats[label] ?? RollingStats()
+            stat.add(ms, windowSize: windowSize)
+            stats[label] = stat
 
             let metric = PerformanceMetric(
                 label: label,
@@ -207,7 +207,7 @@ public final class PerformanceLogger: ObservableObject {
                 recentMin: stat.recentMin,
                 recentMax: stat.recentMax
             )
-            self.metricsMap[label] = metric
+            metricsMap[label] = metric
             if let stage {
                 let sample = PerformanceSample(
                     id: UUID(),
@@ -215,15 +215,15 @@ public final class PerformanceLogger: ObservableObject {
                     label: label,
                     durationMs: ms,
                     stage: stage,
-                    deviceInfo: self.deviceInfo,
+                    deviceInfo: deviceInfo,
                     metadata: metadata
                 )
-                self.sampleHistory.append(sample)
-                if self.sampleHistory.count > PerformanceLogger.sampleRetentionLimit {
-                    self.sampleHistory.removeFirst(self.sampleHistory.count - PerformanceLogger.sampleRetentionLimit)
+                sampleHistory.append(sample)
+                if sampleHistory.count > PerformanceLogger.sampleRetentionLimit {
+                    sampleHistory.removeFirst(sampleHistory.count - PerformanceLogger.sampleRetentionLimit)
                 }
             }
-            let metrics = self.metricsMap.values.sorted { $0.label < $1.label }
+            let metrics = metricsMap.values.sorted { $0.label < $1.label }
             DispatchQueue.main.async {
                 self.lastDurations[label] = ms
                 self.dashboard = PerformanceDashboard(deviceInfo: self.deviceInfo, metrics: metrics)
@@ -261,9 +261,9 @@ public final class PerformanceLogger: ObservableObject {
     public func reset() {
         queue.async(flags: .barrier) { [weak self] in
             guard let self else { return }
-            self.stats.removeAll()
-            self.metricsMap.removeAll()
-            self.sampleHistory.removeAll()
+            stats.removeAll()
+            metricsMap.removeAll()
+            sampleHistory.removeAll()
             DispatchQueue.main.async {
                 self.lastDurations = [:]
                 self.dashboard = PerformanceDashboard(deviceInfo: self.deviceInfo, metrics: [])
@@ -273,16 +273,16 @@ public final class PerformanceLogger: ObservableObject {
 
     private static func hardwareIdentifier() -> String? {
         #if os(iOS) || os(tvOS) || os(watchOS)
-        var sysinfo = utsname()
-        uname(&sysinfo)
-        let mirror = Mirror(reflecting: sysinfo.machine)
-        let identifier = mirror.children.reduce(into: "") { identifier, element in
-            guard let value = element.value as? Int8, value != 0 else { return }
-            identifier.append(String(UnicodeScalar(UInt8(value))))
-        }
-        return identifier.isEmpty ? nil : identifier
+            var sysinfo = utsname()
+            uname(&sysinfo)
+            let mirror = Mirror(reflecting: sysinfo.machine)
+            let identifier = mirror.children.reduce(into: "") { identifier, element in
+                guard let value = element.value as? Int8, value != 0 else { return }
+                identifier.append(String(UnicodeScalar(UInt8(value))))
+            }
+            return identifier.isEmpty ? nil : identifier
         #else
-        return nil
+            return nil
         #endif
     }
 }

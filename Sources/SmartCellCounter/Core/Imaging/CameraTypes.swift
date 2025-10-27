@@ -1,6 +1,6 @@
-import Foundation
 import AVFoundation
 import Combine
+import Foundation
 import UIKit
 
 public enum CameraState: Equatable {

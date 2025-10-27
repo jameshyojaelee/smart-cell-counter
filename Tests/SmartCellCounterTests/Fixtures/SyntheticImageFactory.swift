@@ -1,6 +1,6 @@
-import UIKit
 import AVFoundation
 @testable import SmartCellCounter
+import UIKit
 
 enum TestFixtures {
     enum Error: Swift.Error {
@@ -55,7 +55,7 @@ enum TestFixtures {
         var pixelBuffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true,
         ]
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          width,
@@ -77,9 +77,9 @@ enum TestFixtures {
         let blue = UInt8(b * 255)
         let alpha = UInt8(a * 255)
 
-        for y in 0..<height {
+        for y in 0 ..< height {
             var pointer = baseAddress.advanced(by: y * bytesPerRow).bindMemory(to: UInt8.self, capacity: width * 4)
-            for _ in 0..<width {
+            for _ in 0 ..< width {
                 pointer[0] = blue
                 pointer[1] = green
                 pointer[2] = red
@@ -90,7 +90,8 @@ enum TestFixtures {
 
         var format: CMFormatDescription?
         guard CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pb, formatDescriptionOut: &format) == noErr,
-              let formatDescription = format else {
+              let formatDescription = format
+        else {
             throw Error.sampleBufferCreation
         }
 

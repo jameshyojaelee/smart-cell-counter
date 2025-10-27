@@ -12,7 +12,7 @@ final class QATestsViewModel: ObservableObject {
     @Published var results: [(name: String, count: Int, pass: Bool, ms: Double)] = []
     @Published var isRunning = false
 
-    let cases: [QACase] = (1...10).map { i in QACase(assetName: String(format: "fixture%02d", i), expectedMin: 50, expectedMax: 500) }
+    let cases: [QACase] = (1 ... 10).map { i in QACase(assetName: String(format: "fixture%02d", i), expectedMin: 50, expectedMax: 500) }
 
     func runAll() {
         isRunning = true

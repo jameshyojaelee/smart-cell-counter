@@ -1,6 +1,6 @@
+import CryptoKit
 import Foundation
 import MetricKit
-import CryptoKit
 
 final class CrashReporter: NSObject, MXMetricManagerSubscriber {
     struct CrashDiagnosticSummary: Codable, Identifiable {
@@ -41,7 +41,7 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
-    private override init() {
+    override private init() {
         super.init()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .withoutEscapingSlashes]
@@ -72,12 +72,12 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
     func didReceive(_ payloads: [MXDiagnosticPayload]) {
         workQueue.async { [weak self] in
             guard let self else { return }
-            let summaries = payloads.flatMap(self.extractSummaries)
+            let summaries = payloads.flatMap(extractSummaries)
             guard !summaries.isEmpty else { return }
-            self.persist(summaries)
+            persist(summaries)
             Logger.log("CrashReporter stored \(summaries.count) crash diagnostic(s).")
-            if self.uploadsEnabled {
-                self.scheduleUpload(after: 5)
+            if uploadsEnabled {
+                scheduleUpload(after: 5)
             }
         }
     }
@@ -87,7 +87,8 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
             guard let directory = ensureStorageDirectory(),
                   let files = try? fileManager.contentsOfDirectory(at: directory,
                                                                    includingPropertiesForKeys: [.creationDateKey],
-                                                                   options: [.skipsHiddenFiles]) else {
+                                                                   options: [.skipsHiddenFiles])
+            else {
                 return []
             }
             let sorted = files.sorted { $0.lastPathComponent < $1.lastPathComponent }
@@ -101,9 +102,9 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
 
     func purge(summaryWithID id: UUID) {
         workQueue.async { [weak self] in
-            guard let self, let url = self.fileURL(for: id), self.fileManager.fileExists(atPath: url.path) else { return }
+            guard let self, let url = fileURL(for: id), fileManager.fileExists(atPath: url.path) else { return }
             do {
-                try self.fileManager.removeItem(at: url)
+                try fileManager.removeItem(at: url)
             } catch {
                 Logger.log("CrashReporter purge error: \(error)")
             }
@@ -117,11 +118,10 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
         let deviceInfo = PerformanceLogger.shared.deviceInfo
         return diagnostics.map { diagnostic in
             let meta = diagnostic.metaData
-            let architecture: String?
-            if #available(iOS 14.0, *) {
-                architecture = meta.platformArchitecture
+            let architecture: String? = if #available(iOS 14.0, *) {
+                meta.platformArchitecture
             } else {
-                architecture = nil
+                nil
             }
             return CrashDiagnosticSummary(
                 id: UUID(),
@@ -200,7 +200,8 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
             diagnostics: summaries
         )
         guard let data = try? encoder.encode(envelope),
-              let json = String(data: data, encoding: .utf8) else {
+              let json = String(data: data, encoding: .utf8)
+        else {
             return
         }
         Logger.log("CrashReporter upload stub (disabled): \(json)")

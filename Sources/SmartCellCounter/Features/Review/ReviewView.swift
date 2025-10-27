@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreGraphics
+import SwiftUI
 import UIKit
 
 @MainActor
@@ -34,44 +34,44 @@ final class ReviewViewModel: ObservableObject {
             .blueMask: false,
             .gridMask: false,
             .candidates: false,
-            .tallies: true
+            .tallies: true,
         ]
 
         var title: String {
             switch self {
-            case .detections: return L10n.Review.Overlay.detections
-            case .segmentationMask: return L10n.Review.Overlay.segmentationMask
-            case .blueMask: return L10n.Review.Overlay.blueMask
-            case .gridMask: return L10n.Review.Overlay.gridMask
-            case .candidates: return L10n.Review.Overlay.candidates
-            case .tallies: return L10n.Review.Overlay.tallies
+            case .detections: L10n.Review.Overlay.detections
+            case .segmentationMask: L10n.Review.Overlay.segmentationMask
+            case .blueMask: L10n.Review.Overlay.blueMask
+            case .gridMask: L10n.Review.Overlay.gridMask
+            case .candidates: L10n.Review.Overlay.candidates
+            case .tallies: L10n.Review.Overlay.tallies
             }
         }
 
         var iconName: String {
             switch self {
-            case .detections: return "viewfinder"
-            case .segmentationMask: return "square.dashed"
-            case .blueMask: return "drop.fill"
-            case .gridMask: return "square.grid.3x3"
-            case .candidates: return "circle.hexagonpath"
-            case .tallies: return "number.square"
+            case .detections: "viewfinder"
+            case .segmentationMask: "square.dashed"
+            case .blueMask: "drop.fill"
+            case .gridMask: "square.grid.3x3"
+            case .candidates: "circle.hexagonpath"
+            case .tallies: "number.square"
             }
         }
 
         var tint: Color {
             switch self {
-            case .detections: return Theme.accent
-            case .segmentationMask: return .pink
-            case .blueMask: return .blue
-            case .gridMask: return .yellow
-            case .candidates: return .orange
-            case .tallies: return Theme.textSecondary
+            case .detections: Theme.accent
+            case .segmentationMask: .pink
+            case .blueMask: .blue
+            case .gridMask: .yellow
+            case .candidates: .orange
+            case .tallies: Theme.textSecondary
             }
         }
     }
 
-    @Published var lassoPath: Path = Path()
+    @Published var lassoPath: Path = .init()
     @Published var perSquare: [Int: Int] = [:]
     @Published var selectedLarge: [Int] = [0, 2, 6, 8]
     @Published var isComputing = false
@@ -111,7 +111,7 @@ final class ReviewViewModel: ObservableObject {
             let segmentation = ImagingPipeline.segmentCells(in: image, params: imagingParams)
             let pxPerMicronSnapshot = await MainActor.run { appState.pxPerMicron }
             let det = CellDetector.detect(on: image, roi: nil, pxPerMicron: pxPerMicronSnapshot, params: detectionParams)
-            let pxPerMicron = det.pxPerMicron ?? min(Double(image.size.width)/3000.0, Double(image.size.height)/3000.0)
+            let pxPerMicron = det.pxPerMicron ?? min(Double(image.size.width) / 3000.0, Double(image.size.height) / 3000.0)
             let geom = GridGeometry(originPx: .zero, pxPerMicron: pxPerMicron)
             let tally = CountingService.tallyByLargeSquare(objects: det.objects, geometry: geom)
             let ms = Date().timeIntervalSince(start) * 1000
@@ -226,7 +226,7 @@ final class ReviewViewModel: ObservableObject {
             UIColor.clear.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
             ctx.cgContext.setFillColor(UIColor.systemPink.withAlphaComponent(0.45).cgColor)
-            for idx in 0..<seg.mask.count where seg.mask[idx] {
+            for idx in 0 ..< seg.mask.count where seg.mask[idx] {
                 let x = idx % seg.width
                 let y = idx / seg.width
                 ctx.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 1))
@@ -292,7 +292,8 @@ struct ReviewView: View {
         .navigationTitle(L10n.Review.navigationTitle)
         .onAppear {
             if appState.labeled.isEmpty,
-               let img = appState.correctedImage ?? appState.capturedImage {
+               let img = appState.correctedImage ?? appState.capturedImage
+            {
                 viewModel.recompute(on: img, appState: appState)
             } else {
                 viewModel.refreshStats(appState: appState)
@@ -367,7 +368,8 @@ struct ReviewView: View {
     private func overlayImages() -> some View {
         ZStack {
             if viewModel.isOverlayEnabled(.segmentationMask),
-               let mask = appState.debugImages["00_segmentation_mask"] {
+               let mask = appState.debugImages["00_segmentation_mask"]
+            {
                 Image(uiImage: mask)
                     .resizable()
                     .scaledToFit()
@@ -375,7 +377,8 @@ struct ReviewView: View {
                     .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.blueMask),
-               let blue = appState.debugImages["08_blue_mask"] {
+               let blue = appState.debugImages["08_blue_mask"]
+            {
                 Image(uiImage: blue)
                     .resizable()
                     .scaledToFit()
@@ -383,7 +386,8 @@ struct ReviewView: View {
                     .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.gridMask),
-               let grid = appState.debugImages["05_grid_mask"] {
+               let grid = appState.debugImages["05_grid_mask"]
+            {
                 Image(uiImage: grid)
                     .resizable()
                     .scaledToFit()
@@ -391,7 +395,8 @@ struct ReviewView: View {
                     .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.candidates),
-               let candidates = appState.debugImages["07_candidates"] {
+               let candidates = appState.debugImages["07_candidates"]
+            {
                 Image(uiImage: candidates)
                     .resizable()
                     .scaledToFit()
@@ -401,7 +406,7 @@ struct ReviewView: View {
         }
     }
 
-    private func lassoGesture(in size: CGSize) -> some Gesture {
+    private func lassoGesture(in _: CGSize) -> some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
                 if viewModel.lassoPath.isEmpty {
@@ -416,26 +421,26 @@ struct ReviewView: View {
 
     private func filteredLabeled() -> [CellObjectLabeled] {
         switch filter {
-        case .all: return appState.labeled
-        case .live: return appState.labeled.filter { $0.label == "live" }
-        case .dead: return appState.labeled.filter { $0.label == "dead" }
+        case .all: appState.labeled
+        case .live: appState.labeled.filter { $0.label == "live" }
+        case .dead: appState.labeled.filter { $0.label == "dead" }
         }
     }
 
     private func isOverlayAvailable(_ option: ReviewViewModel.OverlayOption) -> Bool {
         switch option {
         case .detections:
-            return !appState.labeled.isEmpty
+            !appState.labeled.isEmpty
         case .segmentationMask:
-            return appState.debugImages["00_segmentation_mask"] != nil
+            appState.debugImages["00_segmentation_mask"] != nil
         case .blueMask:
-            return appState.debugImages["08_blue_mask"] != nil
+            appState.debugImages["08_blue_mask"] != nil
         case .gridMask:
-            return appState.debugImages["05_grid_mask"] != nil
+            appState.debugImages["05_grid_mask"] != nil
         case .candidates:
-            return appState.debugImages["07_candidates"] != nil
+            appState.debugImages["07_candidates"] != nil
         case .tallies:
-            return !viewModel.perSquare.isEmpty
+            !viewModel.perSquare.isEmpty
         }
     }
 }
@@ -449,14 +454,15 @@ private enum ReviewFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: return L10n.Review.Filter.all
-        case .live: return L10n.Review.Filter.live
-        case .dead: return L10n.Review.Filter.dead
+        case .all: L10n.Review.Filter.all
+        case .live: L10n.Review.Filter.live
+        case .dead: L10n.Review.Filter.dead
         }
     }
 }
 
 // MARK: - Navigation modernization
+
 private struct ReviewNavigation: ViewModifier {
     @Binding var goToResults: Bool
     func body(content: Content) -> some View {
@@ -638,7 +644,7 @@ private struct PerSquareTable: View {
                 .font(.headline)
                 .foregroundColor(Theme.textPrimary)
             LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(0..<9) { index in
+                ForEach(0 ..< 9) { index in
                     let count = tally[index] ?? 0
                     let isSelected = selected.contains(index)
                     Button {
@@ -728,9 +734,9 @@ private struct SegmentationMetadataView: View {
 
     private var strategyText: String {
         switch segmentation.usedStrategy {
-        case .automatic: return L10n.Review.Segmentation.strategyAutomatic
-        case .classical: return L10n.Review.Segmentation.strategyClassical
-        case .coreML: return L10n.Review.Segmentation.strategyCoreML
+        case .automatic: L10n.Review.Segmentation.strategyAutomatic
+        case .classical: L10n.Review.Segmentation.strategyClassical
+        case .coreML: L10n.Review.Segmentation.strategyCoreML
         }
     }
 

@@ -1,6 +1,6 @@
-import SwiftUI
-import Combine
 import AVFoundation
+import Combine
+import SwiftUI
 
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
@@ -68,25 +68,26 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
 
     override init() {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
-        self.camera = CameraService()
-        self.authorizationStatus = status
-        self.permissionDenied = (status == .denied || status == .restricted)
-        self.previewEnabled = status == .authorized
+        camera = CameraService()
+        authorizationStatus = status
+        permissionDenied = (status == .denied || status == .restricted)
+        previewEnabled = status == .authorized
         super.init()
         camera.delegate = self
     }
 
     init(service: CameraServicing) {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
-        self.camera = service
-        self.authorizationStatus = status
-        self.permissionDenied = (status == .denied || status == .restricted)
-        self.previewEnabled = status == .authorized
+        camera = service
+        authorizationStatus = status
+        permissionDenied = (status == .denied || status == .restricted)
+        previewEnabled = status == .authorized
         super.init()
         camera.delegate = self
     }
 
     // MARK: - Lifecycle
+
     func onAppear() {
         refreshAuthorizationStatus()
         switch authorizationStatus {
@@ -122,6 +123,7 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     }
 
     // MARK: - Camera control
+
     func start() {
         guard !permissionDenied else {
             status = L10n.Capture.Status.denied
@@ -158,8 +160,8 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
         status = L10n.Capture.Status.focusing
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self else { return }
-            if self.ready && !self.permissionDenied {
-                self.status = L10n.Capture.Status.ready
+            if ready, !permissionDenied {
+                status = L10n.Capture.Status.ready
             }
         }
     }
@@ -167,17 +169,19 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
     var captureSession: AVCaptureSession { camera.captureSession }
 
     // MARK: - CameraServiceDelegate
-    func cameraService(_ service: CameraService, didUpdateFocusScore score: Double, glareRatio: Double) {
+
+    func cameraService(_: CameraService, didUpdateFocusScore score: Double, glareRatio: Double) {
         focusScore = score
         self.glareRatio = glareRatio
     }
 
-    func cameraService(_ service: CameraService, didCapture image: UIImage) {
+    func cameraService(_: CameraService, didCapture image: UIImage) {
         status = L10n.Capture.Status.saving
         capturedSubject.send(image)
     }
 
     // MARK: - Private helpers
+
     private func configureSubscriptionsIfNeeded() {
         guard !subscriptionsConfigured else { return }
         subscriptionsConfigured = true
@@ -186,12 +190,12 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isReady in
                 guard let self else { return }
-                self.ready = isReady
+                ready = isReady
                 if isReady {
-                    self.previewEnabled = true
-                    self.status = L10n.Capture.Status.ready
-                } else if !self.permissionDenied {
-                    self.status = L10n.Capture.Status.preparing
+                    previewEnabled = true
+                    status = L10n.Capture.Status.ready
+                } else if !permissionDenied {
+                    status = L10n.Capture.Status.preparing
                 }
             }
             .store(in: &cancellables)
@@ -202,25 +206,25 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
                 guard let self else { return }
                 switch state {
                 case .idle:
-                    self.status = L10n.Capture.Status.idle
-                    self.ready = false
+                    status = L10n.Capture.Status.idle
+                    ready = false
                 case .preparing:
-                    self.status = L10n.Capture.Status.preparing
+                    status = L10n.Capture.Status.preparing
                 case .ready:
-                    self.status = L10n.Capture.Status.ready
-                    self.ready = true
-                    self.permissionDenied = false
-                    self.previewEnabled = true
+                    status = L10n.Capture.Status.ready
+                    ready = true
+                    permissionDenied = false
+                    previewEnabled = true
                 case .capturing:
-                    self.status = L10n.Capture.Status.capturing
+                    status = L10n.Capture.Status.capturing
                 case .saving:
-                    self.status = L10n.Capture.Status.saving
-                case .error(let error):
-                    self.ready = false
-                    self.status = error.errorDescription ?? L10n.Capture.Status.genericError
+                    status = L10n.Capture.Status.saving
+                case let .error(error):
+                    ready = false
+                    status = error.errorDescription ?? L10n.Capture.Status.genericError
                     if case .permissionDenied = error {
-                        self.permissionDenied = true
-                        self.previewEnabled = false
+                        permissionDenied = true
+                        previewEnabled = false
                     }
                 }
             }

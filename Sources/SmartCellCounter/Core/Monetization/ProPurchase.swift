@@ -29,8 +29,8 @@ public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseMa
     public func loadProducts() async {
         do {
             let products = try await Product.products(for: [productId])
-            self.product = products.first
-            if let p = products.first { self.price = p.displayPrice }
+            product = products.first
+            if let p = products.first { price = p.displayPrice }
             startListeningForTransactions()
             await refreshEntitlements()
         } catch {
@@ -70,9 +70,9 @@ public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseMa
 
     private func handlePurchaseResult(_ result: Product.PurchaseResult) async {
         switch result {
-        case .success(let verification):
+        case let .success(verification):
             do {
-                let transaction = try self.checkVerified(verification)
+                let transaction = try checkVerified(verification)
                 apply(transaction: transaction)
                 await transaction.finish()
             } catch { Logger.log("Verification failed: \(error)") }
@@ -87,7 +87,7 @@ public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseMa
 
     private func handle(transactionUpdate: VerificationResult<Transaction>) async {
         do {
-            let transaction: Transaction = try self.checkVerified(transactionUpdate)
+            let transaction: Transaction = try checkVerified(transactionUpdate)
             apply(transaction: transaction)
             await transaction.finish()
         } catch { Logger.log("Update verification failed: \(error)") }
@@ -97,7 +97,7 @@ public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseMa
         switch result {
         case .unverified:
             throw NSError(domain: "IAP", code: -2, userInfo: [NSLocalizedDescriptionKey: "Transaction unverified"])
-        case .verified(let safe):
+        case let .verified(safe):
             return safe
         }
     }
@@ -113,14 +113,14 @@ public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseMa
         updatesTask = Task.detached { [weak self] in
             guard let self else { return }
             for await update in Transaction.updates {
-                await self.handle(transactionUpdate: update)
+                await handle(transactionUpdate: update)
             }
         }
     }
 
     #if DEBUG
-    public func debugOverrideEntitlement(_ value: Bool) {
-        setEntitled(value)
-    }
+        public func debugOverrideEntitlement(_ value: Bool) {
+            setEntitled(value)
+        }
     #endif
 }

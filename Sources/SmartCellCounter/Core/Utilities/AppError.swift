@@ -9,11 +9,11 @@ public enum AppError: LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .permissionDenied: return "Camera permission denied."
-        case .configurationFailed(let msg): return "Camera configuration failed: \(msg)"
-        case .hardwareUnavailable: return "Camera unavailable."
-        case .notReady: return "Camera not ready."
-        case .unknown: return "Unknown error."
+        case .permissionDenied: "Camera permission denied."
+        case let .configurationFailed(msg): "Camera configuration failed: \(msg)"
+        case .hardwareUnavailable: "Camera unavailable."
+        case .notReady: "Camera not ready."
+        case .unknown: "Unknown error."
         }
     }
 }

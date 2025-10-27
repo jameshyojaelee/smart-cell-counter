@@ -1,5 +1,5 @@
-import SwiftUI
 import PhotosUI
+import SwiftUI
 import UIKit
 
 struct CaptureView: View {
@@ -147,7 +147,8 @@ struct CaptureView: View {
                     guard let item = newItem else { return }
                     Task { @MainActor in
                         if let data = try? await item.loadTransferable(type: Data.self),
-                           let img = UIImage(data: data) {
+                           let img = UIImage(data: data)
+                        {
                             appState.capturedImage = img
                             goToCrop = true
                         }
@@ -245,6 +246,7 @@ struct CaptureView: View {
 }
 
 // MARK: - Navigation modernization
+
 private struct CaptureNavigation: ViewModifier {
     @Binding var goToCrop: Bool
     func body(content: Content) -> some View {
@@ -292,7 +294,8 @@ private enum MockCaptureData {
             let bounds = CGRect(origin: .zero, size: placeholderSize)
             if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
                                          colors: [UIColor.systemTeal.cgColor, UIColor.systemIndigo.cgColor] as CFArray,
-                                         locations: [0, 1]) {
+                                         locations: [0, 1])
+            {
                 ctx.cgContext.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: bounds.maxX, y: bounds.maxY), options: [])
             } else {
                 ctx.cgContext.setFillColor(UIColor.systemTeal.cgColor)
@@ -310,7 +313,7 @@ private enum MockCaptureData {
         }
     }()
 
-    static let segmentationMask: [Bool] = (0..<1024).map { index in index % 21 == 0 }
+    static let segmentationMask: [Bool] = (0 ..< 1024).map { index in index % 21 == 0 }
 
     static let objects: [CellObject] = {
         let cell1 = CellObject(id: 0,
@@ -351,7 +354,7 @@ private struct GridGuides: Shape {
     func path(in rect: CGRect) -> Path {
         var p = Path()
         // 3x3 grid overlay (approximate guide)
-        for i in 1..<3 {
+        for i in 1 ..< 3 {
             let x = rect.minX + rect.width * CGFloat(i) / 3
             p.move(to: CGPoint(x: x, y: rect.minY))
             p.addLine(to: CGPoint(x: x, y: rect.maxY))
@@ -383,7 +386,7 @@ private struct TargetRect: View {
                     .background(Theme.surface.opacity(0.7))
                     .foregroundColor(Theme.textPrimary)
                     .clipShape(Capsule())
-                    .position(x: centerX, y: centerY + rectH/2 + 18)
+                    .position(x: centerX, y: centerY + rectH / 2 + 18)
             }
             .accessibilityHidden(true)
         }

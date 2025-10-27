@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 public struct Sample: Identifiable, Equatable {
     public let id: String

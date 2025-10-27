@@ -1,7 +1,7 @@
-import XCTest
 import AVFoundation
-import UIKit
 @testable import SmartCellCounter
+import UIKit
+import XCTest
 
 @MainActor
 final class CameraServiceTests: XCTestCase {
@@ -43,10 +43,10 @@ private final class RecordingDelegate: CameraServiceDelegate {
     var lastGlare: Double?
     var onUpdate: ((Double, Double) -> Void)?
 
-    func cameraService(_ service: CameraService, didUpdateFocusScore score: Double, glareRatio: Double) {
+    func cameraService(_: CameraService, didUpdateFocusScore score: Double, glareRatio: Double) {
         lastGlare = glareRatio
         onUpdate?(score, glareRatio)
     }
 
-    func cameraService(_ service: CameraService, didCapture image: UIImage) {}
+    func cameraService(_: CameraService, didCapture _: UIImage) {}
 }

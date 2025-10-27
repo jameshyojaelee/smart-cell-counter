@@ -1,7 +1,7 @@
-import XCTest
-import PDFKit
 import CoreGraphics
+import PDFKit
 @testable import SmartCellCounter
+import XCTest
 
 final class ExporterMetadataTests: XCTestCase {
     func testCSVSummaryIncludesMetadata() throws {
@@ -59,7 +59,8 @@ final class ExporterMetadataTests: XCTestCase {
                                             watermark: false,
                                             filename: "test-report.pdf")
         guard let document = PDFDocument(url: url),
-              let pageText = document.page(at: 0)?.string else {
+              let pageText = document.page(at: 0)?.string
+        else {
             XCTFail("Unable to read generated PDF.")
             return
         }
