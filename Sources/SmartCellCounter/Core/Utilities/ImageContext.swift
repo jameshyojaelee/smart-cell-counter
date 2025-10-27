@@ -7,12 +7,12 @@ public enum ImageContext {
     public static let ciContext: CIContext = if let device {
         .init(mtlDevice: device, options: [
             .cacheIntermediates: true,
-            .useSoftwareRenderer: false,
+            .useSoftwareRenderer: false
         ])
     } else {
         .init(options: [
             .cacheIntermediates: true,
-            .useSoftwareRenderer: false,
+            .useSoftwareRenderer: false
         ])
     }
 }

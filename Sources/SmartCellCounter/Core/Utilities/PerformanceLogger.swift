@@ -155,8 +155,7 @@ public final class PerformanceLogger: ObservableObject {
     private var sampleHistory: [PerformanceSample] = []
 
     public init(windowSize: Int = PerformanceLogger.defaultWindowSize,
-                deviceInfoProvider: @escaping () -> DeviceInfo = DeviceInfo.current)
-    {
+                deviceInfoProvider: @escaping () -> DeviceInfo = DeviceInfo.current) {
         self.windowSize = max(1, windowSize)
         self.deviceInfoProvider = deviceInfoProvider
         let info = deviceInfoProvider()

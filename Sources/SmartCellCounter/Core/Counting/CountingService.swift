@@ -126,8 +126,7 @@ public enum CountingService {
                                      finalVolumeML: Double,
                                      concentrationPerML: Double,
                                      meanCountPerLargeSquare: Double,
-                                     densityLimits: (min: Double, max: Double) = (10, 300)) -> (volumeToAddML: Double, guidance: String)
-    {
+                                     densityLimits: (min: Double, max: Double) = (10, 300)) -> (volumeToAddML: Double, guidance: String) {
         guard concentrationPerML > 0 else { return (0, "Concentration is zero; cannot compute volume.") }
         let vol = Double(targetCells) / concentrationPerML // mL to add
         var notes: [String] = []

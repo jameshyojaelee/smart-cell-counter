@@ -45,8 +45,7 @@ public final class PDFExporter: PDFExporting {
                              tally: [Int: Int],
                              params: ImagingParams,
                              watermark: Bool,
-                             filename: String = "report.pdf") throws -> URL
-    {
+                             filename: String = "report.pdf") throws -> URL {
         let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
@@ -121,7 +120,7 @@ public final class PDFExporter: PDFExporting {
     private func drawWatermark(_ text: String, in rect: CGRect) {
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 64),
-            .foregroundColor: UIColor(white: 0.9, alpha: 0.6),
+            .foregroundColor: UIColor(white: 0.9, alpha: 0.6)
         ]
         let size = text.size(withAttributes: attrs)
         let context = UIGraphicsGetCurrentContext()

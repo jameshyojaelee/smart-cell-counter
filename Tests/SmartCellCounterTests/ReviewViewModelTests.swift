@@ -10,7 +10,7 @@ final class ReviewViewModelTests: XCTestCase {
 
         appState.labeled = [
             makeLabeled(id: 1, label: "live", at: CGPoint(x: 10, y: 10)),
-            makeLabeled(id: 2, label: "dead", at: CGPoint(x: 20, y: 20)),
+            makeLabeled(id: 2, label: "dead", at: CGPoint(x: 20, y: 20))
         ]
         viewModel.perSquare = [0: 100, 2: 110, 6: 105, 8: 420]
         viewModel.selectedLarge = [0, 2, 6, 8]
@@ -31,7 +31,7 @@ final class ReviewViewModelTests: XCTestCase {
         appState.labeled = [
             makeLabeled(id: 1, label: "live", at: CGPoint(x: 10, y: 10)),
             makeLabeled(id: 2, label: "dead", at: CGPoint(x: 60, y: 60)),
-            makeLabeled(id: 3, label: "live", at: CGPoint(x: 15, y: 15)),
+            makeLabeled(id: 3, label: "live", at: CGPoint(x: 15, y: 15))
         ]
 
         viewModel.lassoPath.move(to: CGPoint(x: 0, y: 0))

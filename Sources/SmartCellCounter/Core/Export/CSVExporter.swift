@@ -26,8 +26,7 @@ public extension CSVExporter {
                        viabilityPercent: Double,
                        live: Int,
                        dead: Int,
-                       filename: String? = nil) throws -> URL
-    {
+                       filename: String? = nil) throws -> URL {
         let headers = L10n.Results.CSV.detailedHeaders
         let values = [
             sampleId,
@@ -40,7 +39,7 @@ public extension CSVExporter {
             L10n.Results.viabilityNumeric(viabilityPercent),
             L10n.Results.countValue(live),
             L10n.Results.countValue(dead),
-            metadata.formattedDilution,
+            metadata.formattedDilution
         ]
         return try export(rows: [headers, values], filename: filename ?? L10n.Results.CSV.summaryFilename)
     }
@@ -65,7 +64,7 @@ public extension CSVExporter {
                 CSVExporter.threeDecimalFormatter.string(from: NSNumber(value: b.circularity)) ?? String(format: "%.3f", b.circularity),
                 CSVExporter.threeDecimalFormatter.string(from: NSNumber(value: b.solidity)) ?? String(format: "%.3f", b.solidity),
                 item.label,
-                CSVExporter.twoDecimalFormatter.string(from: NSNumber(value: item.confidence)) ?? String(format: "%.2f", item.confidence),
+                CSVExporter.twoDecimalFormatter.string(from: NSNumber(value: item.confidence)) ?? String(format: "%.2f", item.confidence)
             ])
         }
         return try export(rows: rows, filename: filename ?? L10n.Results.CSV.detectionsFilename)

@@ -10,7 +10,7 @@ final class SmartCellCounterUITests: XCTestCase {
         app.launchArguments += [
             "-onboarding.completed", "1",
             "-consent.shown", "1",
-            "-UITest.MockCapture", "1",
+            "-UITest.MockCapture", "1"
         ]
         app.launch()
 
@@ -74,7 +74,7 @@ final class SmartCellCounterUITests: XCTestCase {
         app.launchArguments += [
             "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge",
             "-onboarding.completed", "1",
-            "-consent.shown", "1",
+            "-consent.shown", "1"
         ]
         app.launch()
 

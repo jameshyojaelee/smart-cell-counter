@@ -15,8 +15,7 @@ enum Classifier {
                          gridMask _: CIImage,
                          eqLuma _: CIImage,
                          context: CIContext,
-                         params: DetectorParams) -> [LabeledCandidate]
-    {
+                         params: DetectorParams) -> [LabeledCandidate] {
         var out: [LabeledCandidate] = []
         for c in candidates {
             let pt = c.center

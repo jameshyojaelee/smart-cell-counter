@@ -34,7 +34,7 @@ final class ReviewViewModel: ObservableObject {
             .blueMask: false,
             .gridMask: false,
             .candidates: false,
-            .tallies: true,
+            .tallies: true
         ]
 
         var title: String {
@@ -292,8 +292,7 @@ struct ReviewView: View {
         .navigationTitle(L10n.Review.navigationTitle)
         .onAppear {
             if appState.labeled.isEmpty,
-               let img = appState.correctedImage ?? appState.capturedImage
-            {
+               let img = appState.correctedImage ?? appState.capturedImage {
                 viewModel.recompute(on: img, appState: appState)
             } else {
                 viewModel.refreshStats(appState: appState)
@@ -368,8 +367,7 @@ struct ReviewView: View {
     private func overlayImages() -> some View {
         ZStack {
             if viewModel.isOverlayEnabled(.segmentationMask),
-               let mask = appState.debugImages["00_segmentation_mask"]
-            {
+               let mask = appState.debugImages["00_segmentation_mask"] {
                 Image(uiImage: mask)
                     .resizable()
                     .scaledToFit()
@@ -377,8 +375,7 @@ struct ReviewView: View {
                     .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.blueMask),
-               let blue = appState.debugImages["08_blue_mask"]
-            {
+               let blue = appState.debugImages["08_blue_mask"] {
                 Image(uiImage: blue)
                     .resizable()
                     .scaledToFit()
@@ -386,8 +383,7 @@ struct ReviewView: View {
                     .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.gridMask),
-               let grid = appState.debugImages["05_grid_mask"]
-            {
+               let grid = appState.debugImages["05_grid_mask"] {
                 Image(uiImage: grid)
                     .resizable()
                     .scaledToFit()
@@ -395,8 +391,7 @@ struct ReviewView: View {
                     .accessibilityHidden(true)
             }
             if viewModel.isOverlayEnabled(.candidates),
-               let candidates = appState.debugImages["07_candidates"]
-            {
+               let candidates = appState.debugImages["07_candidates"] {
                 Image(uiImage: candidates)
                     .resizable()
                     .scaledToFit()

@@ -16,7 +16,7 @@ struct OnboardingView: View {
     private let steps: [OnboardingStep] = [
         OnboardingStep(id: 0, symbolName: "camera"),
         OnboardingStep(id: 1, symbolName: "lock.shield"),
-        OnboardingStep(id: 2, symbolName: "externaldrive"),
+        OnboardingStep(id: 2, symbolName: "externaldrive")
     ]
 
     let onFinish: () -> Void

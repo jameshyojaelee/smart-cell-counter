@@ -229,7 +229,7 @@ public enum ImagingPipeline {
         var buffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true
         ]
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          width,

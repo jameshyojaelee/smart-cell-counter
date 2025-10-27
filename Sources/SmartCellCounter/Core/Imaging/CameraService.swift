@@ -225,7 +225,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
             parameters: [
                 kCIInputExtentKey: CIVector(cgRect: image.extent),
                 "inputCount": bins,
-                "inputScale": 1.0,
+                "inputScale": 1.0
             ]
         )
         var data = [Float](repeating: 0, count: bins * 4)

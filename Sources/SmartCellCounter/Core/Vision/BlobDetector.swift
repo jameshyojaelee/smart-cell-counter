@@ -7,8 +7,7 @@ enum BlobDetector {
                        gridMask: CIImage,
                        context: CIContext,
                        params: DetectorParams,
-                       pxPerMicron: Double?) -> [Candidate]
-    {
+                       pxPerMicron: Double?) -> [Candidate] {
         // Pick DoG scales based on expected radius range if calibration is known
         let sigmas: [CGFloat] = {
             if let ppm = pxPerMicron {

@@ -55,7 +55,7 @@ enum TestFixtures {
         var pixelBuffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true
         ]
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          width,

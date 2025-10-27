@@ -167,7 +167,7 @@ private struct ComparisonTable: View {
          L10n.Paywall.Comparison.valueRemoved),
         (L10n.Paywall.Comparison.support,
          L10n.Paywall.Comparison.valueNotAvailable,
-         L10n.Paywall.Comparison.valueIncluded),
+         L10n.Paywall.Comparison.valueIncluded)
     ]
 
     var body: some View {
