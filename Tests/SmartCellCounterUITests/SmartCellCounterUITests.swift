@@ -41,7 +41,7 @@ final class SmartCellCounterUITests: XCTestCase {
 
         // Swiping should not crash and mock counts are visible
         app.swipeUp()
-        let liveDeadPredicate = NSPredicate(format: "label BEGINSWITH %@", "Live / Dead")
+        let liveDeadPredicate = NSPredicate(format: "label CONTAINS[c] %@", "Live / Dead")
         let countsElement = app.staticTexts.matching(liveDeadPredicate).firstMatch
         XCTAssertTrue(countsElement.waitForExistence(timeout: 5))
 
