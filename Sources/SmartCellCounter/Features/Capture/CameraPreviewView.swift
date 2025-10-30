@@ -160,8 +160,8 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
         status = L10n.Capture.Status.focusing
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self else { return }
-            if self.ready, !self.permissionDenied {
-                self.status = L10n.Capture.Status.ready
+            if ready, !permissionDenied {
+                status = L10n.Capture.Status.ready
             }
         }
     }
@@ -218,10 +218,10 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
                 case .capturing:
                     status = L10n.Capture.Status.capturing
                 case .saving:
-                    self.status = L10n.Capture.Status.saving
+                    status = L10n.Capture.Status.saving
                 case let .error(error):
-                    self.ready = false
-                    self.status = error.errorDescription ?? L10n.Capture.Status.genericError
+                    ready = false
+                    status = error.errorDescription ?? L10n.Capture.Status.genericError
                     if case .permissionDenied = error {
                         permissionDenied = true
                         previewEnabled = false

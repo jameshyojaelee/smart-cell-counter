@@ -33,7 +33,7 @@ final class AuthManager: ObservableObject {
     }
 
     var isAuthenticated: Bool {
-        return user != nil
+        user != nil
     }
 
     func signInWithGoogle() async {

@@ -613,13 +613,13 @@ public enum ImagingPipeline {
     }
 
     static func rgbToLab(_ r: Double, _ g: Double, _ b: Double) -> (Double, Double, Double) {
-        func pivot(_ t: Double) -> Double { return t > 0.04045 ? pow((t + 0.055) / 1.055, 2.4) : t / 12.92 }
+        func pivot(_ t: Double) -> Double { t > 0.04045 ? pow((t + 0.055) / 1.055, 2.4) : t / 12.92 }
         let R = pivot(r), G = pivot(g), B = pivot(b)
         // sRGB D65
         let X = (0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047
         let Y = (0.2126 * R + 0.7152 * G + 0.0722 * B) / 1.00000
         let Z = (0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883
-        func f(_ t: Double) -> Double { return t > 0.008856 ? pow(t, 1.0 / 3.0) : (7.787 * t + 16.0 / 116.0) }
+        func f(_ t: Double) -> Double { t > 0.008856 ? pow(t, 1.0 / 3.0) : (7.787 * t + 16.0 / 116.0) }
         let fx = f(X), fy = f(Y), fz = f(Z)
         let L = (116 * fy - 16)
         let a = 500 * (fx - fy)

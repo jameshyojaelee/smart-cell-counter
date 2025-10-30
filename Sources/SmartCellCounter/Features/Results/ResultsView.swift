@@ -335,7 +335,7 @@ final class ResultsViewModel: ObservableObject {
     private func performExport(kind _: ExportKind, payload: ExportPayload) async throws -> URL {
         switch payload {
         case let .summary(summary):
-            return try await Task.detached(priority: .userInitiated) {
+            try await Task.detached(priority: .userInitiated) {
                 let exporter = CSVExporter()
                 return try exporter.exportSummary(sampleId: summary.sampleId,
                                                   timestamp: summary.timestamp,
@@ -349,7 +349,7 @@ final class ResultsViewModel: ObservableObject {
                                                   filename: summary.filename)
             }.value
         case let .detections(detections):
-            return try await Task.detached(priority: .userInitiated) {
+            try await Task.detached(priority: .userInitiated) {
                 let exporter = CSVExporter()
                 return try exporter.exportDetections(sampleId: detections.sampleId,
                                                      labeled: detections.labeled,
@@ -357,7 +357,7 @@ final class ResultsViewModel: ObservableObject {
                                                      filename: detections.filename)
             }.value
         case let .pdf(report):
-            return try await MainActor.run {
+            try await MainActor.run {
                 let exporter = PDFExporter()
                 return try exporter.exportReport(header: report.header,
                                                  metadata: report.metadata,
@@ -529,25 +529,25 @@ final class ResultsViewModel: ObservableObject {
 
         var metadata: ExportMetadata {
             switch self {
-            case let .summary(payload): return payload.metadata
-            case let .detections(payload): return payload.metadata
-            case let .pdf(payload): return payload.metadata
+            case let .summary(payload): payload.metadata
+            case let .detections(payload): payload.metadata
+            case let .pdf(payload): payload.metadata
             }
         }
 
         var timestamp: Date {
             switch self {
-            case let .summary(payload): return payload.timestamp
-            case let .detections(payload): return payload.timestamp
-            case let .pdf(payload): return payload.timestamp
+            case let .summary(payload): payload.timestamp
+            case let .detections(payload): payload.timestamp
+            case let .pdf(payload): payload.timestamp
             }
         }
 
         var sampleId: String {
             switch self {
-            case let .summary(payload): return payload.sampleId
-            case let .detections(payload): return payload.sampleId
-            case let .pdf(payload): return payload.reportId
+            case let .summary(payload): payload.sampleId
+            case let .detections(payload): payload.sampleId
+            case let .pdf(payload): payload.reportId
             }
         }
     }

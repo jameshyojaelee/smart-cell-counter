@@ -179,7 +179,7 @@ extension CameraService {
 
 extension CameraService: AVCapturePhotoCaptureDelegate {
     public func photoOutput(_: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        if let error = error { Logger.log("Photo capture error: \(error)"); return }
+        if let error { Logger.log("Photo capture error: \(error)"); return }
         guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else { return }
         if let start = captureStart {
             let ms = Date().timeIntervalSince(start) * 1000

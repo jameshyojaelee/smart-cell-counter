@@ -60,7 +60,7 @@ struct RootView: View {
     var body: some View {
         // Use a ZStack to conditionally show content
         ZStack {
-            if authManager.isAuthenticated && onboardingCompleted {
+            if authManager.isAuthenticated, onboardingCompleted {
                 // USER IS LOGGED IN AND ONBOARDED
                 // Show the main app
                 TabView {
