@@ -53,7 +53,7 @@ final class FakeCameraService: CameraServicing {
         Task { @MainActor [weak self] in
             guard let self else { return }
             let stub = CameraService()
-            self.delegate?.cameraService(stub, didCapture: img)
+            delegate?.cameraService(stub, didCapture: img)
         }
     }
 

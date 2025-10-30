@@ -190,12 +190,12 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isReady in
                 guard let self else { return }
-                self.ready = isReady
+                ready = isReady
                 if isReady {
-                    self.previewEnabled = true
-                    self.status = L10n.Capture.Status.ready
-                } else if !self.permissionDenied {
-                    self.status = L10n.Capture.Status.preparing
+                    previewEnabled = true
+                    status = L10n.Capture.Status.ready
+                } else if !permissionDenied {
+                    status = L10n.Capture.Status.preparing
                 }
             }
             .store(in: &cancellables)
@@ -206,25 +206,25 @@ final class CaptureViewModel: NSObject, ObservableObject, CameraServiceDelegate 
                 guard let self else { return }
                 switch state {
                 case .idle:
-                    self.status = L10n.Capture.Status.idle
-                    self.ready = false
+                    status = L10n.Capture.Status.idle
+                    ready = false
                 case .preparing:
-                    self.status = L10n.Capture.Status.preparing
+                    status = L10n.Capture.Status.preparing
                 case .ready:
-                    self.status = L10n.Capture.Status.ready
-                    self.ready = true
-                    self.permissionDenied = false
-                    self.previewEnabled = true
+                    status = L10n.Capture.Status.ready
+                    ready = true
+                    permissionDenied = false
+                    previewEnabled = true
                 case .capturing:
-                    self.status = L10n.Capture.Status.capturing
+                    status = L10n.Capture.Status.capturing
                 case .saving:
                     self.status = L10n.Capture.Status.saving
                 case let .error(error):
                     self.ready = false
                     self.status = error.errorDescription ?? L10n.Capture.Status.genericError
                     if case .permissionDenied = error {
-                        self.permissionDenied = true
-                        self.previewEnabled = false
+                        permissionDenied = true
+                        previewEnabled = false
                     }
                 }
             }

@@ -26,7 +26,7 @@ final class HistoryViewModel: ObservableObject {
                 try? await Task.sleep(nanoseconds: 300_000_000)
                 if Task.isCancelled { return }
             }
-            await self.fetch()
+            await fetch()
         }
     }
 

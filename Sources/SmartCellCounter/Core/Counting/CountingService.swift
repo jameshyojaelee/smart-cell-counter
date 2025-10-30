@@ -68,7 +68,7 @@ public enum CountingService {
 
     private static func adjustToTopLeft(_ value: Double, step: Double) -> Double {
         let r = value.truncatingRemainder(dividingBy: step)
-        if r == 0 && value > 0 { // exactly on a gridline (not the origin)
+        if r == 0, value > 0 { // exactly on a gridline (not the origin)
             return value - 1e-9
         }
         return value

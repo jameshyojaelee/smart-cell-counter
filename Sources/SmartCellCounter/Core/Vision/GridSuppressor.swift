@@ -42,7 +42,7 @@ enum GridSuppressor {
                 scores.append((s, i))
             }
             scores.sort(by: { $0.0 > $1.0 })
-            return scores.prefix(k).map { $0.1 }
+            return scores.prefix(k).map(\.1)
         }
         let rPeaks = peaks(rowSum, win: max(1, h / 40), k: 20)
         let cPeaks = peaks(colSum, win: max(1, w / 40), k: 20)

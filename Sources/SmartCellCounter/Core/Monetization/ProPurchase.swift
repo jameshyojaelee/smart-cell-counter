@@ -113,7 +113,7 @@ public final class PurchaseManager: ObservableObject, @preconcurrency PurchaseMa
         updatesTask = Task.detached { [weak self] in
             guard let self else { return }
             for await update in Transaction.updates {
-                await self.handle(transactionUpdate: update)
+                await handle(transactionUpdate: update)
             }
         }
     }

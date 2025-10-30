@@ -12,41 +12,41 @@ final class ResultsViewModel: ObservableObject {
 
         var displayName: String {
             switch self {
-            case .summaryCSV: return L10n.Results.exportCSV
-            case .detectionsCSV: return L10n.Results.exportDetectionsCSV
-            case .pdf: return L10n.Results.exportPDF
+            case .summaryCSV: L10n.Results.exportCSV
+            case .detectionsCSV: L10n.Results.exportDetectionsCSV
+            case .pdf: L10n.Results.exportPDF
             }
         }
 
         var iconName: String {
             switch self {
-            case .summaryCSV: return "doc.text"
-            case .detectionsCSV: return "tablecells"
-            case .pdf: return "doc.richtext"
+            case .summaryCSV: "doc.text"
+            case .detectionsCSV: "tablecells"
+            case .pdf: "doc.richtext"
             }
         }
 
         var fileExtension: String {
             switch self {
-            case .summaryCSV, .detectionsCSV: return "csv"
-            case .pdf: return "pdf"
+            case .summaryCSV, .detectionsCSV: "csv"
+            case .pdf: "pdf"
             }
         }
 
         var filenamePrefix: String {
             switch self {
-            case .summaryCSV: return "summary"
-            case .detectionsCSV: return "detections"
-            case .pdf: return "report"
+            case .summaryCSV: "summary"
+            case .detectionsCSV: "detections"
+            case .pdf: "report"
             }
         }
 
         var requiresPro: Bool {
             switch self {
             case .summaryCSV:
-                return false
+                false
             case .detectionsCSV, .pdf:
-                return true
+                true
             }
         }
     }
@@ -152,12 +152,12 @@ final class ResultsViewModel: ObservableObject {
                 self.updateProgress(kind: kind, progress: 0.05, message: L10n.Results.Export.preparing)
             }
             do {
-                let payload = self.buildPayload(for: kind, appState: appState)
+                let payload = buildPayload(for: kind, appState: appState)
                 try Task.checkCancellation()
                 await MainActor.run {
                     self.updateProgress(kind: kind, progress: 0.35, message: L10n.Results.Export.writing)
                 }
-                let url = try await self.performExport(kind: kind, payload: payload)
+                let url = try await performExport(kind: kind, payload: payload)
                 try Task.checkCancellation()
                 await MainActor.run {
                     self.updateProgress(kind: kind, progress: 0.85, message: L10n.Results.Export.finishing)
@@ -207,11 +207,11 @@ final class ResultsViewModel: ObservableObject {
         var csvPath: String? = nil
         var thumbnailInfo: (path: String, size: CGSize)? = nil
 
-        if let corrected = corrected {
-            imagePath = (try? await AppDatabase.shared.save(image: corrected, name: "corrected.png", in: folder))?.path
+        if let corrected {
+            imagePath = await (try? AppDatabase.shared.save(image: corrected, name: "corrected.png", in: folder))?.path
         }
         if let seg = appState.segmentation, let maskImage = makeMaskImage(seg) {
-            maskPath = (try? await AppDatabase.shared.save(image: maskImage, name: "mask.png", in: folder))?.path
+            maskPath = await (try? AppDatabase.shared.save(image: maskImage, name: "mask.png", in: folder))?.path
         }
         if let pdfURL = try? exporter.exportReport(header: header,
                                                    metadata: metadata,
@@ -411,7 +411,7 @@ final class ResultsViewModel: ObservableObject {
     }
 
     private func canAccess(_ kind: ExportKind) -> Bool {
-        if kind.requiresPro && !PurchaseManager.shared.isPro {
+        if kind.requiresPro, !PurchaseManager.shared.isPro {
             alert = ExportAlert(title: L10n.Results.Export.lockedTitle,
                                 message: L10n.Results.Export.proRequired(kind.displayName),
                                 showsUpgrade: true)
@@ -655,7 +655,7 @@ struct ResultsView: View {
                             Label {
                                 HStack(spacing: 4) {
                                     Text(L10n.Results.exportDetectionsCSV)
-                                    if ResultsViewModel.ExportKind.detectionsCSV.requiresPro && !PurchaseManager.shared.isPro {
+                                    if ResultsViewModel.ExportKind.detectionsCSV.requiresPro, !PurchaseManager.shared.isPro {
                                         ProBadge()
                                     }
                                 }
@@ -672,7 +672,7 @@ struct ResultsView: View {
                             Label {
                                 HStack(spacing: 4) {
                                     Text(L10n.Results.exportPDF)
-                                    if ResultsViewModel.ExportKind.pdf.requiresPro && !PurchaseManager.shared.isPro {
+                                    if ResultsViewModel.ExportKind.pdf.requiresPro, !PurchaseManager.shared.isPro {
                                         ProBadge()
                                     }
                                 }
@@ -733,16 +733,16 @@ struct ResultsView: View {
         .appBackground()
         .alert(item: $viewModel.alert) { alert in
             if alert.showsUpgrade {
-                return Alert(title: Text(alert.title),
-                             message: Text(alert.message),
-                             primaryButton: .default(Text(L10n.Results.Export.upgrade)) {
-                                 showPaywall = true
-                             },
-                             secondaryButton: .cancel(Text(L10n.Results.Export.dismiss)))
+                Alert(title: Text(alert.title),
+                      message: Text(alert.message),
+                      primaryButton: .default(Text(L10n.Results.Export.upgrade)) {
+                          showPaywall = true
+                      },
+                      secondaryButton: .cancel(Text(L10n.Results.Export.dismiss)))
             } else {
-                return Alert(title: Text(alert.title),
-                             message: Text(alert.message),
-                             dismissButton: .default(Text(L10n.Results.Export.dismiss)))
+                Alert(title: Text(alert.title),
+                      message: Text(alert.message),
+                      dismissButton: .default(Text(L10n.Results.Export.dismiss)))
             }
         }
     }

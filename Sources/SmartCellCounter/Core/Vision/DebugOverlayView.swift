@@ -52,12 +52,12 @@ struct DebugOverlayView: View {
 
     private func pickImage(for kind: DetectionOverlayKind) -> UIImage? {
         switch kind {
-        case .blueMask: return debugImages["08_blue_mask"]
-        case .gridMask: return debugImages["05_grid_mask"]
-        case .illumination: return debugImages["03_illumination"]
-        case .segmentationMask: return debugImages["00_segmentation_mask"]
-        case .candidates: return debugImages["07_candidates"]
-        case .segmentationInfo: return nil
+        case .blueMask: debugImages["08_blue_mask"]
+        case .gridMask: debugImages["05_grid_mask"]
+        case .illumination: debugImages["03_illumination"]
+        case .segmentationMask: debugImages["00_segmentation_mask"]
+        case .candidates: debugImages["07_candidates"]
+        case .segmentationInfo: nil
         }
     }
 }
@@ -65,9 +65,9 @@ struct DebugOverlayView: View {
 private extension SegmentationStrategy {
     var localizedName: String {
         switch self {
-        case .automatic: return L10n.Settings.SegmentationStrategy.automatic
-        case .classical: return L10n.Settings.SegmentationStrategy.classical
-        case .coreML: return L10n.Settings.SegmentationStrategy.coreML
+        case .automatic: L10n.Settings.SegmentationStrategy.automatic
+        case .classical: L10n.Settings.SegmentationStrategy.classical
+        case .coreML: L10n.Settings.SegmentationStrategy.coreML
         }
     }
 }

@@ -18,7 +18,7 @@ lint:
 		echo "swiftlint not installed; skipping"; \
 	fi
 	@if command -v swiftformat >/dev/null 2>&1; then \
-		swiftformat Sources Tests --lint; \
+		swiftformat Sources Tests --lint --swiftversion 5.9; \
 	else \
 		echo "swiftformat not installed; skipping"; \
 	fi

@@ -154,13 +154,13 @@ public actor AppDatabase: Storage {
         guard let dbQueue else { return [] }
         return try await dbQueue.read { db in
             if let q = query, !q.isEmpty {
-                return try SampleRecord
+                try SampleRecord
                     .filter(sql: "project LIKE ? OR \"operator\" LIKE ?", arguments: ["%\(q)%", "%\(q)%"])
                     .order(sql: "createdAt DESC")
                     .limit(limit)
                     .fetchAll(db)
             } else {
-                return try SampleRecord
+                try SampleRecord
                     .order(sql: "createdAt DESC")
                     .limit(limit)
                     .fetchAll(db)
