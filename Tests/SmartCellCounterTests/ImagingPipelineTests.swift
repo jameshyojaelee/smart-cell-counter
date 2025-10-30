@@ -1,7 +1,7 @@
-import XCTest
+import CoreImage
 @testable import SmartCellCounter
 import UIKit
-import CoreImage
+import XCTest
 
 final class ImagingPipelineTests: XCTestCase {
     func testPolarityInversionCheck() throws {
@@ -59,7 +59,7 @@ final class ImagingPipelineTests: XCTestCase {
         let mask: [Bool] = [
             true, true, false,
             true, true, false,
-            false, false, false
+            false, false, false,
         ]
         let seg = SegmentationResult(width: 3, height: 3, mask: mask)
         let objects = ImagingPipeline.objectFeatures(from: seg, pxPerMicron: nil)
@@ -74,7 +74,7 @@ final class ImagingPipelineTests: XCTestCase {
     func testHueMaskSupportsWrapAround() {
         let extent = CGRect(x: 0, y: 0, width: 1, height: 1)
         let hueHigh = CIImage(color: CIColor(red: 0.99, green: 0, blue: 0)).cropped(to: extent) // ~356°
-        let hueMid = CIImage(color: CIColor(red: 0.5, green: 0, blue: 0)).cropped(to: extent)  // 180°
+        let hueMid = CIImage(color: CIColor(red: 0.5, green: 0, blue: 0)).cropped(to: extent) // 180°
         let sat = CIImage(color: CIColor(red: 0.6, green: 0, blue: 0)).cropped(to: extent)
         let val = CIImage(color: CIColor(red: 0.4, green: 0, blue: 0)).cropped(to: extent)
         let hsvHigh = HSVImage(h: hueHigh, s: sat, value: val)
@@ -88,6 +88,7 @@ final class ImagingPipelineTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
     static func makeSolidImage(color: UIColor, size: CGSize) -> UIImage {
         UIGraphicsBeginImageContextWithOptions(size, true, 1)
         color.setFill()
@@ -102,8 +103,8 @@ final class ImagingPipelineTests: XCTestCase {
         UIColor.white.setFill()
         UIRectFill(CGRect(origin: .zero, size: size))
         UIColor.black.setFill()
-        let center = CGPoint(x: size.width/2, y: size.height/2)
-        let rect = CGRect(x: center.x - radius, y: center.y - radius, width: radius*2, height: radius*2)
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let rect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
         UIBezierPath(ovalIn: rect).fill()
         let img = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()

@@ -16,7 +16,7 @@ struct DetectionView: View {
                         DebugOverlayView(debugImages: appState.debugImages,
                                          kind: overlayKind,
                                          segmentation: appState.segmentation)
-                        .opacity(showOverlays ? 1 : 0)
+                            .opacity(showOverlays ? 1 : 0)
                     )
                     .accessibilityHidden(true)
                 HStack {

@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 #if canImport(UIKit)
-import UIKit
+    import UIKit
 #endif
 
 public final class PerformanceLogger: ObservableObject {
@@ -20,17 +20,17 @@ public final class PerformanceLogger: ObservableObject {
             let hardware: String
 
             #if canImport(UIKit)
-            let device = UIDevice.current
-            model = device.model
-            systemName = device.systemName
-            systemVersion = device.systemVersion
-            hardware = PerformanceLogger.hardwareIdentifier() ?? device.model
+                let device = UIDevice.current
+                model = device.model
+                systemName = device.systemName
+                systemVersion = device.systemVersion
+                hardware = PerformanceLogger.hardwareIdentifier() ?? device.model
             #else
-            let process = ProcessInfo.processInfo
-            model = process.hostName
-            systemName = process.operatingSystemVersionString
-            systemVersion = "\(process.operatingSystemVersion.majorVersion).\(process.operatingSystemVersion.minorVersion).\(process.operatingSystemVersion.patchVersion)"
-            hardware = PerformanceLogger.hardwareIdentifier() ?? process.hostName
+                let process = ProcessInfo.processInfo
+                model = process.hostName
+                systemName = process.operatingSystemVersionString
+                systemVersion = "\(process.operatingSystemVersion.majorVersion).\(process.operatingSystemVersion.minorVersion).\(process.operatingSystemVersion.patchVersion)"
+                hardware = PerformanceLogger.hardwareIdentifier() ?? process.hostName
             #endif
 
             let bundle = Bundle.main
@@ -156,12 +156,13 @@ public final class PerformanceLogger: ObservableObject {
     private var sampleHistory: [PerformanceSample] = []
 
     public init(windowSize: Int = PerformanceLogger.defaultWindowSize,
-                deviceInfoProvider: @escaping () -> DeviceInfo = DeviceInfo.current) {
+                deviceInfoProvider: @escaping () -> DeviceInfo = DeviceInfo.current)
+    {
         self.windowSize = max(1, windowSize)
         self.deviceInfoProvider = deviceInfoProvider
         let info = deviceInfoProvider()
-        self.deviceInfo = info
-        self.dashboard = PerformanceDashboard(deviceInfo: info, metrics: [])
+        deviceInfo = info
+        dashboard = PerformanceDashboard(deviceInfo: info, metrics: [])
     }
 
     @discardableResult
@@ -273,16 +274,16 @@ public final class PerformanceLogger: ObservableObject {
 
     private static func hardwareIdentifier() -> String? {
         #if os(iOS) || os(tvOS) || os(watchOS)
-        var sysinfo = utsname()
-        uname(&sysinfo)
-        let mirror = Mirror(reflecting: sysinfo.machine)
-        let identifier = mirror.children.reduce(into: "") { identifier, element in
-            guard let value = element.value as? Int8, value != 0 else { return }
-            identifier.append(String(UnicodeScalar(UInt8(value))))
-        }
-        return identifier.isEmpty ? nil : identifier
+            var sysinfo = utsname()
+            uname(&sysinfo)
+            let mirror = Mirror(reflecting: sysinfo.machine)
+            let identifier = mirror.children.reduce(into: "") { identifier, element in
+                guard let value = element.value as? Int8, value != 0 else { return }
+                identifier.append(String(UnicodeScalar(UInt8(value))))
+            }
+            return identifier.isEmpty ? nil : identifier
         #else
-        return nil
+            return nil
         #endif
     }
 }

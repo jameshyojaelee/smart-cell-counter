@@ -5,20 +5,20 @@
 //  Created by 이효록 on 10/29/25.
 //
 
-import SwiftUI
 import GoogleSignInSwift // Import this for the official button
+import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject private var authManager: AuthManager
-    
+
     var body: some View {
         ZStack {
             // Use the app's background theme
             Theme.background.ignoresSafeArea()
-            
+
             VStack(spacing: 40) {
                 Spacer()
-                
+
                 // App Title
                 VStack(spacing: 12) {
                     Image(systemName: "camera.metering.matrix") // Placeholder icon
@@ -31,9 +31,9 @@ struct LoginView: View {
                         .font(.headline)
                         .foregroundColor(Theme.textSecondary)
                 }
-                
+
                 Spacer()
-                
+
                 // Google Sign-In Button
                 GoogleSignInButton(scheme: .dark, style: .wide, state: .normal) {
                     Task {
@@ -48,7 +48,7 @@ struct LoginView: View {
                         ProgressView().tint(.white)
                     }
                 }
-                
+
                 // Show error message if one exists
                 if let error = authManager.error {
                     Text(error.localizedDescription)
@@ -57,7 +57,7 @@ struct LoginView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
-                
+
                 Spacer()
                     .frame(height: 40)
             }
@@ -67,10 +67,10 @@ struct LoginView: View {
 }
 
 #if DEBUG
-struct LoginView_Previews: PreviewProvider {
-    static var previews: some View {
-        LoginView()
-            .environmentObject(AuthManager())
+    struct LoginView_Previews: PreviewProvider {
+        static var previews: some View {
+            LoginView()
+                .environmentObject(AuthManager())
+        }
     }
-}
 #endif

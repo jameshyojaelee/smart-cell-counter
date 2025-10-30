@@ -10,7 +10,7 @@ final class SmartCellCounterUITests: XCTestCase {
         app.launchArguments += [
             "-onboarding.completed", "1",
             "-consent.shown", "1",
-            "-UITest.MockCapture", "1"
+            "-UITest.MockCapture", "1",
         ]
         app.launch()
 
@@ -74,7 +74,7 @@ final class SmartCellCounterUITests: XCTestCase {
         app.launchArguments += [
             "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge",
             "-onboarding.completed", "1",
-            "-consent.shown", "1"
+            "-consent.shown", "1",
         ]
         app.launch()
 
@@ -106,7 +106,7 @@ final class SmartCellCounterUITests: XCTestCase {
         XCTAssertTrue(saveSampleButton.isHittable, "Save Sample button should remain tappable at large text sizes")
     }
 
-    private func takeShot(_ app: XCUIApplication, name: String) {
+    private func takeShot(_: XCUIApplication, name: String) {
         let shot = XCUIScreen.main.screenshot()
         let attachment = XCTAttachment(screenshot: shot)
         attachment.lifetime = .keepAlways

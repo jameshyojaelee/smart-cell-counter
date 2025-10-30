@@ -1,6 +1,6 @@
-import XCTest
 import CoreImage
 @testable import SmartCellCounter
+import XCTest
 
 final class CellDetectionTests: XCTestCase {
     private let context = CIContext()
@@ -87,7 +87,7 @@ final class CellDetectionTests: XCTestCase {
 private extension HSVImage {
     static func constant(hue: Double, saturation: Double, value: Double, size: CGSize) -> HSVImage {
         let rect = CGRect(origin: .zero, size: size)
-        let h = CIImage(color: CIColor(red: CGFloat(hue/360.0), green: 0, blue: 0, alpha: 1)).cropped(to: rect)
+        let h = CIImage(color: CIColor(red: CGFloat(hue / 360.0), green: 0, blue: 0, alpha: 1)).cropped(to: rect)
         let s = CIImage(color: CIColor(red: CGFloat(saturation), green: 0, blue: 0, alpha: 1)).cropped(to: rect)
         let v = CIImage(color: CIColor(red: CGFloat(value), green: 0, blue: 0, alpha: 1)).cropped(to: rect)
         return HSVImage(h: h, s: s, value: v)

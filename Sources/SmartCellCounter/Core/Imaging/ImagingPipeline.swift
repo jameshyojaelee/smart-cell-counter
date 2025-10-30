@@ -1,10 +1,10 @@
-import Foundation
-import UIKit
-import Vision
 import CoreImage
 import CoreML
 import CoreVideo
+import Foundation
 import Metal
+import UIKit
+import Vision
 
 public enum ImagingPipeline {
     private static let unetLock = DispatchQueue(label: "com.smartcellcounter.unet.lock")
@@ -16,6 +16,7 @@ public enum ImagingPipeline {
     }
 
     // MARK: - Grid Detection
+
     public static func detectGrid(in image: UIImage) -> RectangleDetectionResult {
         guard let cg = image.cgImage else {
             return RectangleDetectionResult(found: false, corners: [], confidence: 0)
@@ -45,6 +46,7 @@ public enum ImagingPipeline {
     }
 
     // MARK: - Perspective Correction
+
     public static func perspectiveCorrect(_ image: UIImage, corners: [CGPoint]) -> UIImage {
         guard corners.count == 4, let cg = image.cgImage else { return image }
         let ciImage = CIImage(cgImage: cg)
@@ -57,7 +59,8 @@ public enum ImagingPipeline {
         filter.bottomLeft = corners[3]
         let context = ImageContext.ciContext
         guard let output = filter.outputImage,
-              let outCG = context.createCGImage(output, from: output.extent) else {
+              let outCG = context.createCGImage(output, from: output.extent)
+        else {
             return image
         }
         let ms = Date().timeIntervalSince(start) * 1000
@@ -67,6 +70,7 @@ public enum ImagingPipeline {
     }
 
     // MARK: - Polarity Check
+
     public static func shouldInvertPolarity(for image: UIImage) -> Bool {
         // Simple heuristic: if average luminance is bright, invert so cells (dark) become foreground
         guard let cg = image.cgImage else { return false }
@@ -76,7 +80,8 @@ public enum ImagingPipeline {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         var data = [UInt8](repeating: 0, count: Int(dw * dh * 4))
         guard let ctx = CGContext(data: &data, width: dw, height: dh, bitsPerComponent: 8, bytesPerRow: dw * 4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
-              let scaled = cg.copy() else {
+              let scaled = cg.copy()
+        else {
             return false
         }
         ctx.interpolationQuality = .low
@@ -84,10 +89,10 @@ public enum ImagingPipeline {
         var sum: Double = 0
         for i in stride(from: 0, to: data.count, by: 4) {
             let r = Double(data[i]) / 255.0
-            let g = Double(data[i+1]) / 255.0
-            let b = Double(data[i+2]) / 255.0
+            let g = Double(data[i + 1]) / 255.0
+            let b = Double(data[i + 2]) / 255.0
             // Perceptual luminance approximation
-            let y = 0.2126*r + 0.7152*g + 0.0722*b
+            let y = 0.2126 * r + 0.7152 * g + 0.0722 * b
             sum += y
         }
         let mean = sum / Double(dw * dh)
@@ -95,6 +100,7 @@ public enum ImagingPipeline {
     }
 
     // MARK: - Segmentation
+
     public static func segmentCells(in image: UIImage, params: ImagingParams) -> SegmentationResult {
         let requested = params.strategy
         switch requested {
@@ -128,14 +134,14 @@ public enum ImagingPipeline {
         let scale = max(1.0, Double(width) / Double(dw))
         let gray = grayscalePixels(from: cg, width: dw, height: dh)
         let invert = shouldInvertPolarity(for: image)
-        var grayD = gray.map { Double($0)/255.0 }
+        var grayD = gray.map { Double($0) / 255.0 }
         if invert { grayD = grayD.map { 1.0 - $0 } }
         let start = Date()
         let mask: [Bool]
         switch params.thresholdMethod {
         case .adaptive:
             let adjustedBlock = max(3, Int(Double(params.blockSize) / scale)) | 1
-            mask = adaptiveThreshold(grayD, w: dw, h: dh, block: adjustedBlock, C: Double(params.C)/255.0)
+            mask = adaptiveThreshold(grayD, w: dw, h: dh, block: adjustedBlock, C: Double(params.C) / 255.0)
         case .otsu:
             let t = otsuThreshold(grayD)
             mask = grayD.map { $0 > t }
@@ -223,7 +229,7 @@ public enum ImagingPipeline {
         var buffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true,
         ]
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
                                          width,
@@ -242,7 +248,8 @@ public enum ImagingPipeline {
                                       bitsPerComponent: 8,
                                       bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
                                       space: CGColorSpaceCreateDeviceRGB(),
-                                      bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) else {
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        else {
             return nil
         }
         context.interpolationQuality = .high
@@ -294,21 +301,21 @@ public enum ImagingPipeline {
         switch multiArray.dataType {
         case .double:
             let pointer = multiArray.dataPointer.bindMemory(to: Double.self, capacity: multiArray.count)
-            for i in 0..<elementCount {
+            for i in 0 ..< elementCount {
                 mask[i] = pointer[i] > 0.5
             }
         case .float32:
             let pointer = multiArray.dataPointer.bindMemory(to: Float32.self, capacity: multiArray.count)
-            for i in 0..<elementCount {
+            for i in 0 ..< elementCount {
                 mask[i] = pointer[i] > 0.5
             }
         case .int32:
             let pointer = multiArray.dataPointer.bindMemory(to: Int32.self, capacity: multiArray.count)
-            for i in 0..<elementCount {
+            for i in 0 ..< elementCount {
                 mask[i] = pointer[i] > 0
             }
         default:
-            for i in 0..<elementCount {
+            for i in 0 ..< elementCount {
                 mask[i] = multiArray[i].doubleValue > 0.5
             }
         }
@@ -324,25 +331,26 @@ public enum ImagingPipeline {
         let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
         var mask = [Bool](repeating: false, count: width * height)
         let ptr = base.assumingMemoryBound(to: UInt8.self)
-        for y in 0..<height {
+        for y in 0 ..< height {
             let row = ptr.advanced(by: y * bytesPerRow)
-            for x in 0..<width {
-                mask[y*width + x] = row[x] > 127
+            for x in 0 ..< width {
+                mask[y * width + x] = row[x] > 127
             }
         }
         return (mask, width, height)
     }
 
     // MARK: - Object Features
-    public static func objectFeatures(from seg: SegmentationResult, pxPerMicron: Double?) -> [CellObject] {
+
+    public static func objectFeatures(from seg: SegmentationResult, pxPerMicron _: Double?) -> [CellObject] {
         let start = Date()
         let (labels, count) = connectedComponents(seg.mask, w: seg.width, h: seg.height)
         var objects: [CellObject] = []
         objects.reserveCapacity(count)
         var stats: [Int: (minX: Int, maxX: Int, minY: Int, maxY: Int, sumX: Double, sumY: Double, pix: Int, perimeter: Int)] = [:]
-        for y in 0..<seg.height {
-            for x in 0..<seg.width {
-                let idx = y*seg.width + x
+        for y in 0 ..< seg.height {
+            for x in 0 ..< seg.width {
+                let idx = y * seg.width + x
                 let id = labels[idx]
                 if id == 0 { continue }
                 if stats[id] == nil {
@@ -357,9 +365,9 @@ public enum ImagingPipeline {
                 s.sumY += Double(y)
                 s.pix += 1
                 // Perimeter increments for each background neighbor (4-connectivity)
-                let neighbors = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+                let neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
                 for (nx, ny) in neighbors {
-                    if nx < 0 || ny < 0 || nx >= seg.width || ny >= seg.height || !seg.mask[ny*seg.width + nx] {
+                    if nx < 0 || ny < 0 || nx >= seg.width || ny >= seg.height || !seg.mask[ny * seg.width + nx] {
                         s.perimeter += 1
                     }
                 }
@@ -380,13 +388,13 @@ public enum ImagingPipeline {
                               width: Double(s.maxX - s.minX + 1) * scale,
                               height: Double(s.maxY - s.minY + 1) * scale)
             let obj = CellObject(id: id,
-                                  pixelCount: Int(round(areaPx)),
-                                  areaPx: areaPx,
-                                  perimeterPx: perimeterPx,
-                                  circularity: circularity,
-                                  solidity: 1.0,
-                                  centroid: centroid,
-                                  bbox: bbox.integral)
+                                 pixelCount: Int(round(areaPx)),
+                                 areaPx: areaPx,
+                                 perimeterPx: perimeterPx,
+                                 circularity: circularity,
+                                 solidity: 1.0,
+                                 centroid: centroid,
+                                 bbox: bbox.integral)
             objects.append(obj)
         }
         PerformanceLogger.shared.record("features", Date().timeIntervalSince(start) * 1000)
@@ -394,6 +402,7 @@ public enum ImagingPipeline {
     }
 
     // MARK: - Color and Labels
+
     public static func colorStatsAndLabels(for objects: [CellObject], on image: UIImage) -> [CellObjectLabeled] {
         guard let cg = image.cgImage else { return [] }
         let start = Date()
@@ -403,15 +412,15 @@ public enum ImagingPipeline {
         let sampleStep = max(1, (w * cg.height) / 4096)
         var vSamples: [Double] = []
         vSamples.reserveCapacity(4096)
-        for i in stride(from: 0, to: data.count, by: 4*sampleStep) {
+        for i in stride(from: 0, to: data.count, by: 4 * sampleStep) {
             let r = Double(data[i]) / 255.0
-            let g = Double(data[i+1]) / 255.0
-            let b = Double(data[i+2]) / 255.0
+            let g = Double(data[i + 1]) / 255.0
+            let b = Double(data[i + 2]) / 255.0
             let (_, _, v) = rgbToHsv(r, g, b)
             vSamples.append(v)
         }
         vSamples.sort()
-        let imageMedianV = vSamples.isEmpty ? 0.5 : vSamples[vSamples.count/2]
+        let imageMedianV = vSamples.isEmpty ? 0.5 : vSamples[vSamples.count / 2]
 
         // Sample colors per object
         var labeled: [CellObjectLabeled] = []
@@ -440,6 +449,7 @@ public enum ImagingPipeline {
     }
 
     // MARK: - Helpers
+
     private static var grayBuffer: [UInt8] = []
     private static func grayscalePixels(from cg: CGImage, width: Int, height: Int) -> [UInt8] {
         let colorSpace = CGColorSpaceCreateDeviceGray()
@@ -456,10 +466,10 @@ public enum ImagingPipeline {
     private static func rgbaPixels(from cg: CGImage) -> [UInt8] {
         let w = cg.width, h = cg.height
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let count = Int(w*h*4)
+        let count = Int(w * h * 4)
         if rgbaBuffer.count != count { rgbaBuffer = [UInt8](repeating: 0, count: count) }
         var data = rgbaBuffer
-        if let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w*4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
+        if let ctx = CGContext(data: &data, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) {
             ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
         }
         return data
@@ -474,30 +484,30 @@ public enum ImagingPipeline {
         let needed = iw * ih
         if integralBuffer.count != needed { integralBuffer = [Double](repeating: 0, count: needed) }
         // Row 0 and col 0 remain zeros
-        for y in 0..<h {
+        for y in 0 ..< h {
             var rowSum = 0.0
-            let base = (y+1) * iw
+            let base = (y + 1) * iw
             let prev = y * iw
-            for x in 0..<w {
-                rowSum += gray[y*w + x]
-                integralBuffer[base + (x+1)] = integralBuffer[prev + (x+1)] + rowSum
+            for x in 0 ..< w {
+                rowSum += gray[y * w + x]
+                integralBuffer[base + (x + 1)] = integralBuffer[prev + (x + 1)] + rowSum
             }
         }
-        let r = max(1, block/2)
-        var out = [Bool](repeating: false, count: w*h)
+        let r = max(1, block / 2)
+        var out = [Bool](repeating: false, count: w * h)
         @inline(__always) func sumRect(_ x0: Int, _ y0: Int, _ x1: Int, _ y1: Int) -> Double {
             let xa = x0, ya = y0, xb = x1 + 1, yb = y1 + 1
-            return integralBuffer[yb*iw + xb] - integralBuffer[ya*iw + xb] - integralBuffer[yb*iw + xa] + integralBuffer[ya*iw + xa]
+            return integralBuffer[yb * iw + xb] - integralBuffer[ya * iw + xb] - integralBuffer[yb * iw + xa] + integralBuffer[ya * iw + xa]
         }
-        for y in 0..<h {
+        for y in 0 ..< h {
             let y0 = max(0, y - r)
             let y1 = min(h - 1, y + r)
-            for x in 0..<w {
+            for x in 0 ..< w {
                 let x0 = max(0, x - r)
                 let x1 = min(w - 1, x + r)
                 let count = Double((x1 - x0 + 1) * (y1 - y0 + 1))
                 let mean = sumRect(x0, y0, x1, y1) / count
-                out[y*w + x] = gray[y*w + x] > (mean - C)
+                out[y * w + x] = gray[y * w + x] > (mean - C)
             }
         }
         return out
@@ -507,15 +517,19 @@ public enum ImagingPipeline {
         let n = gray.count
         if n == 0 { return 0.5 }
         var hist = [Int](repeating: 0, count: 256)
-        for v in gray { hist[min(255, max(0, Int(v * 255.0)))] += 1 }
+        for v in gray {
+            hist[min(255, max(0, Int(v * 255.0)))] += 1
+        }
         let total = Double(n)
         var sum: Double = 0
-        for t in 0..<256 { sum += Double(t) * Double(hist[t]) }
+        for t in 0 ..< 256 {
+            sum += Double(t) * Double(hist[t])
+        }
         var sumB: Double = 0
         var wB: Double = 0
         var varMax: Double = 0
-        var threshold: Int = 0
-        for t in 0..<256 {
+        var threshold = 0
+        for t in 0 ..< 256 {
             wB += Double(hist[t])
             if wB == 0 { continue }
             let wF = total - wB
@@ -533,12 +547,12 @@ public enum ImagingPipeline {
     }
 
     private static func connectedComponents(_ mask: [Bool], w: Int, h: Int) -> ([Int], Int) {
-        var labels = [Int](repeating: 0, count: w*h)
+        var labels = [Int](repeating: 0, count: w * h)
         var current = 0
         var queue: [(Int, Int)] = []
-        for y in 0..<h {
-            for x in 0..<w {
-                let idx = y*w + x
+        for y in 0 ..< h {
+            for x in 0 ..< w {
+                let idx = y * w + x
                 if !mask[idx] || labels[idx] != 0 { continue }
                 current += 1
                 labels[idx] = current
@@ -546,11 +560,11 @@ public enum ImagingPipeline {
                 queue.append((x, y))
                 while !queue.isEmpty {
                     let (cx, cy) = queue.removeLast()
-                    let neighbors = [(cx-1, cy), (cx+1, cy), (cx, cy-1), (cx, cy+1)]
+                    let neighbors = [(cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)]
                     for (nx, ny) in neighbors {
                         if nx < 0 || ny < 0 || nx >= w || ny >= h { continue }
-                        let nidx = ny*w + nx
-                        if mask[nidx] && labels[nidx] == 0 {
+                        let nidx = ny * w + nx
+                        if mask[nidx], labels[nidx] == 0 {
                             labels[nidx] = current
                             queue.append((nx, ny))
                         }
@@ -562,28 +576,29 @@ public enum ImagingPipeline {
     }
 
     private static func sample5x5Stats(x: Int, y: Int, data: [UInt8], width: Int) -> ColorSampleStats {
-        var sumR=0.0, sumG=0.0, sumB=0.0, count=0.0
-        let height = max(1, data.count / (4*width))
-        for j in (y-2)...(y+2) {
-            for i in (x-2)...(x+2) {
-                let xi = max(0, min(width-1, i))
+        var sumR = 0.0, sumG = 0.0, sumB = 0.0, count = 0.0
+        let height = max(1, data.count / (4 * width))
+        for j in (y - 2) ... (y + 2) {
+            for i in (x - 2) ... (x + 2) {
+                let xi = max(0, min(width - 1, i))
                 let yi = max(0, min(height - 1, j))
-                let idx = (yi*width + xi)*4
+                let idx = (yi * width + xi) * 4
                 sumR += Double(data[idx])
-                sumG += Double(data[idx+1])
-                sumB += Double(data[idx+2])
+                sumG += Double(data[idx + 1])
+                sumB += Double(data[idx + 2])
                 count += 1
             }
         }
-        let r = (sumR/count)/255.0
-        let g = (sumG/count)/255.0
-        let b = (sumB/count)/255.0
+        let r = (sumR / count) / 255.0
+        let g = (sumG / count) / 255.0
+        let b = (sumB / count) / 255.0
         let (h, s, v) = rgbToHsv(r, g, b)
         let (L, a, bLab) = rgbToLab(r, g, b)
         return ColorSampleStats(hue: h, saturation: s, value: v, L: L, a: a, b: bLab)
     }
 
     // MARK: - Color conversions
+
     static func rgbToHsv(_ r: Double, _ g: Double, _ b: Double) -> (Double, Double, Double) {
         let maxv = max(r, max(g, b))
         let minv = min(r, min(g, b))
@@ -598,21 +613,22 @@ public enum ImagingPipeline {
     }
 
     static func rgbToLab(_ r: Double, _ g: Double, _ b: Double) -> (Double, Double, Double) {
-        func pivot(_ t: Double) -> Double { return t > 0.04045 ? pow((t + 0.055)/1.055, 2.4) : t/12.92 }
+        func pivot(_ t: Double) -> Double { return t > 0.04045 ? pow((t + 0.055) / 1.055, 2.4) : t / 12.92 }
         let R = pivot(r), G = pivot(g), B = pivot(b)
         // sRGB D65
-        let X = (0.4124*R + 0.3576*G + 0.1805*B) / 0.95047
-        let Y = (0.2126*R + 0.7152*G + 0.0722*B) / 1.00000
-        let Z = (0.0193*R + 0.1192*G + 0.9505*B) / 1.08883
-        func f(_ t: Double) -> Double { return t > 0.008856 ? pow(t, 1.0/3.0) : (7.787*t + 16.0/116.0) }
+        let X = (0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047
+        let Y = (0.2126 * R + 0.7152 * G + 0.0722 * B) / 1.00000
+        let Z = (0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883
+        func f(_ t: Double) -> Double { return t > 0.008856 ? pow(t, 1.0 / 3.0) : (7.787 * t + 16.0 / 116.0) }
         let fx = f(X), fy = f(Y), fz = f(Z)
-        let L = (116*fy - 16)
-        let a = 500*(fx - fy)
-        let b = 200*(fy - fz)
+        let L = (116 * fy - 16)
+        let a = 500 * (fx - fy)
+        let b = 200 * (fy - fz)
         return (L, a, b)
     }
 
     // MARK: - Resize for processing
+
     private static func resizedForProcessing(_ image: UIImage, maxLongSide: Int) -> UIImage {
         let w = Int(image.size.width), h = Int(image.size.height)
         let longSide = max(w, h)
@@ -626,6 +642,7 @@ public enum ImagingPipeline {
 }
 
 // MARK: - UNet Loader Stub
+
 enum UNet256Loader {
     static func model() throws -> MLModel {
         let bundle = Bundle.main

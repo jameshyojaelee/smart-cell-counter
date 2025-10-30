@@ -1,8 +1,8 @@
-import Foundation
 import AVFoundation
 import Combine
-import UIKit
+import Foundation
 @testable import SmartCellCounter
+import UIKit
 
 final class FakeCameraService: CameraServicing {
     weak var delegate: CameraServiceDelegate?

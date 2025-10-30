@@ -1,5 +1,5 @@
-import XCTest
 @testable import SmartCellCounter
+import XCTest
 
 final class AppDatabaseTests: XCTestCase {
     func testInsertAndFetchSample() async throws {
@@ -35,7 +35,7 @@ final class AppDatabaseTests: XCTestCase {
         )
 
         let detections: [DetectionRecord] = [
-            DetectionRecord(sampleId: sampleId, objectId: UUID().uuidString, x: 0, y: 0, areaPx: 10, circularity: 0.9, solidity: 0.95, isLive: true)
+            DetectionRecord(sampleId: sampleId, objectId: UUID().uuidString, x: 0, y: 0, areaPx: 10, circularity: 0.9, solidity: 0.95, isLive: true),
         ]
 
         try await db.insertSample(record, detections: detections)

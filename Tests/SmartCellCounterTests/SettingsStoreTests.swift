@@ -1,5 +1,5 @@
-import XCTest
 @testable import SmartCellCounter
+import XCTest
 
 @MainActor
 final class SettingsStoreTests: XCTestCase {

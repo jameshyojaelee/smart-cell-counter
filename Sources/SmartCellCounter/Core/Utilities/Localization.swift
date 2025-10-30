@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 enum L10n {
     /// Centralized translation helper modeled after SwiftGen output.
@@ -195,12 +195,15 @@ enum L10n {
             static func strategy(_ value: String) -> String {
                 tr("Detection", "detection.segmentation.strategy", value)
             }
+
             static func downscale(_ factor: Double) -> String {
                 tr("Detection", "detection.segmentation.downscale", String(format: "%.2f", factor))
             }
+
             static func polarity(_ inverted: Bool) -> String {
                 tr("Detection", "detection.segmentation.polarity", inverted ? Common.yes : Common.no)
             }
+
             static func resolution(width: Int, height: Int, originalWidth: Int, originalHeight: Int) -> String {
                 tr("Detection", "detection.segmentation.resolution", "\(width)", "\(height)", "\(originalWidth)", "\(originalHeight)")
             }
@@ -227,6 +230,7 @@ enum L10n {
         static func buyTitle(_ price: String) -> String {
             tr("Paywall", "paywall.buy_price", price)
         }
+
         static let buyHint = tr("Paywall", "paywall.buy.hint")
         static let benefitsTitle = tr("Paywall", "paywall.section.benefits")
         static let comparisonTitle = tr("Paywall", "paywall.section.comparison")
@@ -270,10 +274,10 @@ enum L10n {
         }
 
         #if DEBUG
-        enum Debug {
-            static let simulatePurchase = tr("Paywall", "paywall.debug.simulate_purchase")
-            static let revokePurchase = tr("Paywall", "paywall.debug.revoke_purchase")
-        }
+            enum Debug {
+                static let simulatePurchase = tr("Paywall", "paywall.debug.simulate_purchase")
+                static let revokePurchase = tr("Paywall", "paywall.debug.revoke_purchase")
+            }
         #endif
     }
 
@@ -369,6 +373,7 @@ enum L10n {
             static func blockSize(_ value: Int) -> String {
                 tr("Settings", "settings.segmentation.block_size", "\(value)")
             }
+
             static func thresholdC(_ value: Int) -> String {
                 tr("Settings", "settings.segmentation.threshold_c", "\(value)")
             }
@@ -400,6 +405,7 @@ enum L10n {
             static func version(_ value: String) -> String {
                 tr("Settings", "settings.about.version", value)
             }
+
             static let noticeTitle = tr("Settings", "settings.about.notice.title")
             static let noticeDevelopment = tr("Settings", "settings.about.notice.development")
             static let noticeResearch = tr("Settings", "settings.about.notice.research")
@@ -494,7 +500,7 @@ enum L10n {
                     tr("Results", "results.csv.header.concentration"),
                     tr("Results", "results.csv.header.viability"),
                     tr("Results", "results.csv.header.live"),
-                    tr("Results", "results.csv.header.dead")
+                    tr("Results", "results.csv.header.dead"),
                 ]
             }
 
@@ -510,7 +516,7 @@ enum L10n {
                     tr("Results", "results.csv.header.viability"),
                     tr("Results", "results.csv.header.live"),
                     tr("Results", "results.csv.header.dead"),
-                    tr("Results", "results.csv.detailed.dilution")
+                    tr("Results", "results.csv.detailed.dilution"),
                 ]
             }
 
@@ -530,7 +536,7 @@ enum L10n {
                     tr("Results", "results.csv.detections.circularity"),
                     tr("Results", "results.csv.detections.solidity"),
                     tr("Results", "results.csv.detections.label"),
-                    tr("Results", "results.csv.detections.confidence")
+                    tr("Results", "results.csv.detections.confidence"),
                 ]
             }
 
@@ -553,6 +559,7 @@ enum L10n {
             static func proRequired(_ feature: String) -> String {
                 tr("Results", "results.export.pro_required", feature)
             }
+
             static let upgrade = tr("Results", "results.export.upgrade")
         }
 
@@ -637,6 +644,7 @@ enum L10n {
         static func overlayValue(isEnabled: Bool) -> String {
             isEnabled ? tr("Review", "review.overlay.on") : tr("Review", "review.overlay.off")
         }
+
         static let undoHint = tr("Review", "review.undo.hint")
         static let detectionToggleHint = tr("Review", "review.detection.toggle_hint")
 

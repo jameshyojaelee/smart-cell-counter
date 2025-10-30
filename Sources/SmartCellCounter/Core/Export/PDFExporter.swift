@@ -1,6 +1,6 @@
 import Foundation
-import UIKit
 import PDFKit
+import UIKit
 
 public protocol PDFExporting {
     func export(text: String, filename: String) throws -> URL
@@ -45,7 +45,8 @@ public final class PDFExporter: PDFExporting {
                              tally: [Int: Int],
                              params: ImagingParams,
                              watermark: Bool,
-                             filename: String = "report.pdf") throws -> URL {
+                             filename: String = "report.pdf") throws -> URL
+    {
         let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         let renderer = UIGraphicsPDFRenderer(bounds: pageRect)
@@ -98,16 +99,16 @@ public final class PDFExporter: PDFExporting {
         "Per-Square Counts".draw(at: CGPoint(x: 36, y: startY), withAttributes: attrs)
         let y0 = startY + 18
         let cellSize = CGSize(width: 48, height: 18)
-        for r in 0..<3 {
-            for c in 0..<3 {
-                let idx = r*3 + c
+        for r in 0 ..< 3 {
+            for c in 0 ..< 3 {
+                let idx = r * 3 + c
                 let count = tally[idx] ?? 0
-                let rect = CGRect(x: 36 + CGFloat(c)*cellSize.width, y: y0 + CGFloat(r)*cellSize.height, width: cellSize.width-2, height: cellSize.height-2)
+                let rect = CGRect(x: 36 + CGFloat(c) * cellSize.width, y: y0 + CGFloat(r) * cellSize.height, width: cellSize.width - 2, height: cellSize.height - 2)
                 UIColor(white: 0.95, alpha: 1).setFill(); UIRectFill(rect)
                 "\(count)".draw(in: rect.insetBy(dx: 4, dy: 2), withAttributes: [.font: UIFont.systemFont(ofSize: 11)])
             }
         }
-        return y0 + cellSize.height*3
+        return y0 + cellSize.height * 3
     }
 
     private func drawFormulas(params: ImagingParams, startY: CGFloat) -> CGFloat {
@@ -120,14 +121,14 @@ public final class PDFExporter: PDFExporting {
     private func drawWatermark(_ text: String, in rect: CGRect) {
         let attrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 64),
-            .foregroundColor: UIColor(white: 0.9, alpha: 0.6)
+            .foregroundColor: UIColor(white: 0.9, alpha: 0.6),
         ]
         let size = text.size(withAttributes: attrs)
         let context = UIGraphicsGetCurrentContext()
         context?.saveGState()
         context?.translateBy(x: rect.midX, y: rect.midY)
-        context?.rotate(by: -.pi/6)
-        text.draw(at: CGPoint(x: -size.width/2, y: -size.height/2), withAttributes: attrs)
+        context?.rotate(by: -.pi / 6)
+        text.draw(at: CGPoint(x: -size.width / 2, y: -size.height / 2), withAttributes: attrs)
         context?.restoreGState()
     }
 }
@@ -143,7 +144,7 @@ public extension PDFExporter {
                 let color: UIColor = item.label == "dead" ? .red : .green
                 color.setStroke()
                 ctx.cgContext.setLineWidth(2)
-                ctx.cgContext.strokeEllipse(in: CGRect(x: c.x-6, y: c.y-6, width: 12, height: 12))
+                ctx.cgContext.strokeEllipse(in: CGRect(x: c.x - 6, y: c.y - 6, width: 12, height: 12))
             }
         }
         PerformanceLogger.shared.record("renderOverlay", Date().timeIntervalSince(start) * 1000)

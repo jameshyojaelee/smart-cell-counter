@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 public protocol InclusionRules {
     func include(x: Double, y: Double, in rect: CGRect) -> Bool
@@ -12,13 +12,14 @@ public protocol Aggregator {
 public enum Counting {}
 
 // MARK: - Grid Geometry for Neubauer Improved
+
 public struct GridGeometry {
-    public let originPx: CGPoint      // top-left of grid in pixels (corrected image)
-    public let pxPerMicron: Double    // scale factor
-    public let widthMicron: Double    // usually 3000 µm
-    public let heightMicron: Double   // usually 3000 µm
-    public let largeSizeUm: Double    // 1000 µm
-    public let smallSizeUm: Double    // 50 µm
+    public let originPx: CGPoint // top-left of grid in pixels (corrected image)
+    public let pxPerMicron: Double // scale factor
+    public let widthMicron: Double // usually 3000 µm
+    public let heightMicron: Double // usually 3000 µm
+    public let largeSizeUm: Double // 1000 µm
+    public let smallSizeUm: Double // 50 µm
 
     public init(originPx: CGPoint, pxPerMicron: Double, widthMicron: Double = 3000, heightMicron: Double = 3000, largeSizeUm: Double = 1000, smallSizeUm: Double = 50) {
         self.originPx = originPx
@@ -31,10 +32,10 @@ public struct GridGeometry {
 }
 
 public struct GridIndex: Equatable {
-    public let largeX: Int  // 0..2
-    public let largeY: Int  // 0..2
-    public let smallX: Int  // 0..19 within large
-    public let smallY: Int  // 0..19 within large
+    public let largeX: Int // 0..2
+    public let largeY: Int // 0..2
+    public let smallX: Int // 0..19 within large
+    public let smallY: Int // 0..19 within large
     public var largeIndex: Int { largeY * 3 + largeX }
     public var smallIndex: Int { smallY * 20 + smallX }
 }
@@ -59,7 +60,7 @@ public enum CountingService {
         let localY = vAdj - Double(largeY) * geometry.largeSizeUm
         let smallX = Int(localX / geometry.smallSizeUm) // 0..19
         let smallY = Int(localY / geometry.smallSizeUm)
-        guard (0...2).contains(largeX), (0...2).contains(largeY), (0...19).contains(smallX), (0...19).contains(smallY) else {
+        guard (0 ... 2).contains(largeX), (0 ... 2).contains(largeY), (0 ... 19).contains(smallX), (0 ... 19).contains(smallY) else {
             return nil
         }
         return GridIndex(largeX: largeX, largeY: largeY, smallX: smallX, smallY: smallY)
@@ -125,7 +126,8 @@ public enum CountingService {
                                      finalVolumeML: Double,
                                      concentrationPerML: Double,
                                      meanCountPerLargeSquare: Double,
-                                     densityLimits: (min: Double, max: Double) = (10, 300)) -> (volumeToAddML: Double, guidance: String) {
+                                     densityLimits: (min: Double, max: Double) = (10, 300)) -> (volumeToAddML: Double, guidance: String)
+    {
         guard concentrationPerML > 0 else { return (0, "Concentration is zero; cannot compute volume.") }
         let vol = Double(targetCells) / concentrationPerML // mL to add
         var notes: [String] = []
@@ -142,11 +144,12 @@ public enum CountingService {
     }
 
     // MARK: - Private helpers
+
     private static func median(_ xs: [Double]) -> Double {
         let n = xs.count
         if n == 0 { return 0 }
         let sorted = xs.sorted()
-        if n % 2 == 1 { return sorted[n/2] }
-        return 0.5 * (sorted[n/2 - 1] + sorted[n/2])
+        if n % 2 == 1 { return sorted[n / 2] }
+        return 0.5 * (sorted[n / 2 - 1] + sorted[n / 2])
     }
 }

@@ -26,6 +26,7 @@ public final class Settings: ObservableObject {
     @Published public var labName: String = "" {
         didSet { defaults.set(labName, forKey: Keys.labName) }
     }
+
     @Published public var defaultDilution: Double = 1.0
     @Published public var thresholdMethod: ThresholdMethod = .adaptive
     @Published public var blockSize: Int = 51
@@ -36,6 +37,7 @@ public final class Settings: ObservableObject {
     @Published public var personalizedAds: Bool {
         didSet { defaults.set(personalizedAds, forKey: Keys.personalizedAds) }
     }
+
     @Published public var crashReportingEnabled: Bool {
         didSet {
             defaults.set(crashReportingEnabled, forKey: Keys.crashReporting)
@@ -46,6 +48,7 @@ public final class Settings: ObservableObject {
             }
         }
     }
+
     @Published public var analyticsEnabled: Bool {
         didSet {
             defaults.set(analyticsEnabled, forKey: Keys.analytics)
@@ -62,10 +65,10 @@ public final class Settings: ObservableObject {
 
     private init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        self.personalizedAds = defaults.bool(forKey: Keys.personalizedAds)
-        self.crashReportingEnabled = defaults.bool(forKey: Keys.crashReporting)
-        self.analyticsEnabled = defaults.bool(forKey: Keys.analytics)
-        self.labName = defaults.string(forKey: Keys.labName) ?? ""
+        personalizedAds = defaults.bool(forKey: Keys.personalizedAds)
+        crashReportingEnabled = defaults.bool(forKey: Keys.crashReporting)
+        analyticsEnabled = defaults.bool(forKey: Keys.analytics)
+        labName = defaults.string(forKey: Keys.labName) ?? ""
         AnalyticsLogger.shared.isEnabled = analyticsEnabled
         if crashReportingEnabled {
             CrashReporter.shared.start()

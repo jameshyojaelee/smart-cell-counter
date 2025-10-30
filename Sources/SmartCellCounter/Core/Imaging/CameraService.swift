@@ -1,8 +1,8 @@
-import Foundation
 import AVFoundation
-import UIKit
-import CoreImage
 import Combine
+import CoreImage
+import Foundation
+import UIKit
 
 @MainActor
 public protocol CameraServiceDelegate: AnyObject {
@@ -11,7 +11,6 @@ public protocol CameraServiceDelegate: AnyObject {
 }
 
 public final class CameraService: NSObject, CameraServicing {
-
     private let session = AVCaptureSession()
     private let photoOutput = AVCapturePhotoOutput()
     private let videoOutput = AVCaptureVideoDataOutput()
@@ -72,7 +71,8 @@ public final class CameraService: NSObject, CameraServicing {
     public func capturePhoto() {
         queue.async {
             guard self.session.isRunning,
-                  let conn = self.photoOutput.connection(with: .video), conn.isEnabled else {
+                  let conn = self.photoOutput.connection(with: .video), conn.isEnabled
+            else {
                 Logger.log("Capture requested before session ready; ignoring")
                 DispatchQueue.main.async { self.stateSubject.send(.error(.notReady)) }
                 return
@@ -178,7 +178,7 @@ extension CameraService {
 }
 
 extension CameraService: AVCapturePhotoCaptureDelegate {
-    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+    public func photoOutput(_: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error { Logger.log("Photo capture error: \(error)"); return }
         guard let data = photo.fileDataRepresentation(), let image = UIImage(data: data) else { return }
         if let start = captureStart {
@@ -193,7 +193,7 @@ extension CameraService: AVCapturePhotoCaptureDelegate {
 }
 
 extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
-    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    public func captureOutput(_: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from _: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         // Approximate focus score using Laplacian response mean
@@ -214,8 +214,8 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
         var bitmap = [UInt8](repeating: 0, count: 4)
         ciContext.render(avg, toBitmap: &bitmap, rowBytes: 4, bounds: CGRect(x: 0, y: 0, width: 1, height: 1), format: .RGBA8, colorSpace: CGColorSpaceCreateDeviceRGB())
         // Use luminance of avg response as proxy
-        let r = Double(bitmap[0])/255.0, g = Double(bitmap[1])/255.0, b = Double(bitmap[2])/255.0
-        return 0.2126*r + 0.7152*g + 0.0722*b
+        let r = Double(bitmap[0]) / 255.0, g = Double(bitmap[1]) / 255.0, b = Double(bitmap[2]) / 255.0
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
 
     private func glareRatio(_ image: CIImage) -> Double {
@@ -225,7 +225,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
             parameters: [
                 kCIInputExtentKey: CIVector(cgRect: image.extent),
                 "inputCount": bins,
-                "inputScale": 1.0
+                "inputScale": 1.0,
             ]
         )
         var data = [Float](repeating: 0, count: bins * 4)
@@ -241,7 +241,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
         var total: Float = 0
         var bright: Float = 0
         let brightStart = Int(Double(bins) * 0.875) // top ~12.5%
-        for bin in 0..<bins {
+        for bin in 0 ..< bins {
             let count = data[bin * 4]
             total += count
             if bin >= brightStart {

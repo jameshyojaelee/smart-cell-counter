@@ -17,7 +17,7 @@ public struct ExportMetadata: Equatable {
 
     public var isEmpty: Bool {
         labName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        stain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        dilution == 0
+            stain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            dilution == 0
     }
 }

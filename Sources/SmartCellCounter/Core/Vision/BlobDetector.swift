@@ -1,5 +1,5 @@
-import Foundation
 import CoreImage
+import Foundation
 
 enum BlobDetector {
     static func detect(on luma: CIImage,
@@ -7,7 +7,8 @@ enum BlobDetector {
                        gridMask: CIImage,
                        context: CIContext,
                        params: DetectorParams,
-                       pxPerMicron: Double?) -> [Candidate] {
+                       pxPerMicron: Double?) -> [Candidate]
+    {
         // Pick DoG scales based on expected radius range if calibration is known
         let sigmas: [CGFloat] = {
             if let ppm = pxPerMicron {
@@ -22,7 +23,7 @@ enum BlobDetector {
                 let count = max(2, min(4, Int(ceil((maxSigma - minSigma) / 1.5))))
                 if count <= 2 { return [minSigma, maxSigma] }
                 let step = (maxSigma - minSigma) / CGFloat(count - 1)
-                return (0..<count).map { minSigma + CGFloat($0) * step }
+                return (0 ..< count).map { minSigma + CGFloat($0) * step }
             } else {
                 return [1.5, 2.5, 3.5, 4.5]
             }
@@ -31,7 +32,7 @@ enum BlobDetector {
         responses.reserveCapacity(sigmas.count)
         for s in sigmas {
             let g1 = luma.clampedToExtent().applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: s]).cropped(to: luma.extent)
-            let g2 = luma.clampedToExtent().applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: s*1.6]).cropped(to: luma.extent)
+            let g2 = luma.clampedToExtent().applyingFilter("CIGaussianBlur", parameters: [kCIInputRadiusKey: s * 1.6]).cropped(to: luma.extent)
             let dog = g2.applyingFilter("CIAdditionCompositing", parameters: [kCIInputBackgroundImageKey: g1.applyingFilter("CIColorInvert")])
             responses.append(dog)
         }
@@ -53,23 +54,23 @@ enum BlobDetector {
                 let stride = cg.bytesPerRow
                 // Use finer step for higher quality on smaller images, coarser on large images
                 let step = max(1, Int(min(w, h) / 768))
-                DispatchQueue.concurrentPerform(iterations: max(1, (h-4)/step)) { rowIndex in
+                DispatchQueue.concurrentPerform(iterations: max(1, (h - 4) / step)) { rowIndex in
                     let y = 2 + rowIndex * step
-                    if y >= h-2 { return }
-                    let line = p + y*stride
+                    if y >= h - 2 { return }
+                    let line = p + y * stride
                     var rowLocal: [Candidate] = []
                     var x = 2
-                    while x < (w-2) {
-                        let idx = x*4
+                    while x < (w - 2) {
+                        let idx = x * 4
                         let v = Double(line[idx])
                         var isMax = true
                         var dy = -2
-                        while dy <= 2 && isMax {
-                            let nline = p + (y+dy)*stride
+                        while dy <= 2, isMax {
+                            let nline = p + (y + dy) * stride
                             var dx = -2
                             while dx <= 2 {
                                 if dx != 0 || dy != 0 {
-                                    let nv = Double(nline[(x+dx)*4])
+                                    let nv = Double(nline[(x + dx) * 4])
                                     if nv > v { isMax = false; break }
                                 }
                                 dx += 1
@@ -81,7 +82,7 @@ enum BlobDetector {
                             if score >= params.blobScoreThreshold {
                                 let radius = CGFloat(1.6 * scale)
                                 let pt = CGPoint(x: CGFloat(x), y: CGFloat(y))
-                                if !(gridSampler?.isOn(Int(x), Int(y)) ?? false) && (textureSampler?.isOn(Int(x), Int(y)) ?? true) {
+                                if !(gridSampler?.isOn(Int(x), Int(y)) ?? false), textureSampler?.isOn(Int(x), Int(y)) ?? true {
                                     rowLocal.append(Candidate(center: pt, radius: radius, score: score))
                                 }
                             }
@@ -132,7 +133,7 @@ private struct PixelSampler {
 
     func isOn(_ x: Int, _ y: Int) -> Bool {
         if x < 0 || y < 0 || x >= width || y >= height { return false }
-        return data[y*stride + x*4] > 127
+        return data[y * stride + x * 4] > 127
     }
 
     static func from(ci: CIImage, context: CIContext) -> PixelSampler? {

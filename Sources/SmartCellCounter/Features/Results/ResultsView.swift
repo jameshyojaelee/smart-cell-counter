@@ -107,9 +107,9 @@ final class ResultsViewModel: ObservableObject {
 
     init(defaultDilution: Double? = nil) {
         if let defaultDilution {
-            self.dilution = defaultDilution
+            dilution = defaultDilution
         } else {
-            self.dilution = SettingsStore.shared.dilutionFactor
+            dilution = SettingsStore.shared.dilutionFactor
         }
     }
 
@@ -219,12 +219,14 @@ final class ResultsViewModel: ObservableObject {
                                                    tally: tally,
                                                    params: params,
                                                    watermark: true,
-                                                   filename: "report.pdf") {
+                                                   filename: "report.pdf")
+        {
             pdfPath = pdfURL.path
         }
 
         if let baseImage = corrected ?? original,
-           let (thumbnail, size) = makeThumbnail(from: baseImage) {
+           let (thumbnail, size) = makeThumbnail(from: baseImage)
+        {
             let thumbURL = folder.appendingPathComponent("thumbnail.png")
             if let data = thumbnail.pngData() {
                 try? data.write(to: thumbURL)
@@ -242,7 +244,8 @@ final class ResultsViewModel: ObservableObject {
                                                            viabilityPercent: metrics.viability,
                                                            live: metrics.live,
                                                            dead: metrics.dead,
-                                                           filename: L10n.Results.CSV.summaryFilename) {
+                                                           filename: L10n.Results.CSV.summaryFilename)
+        {
             csvPath = summaryURL.path
         }
 
@@ -332,9 +335,9 @@ final class ResultsViewModel: ObservableObject {
         }
     }
 
-    private func performExport(kind: ExportKind, payload: ExportPayload) async throws -> URL {
+    private func performExport(kind _: ExportKind, payload: ExportPayload) async throws -> URL {
         switch payload {
-        case .summary(let summary):
+        case let .summary(summary):
             return try await Task.detached(priority: .userInitiated) {
                 let exporter = CSVExporter()
                 return try exporter.exportSummary(sampleId: summary.sampleId,
@@ -348,7 +351,7 @@ final class ResultsViewModel: ObservableObject {
                                                   dead: summary.dead,
                                                   filename: summary.filename)
             }.value
-        case .detections(let detections):
+        case let .detections(detections):
             return try await Task.detached(priority: .userInitiated) {
                 let exporter = CSVExporter()
                 return try exporter.exportDetections(sampleId: detections.sampleId,
@@ -356,7 +359,7 @@ final class ResultsViewModel: ObservableObject {
                                                      metadata: detections.metadata,
                                                      filename: detections.filename)
             }.value
-        case .pdf(let report):
+        case let .pdf(report):
             return try await MainActor.run {
                 let exporter = PDFExporter()
                 return try exporter.exportReport(header: report.header,
@@ -418,13 +421,13 @@ final class ResultsViewModel: ObservableObject {
     }
 
     #if DEBUG
-    func debugResetAlert() {
-        alert = nil
-    }
+        func debugResetAlert() {
+            alert = nil
+        }
 
-    func debugCanAccess(_ kind: ExportKind) -> Bool {
-        canAccess(kind)
-    }
+        func debugCanAccess(_ kind: ExportKind) -> Bool {
+            canAccess(kind)
+        }
     #endif
 
     private func makeFilename(prefix: String, fileExtension: String, timestamp: Date) -> String {
@@ -461,8 +464,8 @@ final class ResultsViewModel: ObservableObject {
             UIColor.clear.setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
             ctx.cgContext.setFillColor(UIColor.red.withAlphaComponent(0.5).cgColor)
-            for y in 0..<seg.height {
-                for x in 0..<seg.width where seg.mask[y * seg.width + x] {
+            for y in 0 ..< seg.height {
+                for x in 0 ..< seg.width where seg.mask[y * seg.width + x] {
                     ctx.cgContext.fill(CGRect(x: x, y: y, width: 1, height: 1))
                 }
             }
@@ -529,25 +532,25 @@ final class ResultsViewModel: ObservableObject {
 
         var metadata: ExportMetadata {
             switch self {
-            case .summary(let payload): return payload.metadata
-            case .detections(let payload): return payload.metadata
-            case .pdf(let payload): return payload.metadata
+            case let .summary(payload): return payload.metadata
+            case let .detections(payload): return payload.metadata
+            case let .pdf(payload): return payload.metadata
             }
         }
 
         var timestamp: Date {
             switch self {
-            case .summary(let payload): return payload.timestamp
-            case .detections(let payload): return payload.timestamp
-            case .pdf(let payload): return payload.timestamp
+            case let .summary(payload): return payload.timestamp
+            case let .detections(payload): return payload.timestamp
+            case let .pdf(payload): return payload.timestamp
             }
         }
 
         var sampleId: String {
             switch self {
-            case .summary(let payload): return payload.sampleId
-            case .detections(let payload): return payload.sampleId
-            case .pdf(let payload): return payload.reportId
+            case let .summary(payload): return payload.sampleId
+            case let .detections(payload): return payload.sampleId
+            case let .pdf(payload): return payload.reportId
             }
         }
     }
@@ -604,7 +607,7 @@ struct ResultsView: View {
                     HStack {
                         Text(L10n.Results.dilution).foregroundColor(Theme.textSecondary)
                         Spacer()
-                        Stepper(value: $viewModel.dilution, in: 0.1...100, step: 0.1) {
+                        Stepper(value: $viewModel.dilution, in: 0.1 ... 100, step: 0.1) {
                             Text(L10n.Results.dilutionValue(viewModel.dilution))
                                 .foregroundColor(Theme.textPrimary)
                         }
@@ -720,7 +723,7 @@ struct ResultsView: View {
                 .cardStyle()
 
                 #if ADS
-                if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
+                    if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
                 #endif
             }
             .padding()
@@ -839,13 +842,14 @@ private struct QCRow: View {
 
 private extension View {
     func cardStyle() -> some View {
-        self.padding(12)
+        padding(12)
             .background(Color(.secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 
 // MARK: - Navigation modernization
+
 private struct ResultsNavigation: ViewModifier {
     @Binding var showPaywall: Bool
     func body(content: Content) -> some View {

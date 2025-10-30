@@ -1,6 +1,6 @@
-import XCTest
 import Combine
 @testable import SmartCellCounter
+import XCTest
 
 @MainActor
 final class SmartCellCounterTests: XCTestCase {

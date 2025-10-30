@@ -14,7 +14,7 @@ struct NumericField: View {
 
     init(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, step: Double = 1.0, onInvalid: @escaping (String) -> Void) {
         self.title = title
-        self._value = value
+        _value = value
         self.range = range
         self.step = step
         self.onInvalid = onInvalid
@@ -22,7 +22,7 @@ struct NumericField: View {
         nf.maximumFractionDigits = 3
         nf.minimumFractionDigits = 0
         nf.numberStyle = .decimal
-        self.formatter = nf
+        formatter = nf
     }
 
     var body: some View {

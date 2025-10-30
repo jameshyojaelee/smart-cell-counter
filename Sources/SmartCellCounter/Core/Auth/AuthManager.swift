@@ -5,18 +5,17 @@
 //  Created by 이효록 on 10/29/25.
 //
 
-import Foundation
 import FirebaseAuth
+import Foundation
 import GoogleSignIn
 import GoogleSignInSwift
 
 @MainActor
 final class AuthManager: ObservableObject {
-    
     @Published private(set) var user: User? // Firebase User object
     @Published var error: Error?
     @Published var isLoading: Bool = false
-    
+
     private var authStateHandler: AuthStateDidChangeListenerHandle?
 
     init() {
@@ -25,7 +24,7 @@ final class AuthManager: ObservableObject {
             self?.user = user
         }
     }
-    
+
     deinit {
         // Stop listening when this object is deallocated
         if let authStateHandler {
@@ -39,8 +38,8 @@ final class AuthManager: ObservableObject {
 
     func signInWithGoogle() async {
         isLoading = true
-        self.error = nil
-        
+        error = nil
+
         do {
             // 1. Get the top-most view controller to present the Google sign-in sheet
             guard let topVC = await MainActor.run(body: {
@@ -53,25 +52,25 @@ final class AuthManager: ObservableObject {
 
             // 2. Start the Google Sign-In flow
             let gidSignInResult = try await GIDSignIn.sharedInstance.signIn(withPresenting: topVC)
-            
+
             // 3. Get the ID token from the Google sign-in result
             guard let idToken = gidSignInResult.user.idToken?.tokenString else {
                 throw NSError(domain: "AuthManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "Could not get ID token from Google."])
             }
-            
+
             // 4. Create a Firebase credential with the Google ID token
             let credential = GoogleAuthProvider.credential(withIDToken: idToken,
                                                            accessToken: gidSignInResult.user.accessToken.tokenString)
-            
+
             // 5. Sign in to Firebase with the credential
             let authResult = try await Auth.auth().signIn(with: credential)
-            self.user = authResult.user
-            
+            user = authResult.user
+
         } catch {
             self.error = error
             print("Error during Google Sign-In: \(error.localizedDescription)")
         }
-        
+
         isLoading = false
     }
 
@@ -79,7 +78,7 @@ final class AuthManager: ObservableObject {
         do {
             try Auth.auth().signOut()
             GIDSignIn.sharedInstance.signOut()
-            self.user = nil
+            user = nil
         } catch {
             print("Error signing out: \(error.localizedDescription)")
             self.error = error

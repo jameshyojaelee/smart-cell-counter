@@ -1,5 +1,5 @@
-import Foundation
 import CoreImage
+import Foundation
 import Metal
 
 public enum ImageContext {
@@ -8,12 +8,12 @@ public enum ImageContext {
         if let device = device {
             return CIContext(mtlDevice: device, options: [
                 .cacheIntermediates: true,
-                .useSoftwareRenderer: false
+                .useSoftwareRenderer: false,
             ])
         } else {
             return CIContext(options: [
                 .cacheIntermediates: true,
-                .useSoftwareRenderer: false
+                .useSoftwareRenderer: false,
             ])
         }
     }()

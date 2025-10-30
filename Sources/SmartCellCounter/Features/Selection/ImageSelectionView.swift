@@ -21,15 +21,15 @@ struct ImageSelectionView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: fit.size.width, height: fit.size.height)
-                        .position(x: geo.size.width/2, y: geo.size.height/2)
+                        .position(x: geo.size.width / 2, y: geo.size.height / 2)
                         .flipsForRightToLeftLayoutDirection(false)
                         .accessibilityHidden(true)
                         .onAppear {
-                            viewRect = CGRect(origin: CGPoint(x: (geo.size.width - fit.size.width)/2, y: (geo.size.height - fit.size.height)/2), size: fit.size)
+                            viewRect = CGRect(origin: CGPoint(x: (geo.size.width - fit.size.width) / 2, y: (geo.size.height - fit.size.height) / 2), size: fit.size)
                             // default selection in center
                             let w = fit.size.width * 0.5
                             let h = fit.size.height * 0.4
-                            selection = CGRect(x: viewRect.midX - w/2, y: viewRect.midY - h/2, width: w, height: h)
+                            selection = CGRect(x: viewRect.midX - w / 2, y: viewRect.midY - h / 2, width: w, height: h)
                         }
                     SelectionOverlay(rect: $selection, bounds: viewRect, minSize: CGSize(width: 40, height: 40), fixedAspect: fixedAspect)
                 }

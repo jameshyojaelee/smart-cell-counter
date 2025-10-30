@@ -1,5 +1,5 @@
-import SwiftUI
 import Combine
+import SwiftUI
 
 @MainActor
 final class PaywallViewModel: ObservableObject {
@@ -46,13 +46,13 @@ final class PaywallViewModel: ObservableObject {
     }
 
     #if DEBUG
-    func simulatePurchase() {
-        purchases.debugOverrideEntitlement(true)
-    }
+        func simulatePurchase() {
+            purchases.debugOverrideEntitlement(true)
+        }
 
-    func revokeEntitlement() {
-        purchases.debugOverrideEntitlement(false)
-    }
+        func revokeEntitlement() {
+            purchases.debugOverrideEntitlement(false)
+        }
     #endif
 }
 
@@ -77,8 +77,8 @@ struct PaywallView: View {
                                onContinue: { dismiss() })
 
                 #if DEBUG
-                DebugPurchaseControls(onSimulate: viewModel.simulatePurchase,
-                                      onRevoke: viewModel.revokeEntitlement)
+                    DebugPurchaseControls(onSimulate: viewModel.simulatePurchase,
+                                          onRevoke: viewModel.revokeEntitlement)
                 #endif
             }
             .padding()
@@ -167,7 +167,7 @@ private struct ComparisonTable: View {
          L10n.Paywall.Comparison.valueRemoved),
         (L10n.Paywall.Comparison.support,
          L10n.Paywall.Comparison.valueNotAvailable,
-         L10n.Paywall.Comparison.valueIncluded)
+         L10n.Paywall.Comparison.valueIncluded),
     ]
 
     var body: some View {
@@ -311,32 +311,31 @@ private struct PaywallActions: View {
 }
 
 #if DEBUG
-private struct DebugPurchaseControls: View {
-    let onSimulate: () -> Void
-    let onRevoke: () -> Void
+    private struct DebugPurchaseControls: View {
+        let onSimulate: () -> Void
+        let onRevoke: () -> Void
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Debug")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            HStack {
-                Button(L10n.Paywall.Debug.simulatePurchase, action: onSimulate)
-                Button(L10n.Paywall.Debug.revokePurchase, action: onRevoke)
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Debug")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                HStack {
+                    Button(L10n.Paywall.Debug.simulatePurchase, action: onSimulate)
+                    Button(L10n.Paywall.Debug.revokePurchase, action: onRevoke)
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
+            .padding()
+            .background(Color(.tertiarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
-        .padding()
-        .background(Color(.tertiarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
-}
 #endif
 
 private extension View {
     func cardBackground() -> some View {
-        self
-            .padding(16)
+        padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(.secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))

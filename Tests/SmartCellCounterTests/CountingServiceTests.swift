@@ -1,6 +1,6 @@
-import XCTest
-@testable import SmartCellCounter
 import CoreGraphics
+@testable import SmartCellCounter
+import XCTest
 
 final class CountingServiceTests: XCTestCase {
     private func geom(pxPerMicron: Double = 1.0) -> GridGeometry {
@@ -43,13 +43,21 @@ final class CountingServiceTests: XCTestCase {
         let g = geom()
         var objects: [CellObject] = []
         // Large 0: 100 cells
-        for i in 0..<100 { objects.append(makeObject(id: i, x: 100, y: 100)) }
+        for i in 0 ..< 100 {
+            objects.append(makeObject(id: i, x: 100, y: 100))
+        }
         // Large 2: 110 cells
-        for i in 0..<110 { objects.append(makeObject(id: 100+i, x: 2100, y: 100)) }
+        for i in 0 ..< 110 {
+            objects.append(makeObject(id: 100 + i, x: 2100, y: 100))
+        }
         // Large 6: 105 cells
-        for i in 0..<105 { objects.append(makeObject(id: 210+i, x: 100, y: 2100)) }
+        for i in 0 ..< 105 {
+            objects.append(makeObject(id: 210 + i, x: 100, y: 2100))
+        }
         // Large 8: outlier 500 cells
-        for i in 0..<500 { objects.append(makeObject(id: 315+i, x: 2100, y: 2100)) }
+        for i in 0 ..< 500 {
+            objects.append(makeObject(id: 315 + i, x: 2100, y: 2100))
+        }
 
         let tally = CountingService.tallyByLargeSquare(objects: objects, geometry: g)
         let mean = CountingService.meanCountPerLargeSquare(countsByIndex: tally, selectedLargeIndices: [0, 2, 6, 8], outlierThreshold: 2.5)

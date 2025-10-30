@@ -30,18 +30,18 @@ final class HelpViewModel: ObservableObject {
         HelpTopic(id: 0),
         HelpTopic(id: 1),
         HelpTopic(id: 2),
-        HelpTopic(id: 3)
+        HelpTopic(id: 3),
     ]
 
     let quickLinks: [HelpLink] = [
         HelpLink(id: 0, symbol: "wrench.and.screwdriver", url: URL(string: "https://www.smartcellcounter.com/support")),
         HelpLink(id: 1, symbol: "envelope", url: URL(string: "mailto:support@smartcellcounter.com")),
-        HelpLink(id: 2, symbol: "doc.text", url: URL(string: "https://www.smartcellcounter.com/releases"))
+        HelpLink(id: 2, symbol: "doc.text", url: URL(string: "https://www.smartcellcounter.com/releases")),
     ]
 
     let videos: [HelpVideo] = [
         HelpVideo(id: 0),
-        HelpVideo(id: 1)
+        HelpVideo(id: 1),
     ]
 
     var filteredTopics: [HelpTopic] {
@@ -49,8 +49,8 @@ final class HelpViewModel: ObservableObject {
         guard !normalized.isEmpty else { return topics }
         return topics.filter { topic in
             topic.question.localizedCaseInsensitiveContains(normalized) ||
-            topic.answer.localizedCaseInsensitiveContains(normalized) ||
-            topic.tags.contains { $0.localizedCaseInsensitiveContains(normalized) }
+                topic.answer.localizedCaseInsensitiveContains(normalized) ||
+                topic.tags.contains { $0.localizedCaseInsensitiveContains(normalized) }
         }
     }
 }

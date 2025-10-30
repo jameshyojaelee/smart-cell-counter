@@ -1,6 +1,6 @@
+import CryptoKit
 import Foundation
 import MetricKit
-import CryptoKit
 
 final class CrashReporter: NSObject, MXMetricManagerSubscriber {
     struct CrashDiagnosticSummary: Codable, Identifiable {
@@ -41,7 +41,7 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
 
-    private override init() {
+    override private init() {
         super.init()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .withoutEscapingSlashes]
@@ -87,7 +87,8 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
             guard let directory = ensureStorageDirectory(),
                   let files = try? fileManager.contentsOfDirectory(at: directory,
                                                                    includingPropertiesForKeys: [.creationDateKey],
-                                                                   options: [.skipsHiddenFiles]) else {
+                                                                   options: [.skipsHiddenFiles])
+            else {
                 return []
             }
             let sorted = files.sorted { $0.lastPathComponent < $1.lastPathComponent }
@@ -200,7 +201,8 @@ final class CrashReporter: NSObject, MXMetricManagerSubscriber {
             diagnostics: summaries
         )
         guard let data = try? encoder.encode(envelope),
-              let json = String(data: data, encoding: .utf8) else {
+              let json = String(data: data, encoding: .utf8)
+        else {
             return
         }
         Logger.log("CrashReporter upload stub (disabled): \(json)")

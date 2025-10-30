@@ -8,7 +8,7 @@ public enum Hemocytometer {
     ///   - dilutionFactor: Sample dilution factor (default 1.0)
     /// - Returns: Concentration in cells per milliliter
     public static func concentration(avgCellsPerSquare: Double, dilutionFactor: Double = 1.0) -> Double {
-        return avgCellsPerSquare * 10_000.0 * dilutionFactor
+        return avgCellsPerSquare * 10000.0 * dilutionFactor
     }
 
     /// Viability (%) = (Live cells / Total cells) × 100

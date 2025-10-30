@@ -1,6 +1,6 @@
+import CoreImage
 import Foundation
 import SwiftUI
-import CoreImage
 
 struct DebugOverlayView: View {
     let debugImages: [String: UIImage]

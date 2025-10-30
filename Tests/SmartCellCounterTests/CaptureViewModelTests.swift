@@ -1,8 +1,8 @@
-import XCTest
 import Combine
 import CoreGraphics
-import SwiftUI
 @testable import SmartCellCounter
+import SwiftUI
+import XCTest
 
 @MainActor
 final class CaptureViewModelTests: XCTestCase {

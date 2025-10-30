@@ -1,5 +1,5 @@
-import XCTest
 @testable import SmartCellCounter
+import XCTest
 
 final class CountingTests: XCTestCase {
     func testMapCentroidToGridRespectsBounds() {
@@ -13,11 +13,11 @@ final class CountingTests: XCTestCase {
     func testTallyByLargeSquareAggregatesCounts() {
         let geometry = GridGeometry(originPx: .zero, pxPerMicron: 1.0)
         let objects = [
-            TestFixtures.cellObject(id: 1, centroid: CGPoint(x: 120, y: 120)),    // large index 0
-            TestFixtures.cellObject(id: 2, centroid: CGPoint(x: 1000, y: 140)),   // boundary x=1000 -> still large index 0
-            TestFixtures.cellObject(id: 3, centroid: CGPoint(x: 2100, y: 140)),   // large index 2
-            TestFixtures.cellObject(id: 4, centroid: CGPoint(x: 2180, y: 1140)),  // large index 5
-            TestFixtures.cellObject(id: 5, centroid: CGPoint(x: 2180, y: 2140))   // large index 8
+            TestFixtures.cellObject(id: 1, centroid: CGPoint(x: 120, y: 120)), // large index 0
+            TestFixtures.cellObject(id: 2, centroid: CGPoint(x: 1000, y: 140)), // boundary x=1000 -> still large index 0
+            TestFixtures.cellObject(id: 3, centroid: CGPoint(x: 2100, y: 140)), // large index 2
+            TestFixtures.cellObject(id: 4, centroid: CGPoint(x: 2180, y: 1140)), // large index 5
+            TestFixtures.cellObject(id: 5, centroid: CGPoint(x: 2180, y: 2140)), // large index 8
         ]
 
         let tally = CountingService.tallyByLargeSquare(objects: objects, geometry: geometry)

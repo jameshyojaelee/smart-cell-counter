@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreGraphics
+import SwiftUI
 
 struct CornerEditorView: View {
     @Binding var image: UIImage
@@ -28,7 +28,7 @@ struct CornerEditorView: View {
                 }
                 .stroke(Color.yellow, lineWidth: 2)
 
-                ForEach(0..<4, id: \.self) { i in
+                ForEach(0 ..< 4, id: \.self) { i in
                     Handle(position: transformedCorners(rect: rect)[i], size: handleSize)
                         .gesture(dragHandle(index: i, rect: rect))
                 }
@@ -41,7 +41,7 @@ struct CornerEditorView: View {
     private func transformedCorners(rect: CGRect) -> [CGPoint] {
         // Map image-space corners through scale/offset into view space
         let imgSize = fittedImageSize(in: rect, image: image)
-        let origin = CGPoint(x: rect.midX - imgSize.width/2 + offset.width, y: rect.midY - imgSize.height/2 + offset.height)
+        let origin = CGPoint(x: rect.midX - imgSize.width / 2 + offset.width, y: rect.midY - imgSize.height / 2 + offset.height)
         func map(_ p: CGPoint) -> CGPoint {
             let x = origin.x + p.x * (imgSize.width / image.size.width) * scale
             let y = origin.y + p.y * (imgSize.height / image.size.height) * scale
@@ -90,7 +90,7 @@ struct CornerEditorView: View {
     private func enforceOrdering(points: [CGPoint]) -> [CGPoint] {
         guard points.count == 4 else { return points }
         // Sort by y then x to find approximate TL, TR, BR, BL
-        let sorted = points.sorted { (a, b) in a.y == b.y ? a.x < b.x : a.y < b.y }
+        let sorted = points.sorted { a, b in a.y == b.y ? a.x < b.x : a.y < b.y }
         let top = Array(sorted.prefix(2)).sorted { $0.x < $1.x }
         let bottom = Array(sorted.suffix(2)).sorted { $0.x < $1.x }
         return [top[0], top[1], bottom[1], bottom[0]]

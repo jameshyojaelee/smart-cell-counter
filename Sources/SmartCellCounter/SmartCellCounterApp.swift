@@ -1,7 +1,7 @@
-import SwiftUI
-import UIKit
 import FirebaseCore
 import GoogleSignIn
+import SwiftUI
+import UIKit
 
 @main
 struct SmartCellCounterApp: App {
@@ -11,13 +11,13 @@ struct SmartCellCounterApp: App {
     init() {
         FirebaseApp.configure()
     }
-    
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
                 .environmentObject(authManager)
-                .onOpenURL{ url in
+                .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
                 }
         }
@@ -50,7 +50,7 @@ final class AppState: ObservableObject {
 
 struct RootView: View {
     @EnvironmentObject private var authManager: AuthManager // Get AuthManager from environment
-    
+
     @AppStorage("consent.shown") private var consentShown: Bool = false
     @AppStorage("onboarding.completed") private var onboardingCompleted: Bool = false
     @StateObject private var purchases = PurchaseManager.shared
@@ -80,7 +80,7 @@ struct RootView: View {
                 .sheet(isPresented: $showConsent) {
                     ConsentView(consentShown: $consentShown)
                 }
-                
+
             } else {
                 // USER IS NOT LOGGED IN OR NOT ONBOARDED
                 // Show a simple background while modal sheets are figured out
@@ -92,7 +92,7 @@ struct RootView: View {
                 onboardingCompleted = true
                 AnalyticsLogger.shared.log(event: "onboarding_completed")
                 showOnboarding = false
-                
+
                 // If not logged in, show login view right after onboarding
                 // If already logged in (e.g., from a previous session), this will be false
                 if !authManager.isAuthenticated {

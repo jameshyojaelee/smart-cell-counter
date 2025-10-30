@@ -56,7 +56,7 @@ struct HistoryView: View {
     var body: some View {
         VStack(spacing: 8) {
             #if ADS
-            if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
+                if !PurchaseManager.shared.isPro { BannerAdView().frame(height: 50) }
             #endif
             List(viewModel.rows) { sample in
                 HistoryRowView(sample: sample)

@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 import UIKit
 
 public struct LabeledPoint: Codable {
@@ -10,7 +10,7 @@ public struct LabeledPoint: Codable {
 }
 
 enum Metrics {
-    static func varianceOfLaplacian(_ ci: CIImage, context: CIContext) -> Double {
+    static func varianceOfLaplacian(_ ci: CIImage, context _: CIContext) -> Double {
         let kernel: [CGFloat] = [0, 1, 0, 1, -4, 1, 0, 1, 0]
         let lap = CIFilter(name: "CIConvolution3X3", parameters: [kCIInputImageKey: ci, "inputWeights": CIVector(values: kernel, count: 9), "inputBias": 0])?.outputImage ?? ci
         let mean = lap.applyingFilter("CIAreaAverage", parameters: [kCIInputExtentKey: CIVector(cgRect: ci.extent)])
@@ -27,7 +27,7 @@ enum Metrics {
             let pr = CGFloat(sqrt(pdet.base.areaPx / .pi))
             var found = -1
             for (j, gt) in truth.enumerated() where !matched.contains(j) {
-                if iouCircle(pdet.base.centroid, pr, CGPoint(x: gt.x, y: gt.y), gt.r) > iou && gt.label == pdet.label {
+                if iouCircle(pdet.base.centroid, pr, CGPoint(x: gt.x, y: gt.y), gt.r) > iou, gt.label == pdet.label {
                     found = j; break
                 }
             }
@@ -44,11 +44,11 @@ enum Metrics {
         let d = hypot(c1.x - c2.x, c1.y - c2.y)
         if d >= r1 + r2 { return 0 }
         if d <= abs(r1 - r2) { return Double(min(r1, r2) * min(r1, r2)) / Double(max(r1, r2) * max(r1, r2)) }
-        let r1_2 = r1*r1, r2_2 = r2*r2
-        let alpha = acos((r1_2 + d*d - r2_2) / (2*r1*d))
-        let beta = acos((r2_2 + d*d - r1_2) / (2*r2*d))
-        let inter = r1_2*alpha + r2_2*beta - 0.5*sqrt(max(0, (-d+r1+r2)*(d+r1-r2)*(d-r1+r2)*(d+r1+r2)))
-        let union = Double.pi*Double(r1_2 + r2_2) - Double(inter)
+        let r1_2 = r1 * r1, r2_2 = r2 * r2
+        let alpha = acos((r1_2 + d * d - r2_2) / (2 * r1 * d))
+        let beta = acos((r2_2 + d * d - r1_2) / (2 * r2 * d))
+        let inter = r1_2 * alpha + r2_2 * beta - 0.5 * sqrt(max(0, (-d + r1 + r2) * (d + r1 - r2) * (d - r1 + r2) * (d + r1 + r2)))
+        let union = Double.pi * Double(r1_2 + r2_2) - Double(inter)
         return Double(inter) / union
     }
 }
