@@ -66,11 +66,10 @@ struct ImageSelectionView: View {
 
     private func fitRect(imageSize: CGSize, in container: CGSize) -> CGRect {
         let ar = imageSize.width / imageSize.height
-        var size: CGSize
-        if container.width / container.height > ar {
-            size = CGSize(width: container.height * ar, height: container.height)
+        var size = if container.width / container.height > ar {
+            CGSize(width: container.height * ar, height: container.height)
         } else {
-            size = CGSize(width: container.width, height: container.width / ar)
+            CGSize(width: container.width, height: container.width / ar)
         }
         return CGRect(origin: .zero, size: size)
     }

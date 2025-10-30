@@ -35,7 +35,7 @@ struct SettingsView: View {
                 }
                 .pickerStyle(.segmented)
                 .accessibilityLabel(L10n.Settings.Picker.strategy)
-                if store.segmentationStrategy == .coreML && !ImagingPipeline.isCoreMLSegmentationAvailable {
+                if store.segmentationStrategy == .coreML, !ImagingPipeline.isCoreMLSegmentationAvailable {
                     Text(L10n.Settings.Segmentation.coreMLFallback)
                         .font(.footnote)
                         .foregroundColor(.secondary)

@@ -39,34 +39,34 @@ final class ReviewViewModel: ObservableObject {
 
         var title: String {
             switch self {
-            case .detections: return L10n.Review.Overlay.detections
-            case .segmentationMask: return L10n.Review.Overlay.segmentationMask
-            case .blueMask: return L10n.Review.Overlay.blueMask
-            case .gridMask: return L10n.Review.Overlay.gridMask
-            case .candidates: return L10n.Review.Overlay.candidates
-            case .tallies: return L10n.Review.Overlay.tallies
+            case .detections: L10n.Review.Overlay.detections
+            case .segmentationMask: L10n.Review.Overlay.segmentationMask
+            case .blueMask: L10n.Review.Overlay.blueMask
+            case .gridMask: L10n.Review.Overlay.gridMask
+            case .candidates: L10n.Review.Overlay.candidates
+            case .tallies: L10n.Review.Overlay.tallies
             }
         }
 
         var iconName: String {
             switch self {
-            case .detections: return "viewfinder"
-            case .segmentationMask: return "square.dashed"
-            case .blueMask: return "drop.fill"
-            case .gridMask: return "square.grid.3x3"
-            case .candidates: return "circle.hexagonpath"
-            case .tallies: return "number.square"
+            case .detections: "viewfinder"
+            case .segmentationMask: "square.dashed"
+            case .blueMask: "drop.fill"
+            case .gridMask: "square.grid.3x3"
+            case .candidates: "circle.hexagonpath"
+            case .tallies: "number.square"
             }
         }
 
         var tint: Color {
             switch self {
-            case .detections: return Theme.accent
-            case .segmentationMask: return .pink
-            case .blueMask: return .blue
-            case .gridMask: return .yellow
-            case .candidates: return .orange
-            case .tallies: return Theme.textSecondary
+            case .detections: Theme.accent
+            case .segmentationMask: .pink
+            case .blueMask: .blue
+            case .gridMask: .yellow
+            case .candidates: .orange
+            case .tallies: Theme.textSecondary
             }
         }
     }
@@ -416,26 +416,26 @@ struct ReviewView: View {
 
     private func filteredLabeled() -> [CellObjectLabeled] {
         switch filter {
-        case .all: return appState.labeled
-        case .live: return appState.labeled.filter { $0.label == "live" }
-        case .dead: return appState.labeled.filter { $0.label == "dead" }
+        case .all: appState.labeled
+        case .live: appState.labeled.filter { $0.label == "live" }
+        case .dead: appState.labeled.filter { $0.label == "dead" }
         }
     }
 
     private func isOverlayAvailable(_ option: ReviewViewModel.OverlayOption) -> Bool {
         switch option {
         case .detections:
-            return !appState.labeled.isEmpty
+            !appState.labeled.isEmpty
         case .segmentationMask:
-            return appState.debugImages["00_segmentation_mask"] != nil
+            appState.debugImages["00_segmentation_mask"] != nil
         case .blueMask:
-            return appState.debugImages["08_blue_mask"] != nil
+            appState.debugImages["08_blue_mask"] != nil
         case .gridMask:
-            return appState.debugImages["05_grid_mask"] != nil
+            appState.debugImages["05_grid_mask"] != nil
         case .candidates:
-            return appState.debugImages["07_candidates"] != nil
+            appState.debugImages["07_candidates"] != nil
         case .tallies:
-            return !viewModel.perSquare.isEmpty
+            !viewModel.perSquare.isEmpty
         }
     }
 }
@@ -449,9 +449,9 @@ private enum ReviewFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: return L10n.Review.Filter.all
-        case .live: return L10n.Review.Filter.live
-        case .dead: return L10n.Review.Filter.dead
+        case .all: L10n.Review.Filter.all
+        case .live: L10n.Review.Filter.live
+        case .dead: L10n.Review.Filter.dead
         }
     }
 }
@@ -729,9 +729,9 @@ private struct SegmentationMetadataView: View {
 
     private var strategyText: String {
         switch segmentation.usedStrategy {
-        case .automatic: return L10n.Review.Segmentation.strategyAutomatic
-        case .classical: return L10n.Review.Segmentation.strategyClassical
-        case .coreML: return L10n.Review.Segmentation.strategyCoreML
+        case .automatic: L10n.Review.Segmentation.strategyAutomatic
+        case .classical: L10n.Review.Segmentation.strategyClassical
+        case .coreML: L10n.Review.Segmentation.strategyCoreML
         }
     }
 

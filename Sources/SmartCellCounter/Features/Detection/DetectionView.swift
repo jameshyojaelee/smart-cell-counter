@@ -54,12 +54,12 @@ enum DetectionOverlayKind: String, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .candidates: return L10n.Detection.Overlay.candidates
-        case .blueMask: return L10n.Detection.Overlay.blueMask
-        case .gridMask: return L10n.Detection.Overlay.gridMask
-        case .illumination: return L10n.Detection.Overlay.illumination
-        case .segmentationMask: return L10n.Detection.Overlay.segmentationMask
-        case .segmentationInfo: return L10n.Detection.Overlay.segmentationInfo
+        case .candidates: L10n.Detection.Overlay.candidates
+        case .blueMask: L10n.Detection.Overlay.blueMask
+        case .gridMask: L10n.Detection.Overlay.gridMask
+        case .illumination: L10n.Detection.Overlay.illumination
+        case .segmentationMask: L10n.Detection.Overlay.segmentationMask
+        case .segmentationInfo: L10n.Detection.Overlay.segmentationInfo
         }
     }
 }

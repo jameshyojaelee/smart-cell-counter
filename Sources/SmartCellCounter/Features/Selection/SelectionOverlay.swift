@@ -52,10 +52,10 @@ struct SelectionOverlay: View {
 
     private func handlePosition(_ i: Int) -> CGPoint {
         switch i {
-        case 0: return CGPoint(x: rect.minX, y: rect.minY)
-        case 1: return CGPoint(x: rect.maxX, y: rect.minY)
-        case 2: return CGPoint(x: rect.maxX, y: rect.maxY)
-        default: return CGPoint(x: rect.minX, y: rect.maxY)
+        case 0: CGPoint(x: rect.minX, y: rect.minY)
+        case 1: CGPoint(x: rect.maxX, y: rect.minY)
+        case 2: CGPoint(x: rect.maxX, y: rect.maxY)
+        default: CGPoint(x: rect.minX, y: rect.maxY)
         }
     }
 
