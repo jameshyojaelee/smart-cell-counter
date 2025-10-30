@@ -59,7 +59,7 @@ final class ImagingPipelineTests: XCTestCase {
         let mask: [Bool] = [
             true, true, false,
             true, true, false,
-            false, false, false,
+            false, false, false
         ]
         let seg = SegmentationResult(width: 3, height: 3, mask: mask)
         let objects = ImagingPipeline.objectFeatures(from: seg, pxPerMicron: nil)

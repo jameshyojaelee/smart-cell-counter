@@ -147,8 +147,7 @@ struct CaptureView: View {
                     guard let item = newItem else { return }
                     Task { @MainActor in
                         if let data = try? await item.loadTransferable(type: Data.self),
-                           let img = UIImage(data: data)
-                        {
+                           let img = UIImage(data: data) {
                             appState.capturedImage = img
                             goToCrop = true
                         }
@@ -294,8 +293,7 @@ private enum MockCaptureData {
             let bounds = CGRect(origin: .zero, size: placeholderSize)
             if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
                                          colors: [UIColor.systemTeal.cgColor, UIColor.systemIndigo.cgColor] as CFArray,
-                                         locations: [0, 1])
-            {
+                                         locations: [0, 1]) {
                 ctx.cgContext.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: bounds.maxX, y: bounds.maxY), options: [])
             } else {
                 ctx.cgContext.setFillColor(UIColor.systemTeal.cgColor)

@@ -11,7 +11,7 @@ enum IlluminationCorrector {
             "inputRVector": CIVector(x: 1, y: 0, z: 0, w: 0),
             "inputGVector": CIVector(x: 0, y: 1, z: 0, w: 0),
             "inputBVector": CIVector(x: 0, y: 0, z: 1, w: 0),
-            "inputBiasVector": CIVector(x: epsilon, y: epsilon, z: epsilon, w: 0),
+            "inputBiasVector": CIVector(x: epsilon, y: epsilon, z: epsilon, w: 0)
         ])
         let flat = l1.applyingFilter("CIDivideBlendMode", parameters: [kCIInputBackgroundImageKey: bg])
         return (bg, flat)

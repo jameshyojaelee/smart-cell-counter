@@ -500,7 +500,7 @@ enum L10n {
                     tr("Results", "results.csv.header.concentration"),
                     tr("Results", "results.csv.header.viability"),
                     tr("Results", "results.csv.header.live"),
-                    tr("Results", "results.csv.header.dead"),
+                    tr("Results", "results.csv.header.dead")
                 ]
             }
 
@@ -516,7 +516,7 @@ enum L10n {
                     tr("Results", "results.csv.header.viability"),
                     tr("Results", "results.csv.header.live"),
                     tr("Results", "results.csv.header.dead"),
-                    tr("Results", "results.csv.detailed.dilution"),
+                    tr("Results", "results.csv.detailed.dilution")
                 ]
             }
 
@@ -536,7 +536,7 @@ enum L10n {
                     tr("Results", "results.csv.detections.circularity"),
                     tr("Results", "results.csv.detections.solidity"),
                     tr("Results", "results.csv.detections.label"),
-                    tr("Results", "results.csv.detections.confidence"),
+                    tr("Results", "results.csv.detections.confidence")
                 ]
             }
 

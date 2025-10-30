@@ -13,8 +13,7 @@ enum CellDetector {
     static func detect(on uiImage: UIImage,
                        roi: CGRect?,
                        pxPerMicron: Double?,
-                       params p: DetectorParams) -> DetectionResult
-    {
+                       params p: DetectorParams) -> DetectionResult {
         let context = ImageContext.ciContext
         // Downscale for speed (process at ~2MP target), then scale detections back
         let originalCI = CIImage(image: uiImage) ?? CIImage(color: CIColor(color: .black)).cropped(to: CGRect(origin: .zero, size: uiImage.size))

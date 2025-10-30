@@ -219,14 +219,12 @@ final class ResultsViewModel: ObservableObject {
                                                    tally: tally,
                                                    params: params,
                                                    watermark: true,
-                                                   filename: "report.pdf")
-        {
+                                                   filename: "report.pdf") {
             pdfPath = pdfURL.path
         }
 
         if let baseImage = corrected ?? original,
-           let (thumbnail, size) = makeThumbnail(from: baseImage)
-        {
+           let (thumbnail, size) = makeThumbnail(from: baseImage) {
             let thumbURL = folder.appendingPathComponent("thumbnail.png")
             if let data = thumbnail.pngData() {
                 try? data.write(to: thumbURL)
@@ -244,8 +242,7 @@ final class ResultsViewModel: ObservableObject {
                                                            viabilityPercent: metrics.viability,
                                                            live: metrics.live,
                                                            dead: metrics.dead,
-                                                           filename: L10n.Results.CSV.summaryFilename)
-        {
+                                                           filename: L10n.Results.CSV.summaryFilename) {
             csvPath = summaryURL.path
         }
 
