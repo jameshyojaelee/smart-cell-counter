@@ -8,6 +8,12 @@ packages:
   GRDB:
     url: https://github.com/groue/GRDB.swift
     from: 6.0.0
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk.git
+    from: 10.0.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS.git
+    from: 7.0.0
 settings:
   base:
     DEVELOPMENT_TEAM: ABCDE12345
@@ -51,11 +57,19 @@ targets:
         UIFileSharingEnabled: true
         LSSupportsOpeningDocumentsInPlace: true
         UIRequiredDeviceCapabilities: [camera]
+        CFBundleURLTypes:
+                  - CFBundleTypeRole: Editor
+                    CFBundleURLSchemes:
+                      - com.googleusercontent.apps.com.googleusercontent.apps.12646043017-b5ojc052qv978ja3t778drbrmb75c9il
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.SmartCellCounter
     dependencies:
       - package: GRDB
+      - package: Firebase
+        products: [FirebaseAuth, FirebaseAnalytics]
+      - package: GoogleSignIn
+        products: [GoogleSignIn, GoogleSignInSwift]
 
   SmartCellCounterTests:
     type: bundle.unit-test
