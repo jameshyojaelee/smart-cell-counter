@@ -50,6 +50,7 @@ final class AppState: ObservableObject {
 
 struct RootView: View {
     @EnvironmentObject private var authManager: AuthManager // Get AuthManager from environment
+    let isUITesting = ProcessInfo.processInfo.arguments.contains("-UITesting")
 
     @AppStorage("consent.shown") private var consentShown: Bool = false
     @AppStorage("onboarding.completed") private var onboardingCompleted: Bool = false
@@ -60,7 +61,7 @@ struct RootView: View {
     var body: some View {
         // Use a ZStack to conditionally show content
         ZStack {
-            if authManager.isAuthenticated, onboardingCompleted {
+            if authManager.isAuthenticated || isUITesting, onboardingCompleted {
                 // USER IS LOGGED IN AND ONBOARDED
                 // Show the main app
                 TabView {
@@ -104,7 +105,7 @@ struct RootView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: .constant(!authManager.isAuthenticated && onboardingCompleted)) {
+        .fullScreenCover(isPresented: .constant(!authManager.isAuthenticated && onboardingCompleted && !isUITesting)) {
             // NEW: Show LoginView if onboarding is done but user is NOT authenticated
             LoginView()
         }
