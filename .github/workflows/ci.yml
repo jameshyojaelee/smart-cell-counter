@@ -12,7 +12,88 @@ jobs:
     env:
       GIT_TERMINAL_PROMPT: 0
     steps:
+      - name: Checkouname: iOS CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    env:
+      GIT_TERMINAL_PROMPT: 0
+
+    steps:
       - name: Checkout
+        uses: actions/checkout@v4
+
+      # ✅ Cache Swift Package Manager dependencies
+      - name: Cache SPM Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.swiftpm
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      # ✅ Cache Derived Data (build output)
+      - name: Cache Derived Data
+        uses: actions/cache@v3
+        with:
+          path: DerivedData
+          key: ${{ runner.os }}-derived-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-derived-
+
+      - name: Install tooling
+        run: |
+          brew list xcodegen || brew install xcodegen
+          brew list swiftlint || brew install swiftlint
+          brew list swiftformat || brew install swiftformat
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: SwiftLint
+        run: swiftlint --strict
+
+      - name: SwiftFormat
+        run: swiftformat Sources Tests --lint --swiftversion 5.9
+
+      - name: Build & Test (with cached deps)
+        run: |
+          set -euo pipefail
+
+          xcodebuild -resolvePackageDependencies \
+            -project SmartCellCounter.xcodeproj \
+            -scheme SmartCellCounter
+
+          xcodebuild -project SmartCellCounter.xcodeproj \
+            -scheme SmartCellCounter \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -derivedDataPath DerivedData \
+            -enableCodeCoverage YES \
+            test
+
+      - name: Prepare coverage report
+        run: |
+          RESULT_PATH=$(find DerivedData/Logs/Test -maxdepth 1 -name '*.xcresult' | head -n 1)
+          if [ -z "$RESULT_PATH" ]; then
+            echo "{}" > coverage.json
+          else
+            xcrun xccov view --report --json "$RESULT_PATH" > coverage.json
+          fi
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: coverage.jsont
         uses: actions/checkout@v4
 
       - name: Configure GitHub auth for SPM
